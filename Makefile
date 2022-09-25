@@ -7,5 +7,8 @@ CFLAGS = -Wall -Wextra -Werror -pedantic -std=c99
 $(PROGRAM):
 	$(CC) $(CFLAGS) $(SOURCES) -o $(PROGRAM)
 
-run: $(PROGRAM)
+clean:
+	rm -f $(PROGRAM)
+
+run: clean $(PROGRAM)
 	./$(PROGRAM)
