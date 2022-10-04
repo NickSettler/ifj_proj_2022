@@ -1,4 +1,4 @@
-SOURCES = $(wildcard *.c)
+SOURCES = $(wildcard src/*.c)
 PROGRAM = comp
 
 CC = gcc
