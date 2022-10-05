@@ -1,25 +1,73 @@
 #include "string.h"
+#include <stdio.h>
 
-void string_add_char(char *str, char c) {
-    size_t len = strlen(str);
+string_t *string_base_init() {
+    string_t *string = (string_t *) malloc(sizeof(string_t));
+    if (string == NULL)
+        return NULL;
 
-    char *result = malloc(len + 1 + 1);
-    memcpy(result, str, len);
-    memcpy(result + len, &c, 1);
-    memcpy(str, result, len + 1 + 1);
-}
-
-void string_add_chars(char *str, char *chars) {
-    while (*chars != '\0') {
-        string_add_char(str, *chars);
-        ++chars;
+    string->value = (char *) malloc(STRING_ALLOCATION_SIZE);
+    if (string->value == NULL) {
+        free(string);
+        return NULL;
     }
+
+    string->capacity = STRING_ALLOCATION_SIZE;
+    return string;
 }
 
-void string_clear(char *str) {
-    if (str != NULL) return;
+string_t *string_init(const char *value) {
+    string_t *string = string_base_init();
 
-    char *result = malloc(1);
-    memcpy(result, "", 1);
-    memcpy(str, result, 1);
+    string->value = (char *) malloc(sizeof(char) * strlen(value));
+    strcpy(string->value, value);
+    string->length = strlen(value);
+    string->capacity = strlen(value);
+
+    return string;
+}
+
+void string_append_char(string_t *str, char c) {
+    if (str == NULL)
+        return;
+
+    if (str->length + 1 >= str->capacity) {
+        size_t new_capacity = str->capacity + STRING_ALLOCATION_SIZE;
+        char *new_value = (char *) realloc(str->value, new_capacity);
+        if (new_value == NULL)
+            return;
+
+        str->value = new_value;
+        str->capacity = new_capacity;
+    }
+
+    str->value[str->length++] = c;
+    str->value[str->length] = '\0';
+}
+
+void string_append_string(string_t *str, const char *value) {
+    if (str == NULL || value == NULL)
+        return;
+
+    size_t value_length = strlen(value);
+
+    if (str->length + value_length + 1 >= str->capacity) {
+        size_t new_capacity = str->capacity + value_length + STRING_ALLOCATION_SIZE;
+        char *new_value = (char *) realloc(str->value, new_capacity);
+        if (new_value == NULL)
+            return;
+
+        str->value = new_value;
+        str->capacity = new_capacity;
+    }
+    strcat(str->value, value);
+    str->length += value_length;
+    str->value[str->length] = '\0';
+}
+
+void string_clear(string_t *str) {
+    if (str == NULL) return;
+
+    str->length = 0;
+    str->value[str->length] = '\0';
 }
