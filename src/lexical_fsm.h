@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <string.h>
 #include "string.h"
+#include "errors.h"
 
 /**
  * PHP Lexical Analyzer Tokens
@@ -62,17 +63,13 @@ typedef enum LEXICAL_FSM_TOKENS {
 typedef enum LEXICAL_FSM_STATES {
     START,
     KEYWORD_STATE,
+    IDENTIFIER_START_STATE,
     IDENTIFIER_STATE,
     INTEGER_STATE,
     FLOAT_STATE,
     STRING_STATE,
 } LEXICAL_FSM_STATES;
 
-typedef struct lexical_token {
-    LEXICAL_FSM_TOKENS type;
-    char *value;
-} lexical_token_t;
-
-LEXICAL_FSM_TOKENS get_next_token(char *token);
+LEXICAL_FSM_TOKENS get_next_token(string_t *token);
 
 #endif //IFJ_PROJ_2022_LEXICAL_FSM_H
