@@ -15,3 +15,11 @@ void string_add_chars(char *str, char *chars) {
         ++chars;
     }
 }
+
+void string_clear(char *str) {
+    if (str != NULL) return;
+
+    char *result = malloc(1);
+    memcpy(result, "", 1);
+    memcpy(str, result, 1);
+}
