@@ -1,11 +1,11 @@
 #ifndef IFJ_PROJ_2022_LEXICAL_FSM_H
 #define IFJ_PROJ_2022_LEXICAL_FSM_H
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include "string.h"
 
 /**
  * PHP Lexical Analyzer Tokens
@@ -57,19 +57,22 @@ typedef enum LEXICAL_FSM_TOKENS {
 
     // end of file
     END_OF_FILE,
+} LEXICAL_FSM_TOKENS;
 
-    // FSM states
+typedef enum LEXICAL_FSM_STATES {
     START,
-    KEYWORD_STATE,  // before it becomes identifier/declaration
+    KEYWORD_STATE,
     IDENTIFIER_STATE,
     INTEGER_STATE,
     FLOAT_STATE,
     STRING_STATE,
+} LEXICAL_FSM_STATES;
 
-    // end of tokens
-    END_OF_TOKENS
-} LEXICAL_FSM_TOKENS;
+typedef struct lexical_token {
+    LEXICAL_FSM_TOKENS type;
+    char *value;
+} lexical_token_t;
 
-int get_next_token(char *lexeme);
+LEXICAL_FSM_TOKENS get_next_token(char *token);
 
 #endif //IFJ_PROJ_2022_LEXICAL_FSM_H

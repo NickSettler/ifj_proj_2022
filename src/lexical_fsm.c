@@ -4,7 +4,7 @@ int state = START;
 
 const char *test = "int $abc = 105;";
 
-int get_next_token(char *token) {
+LEXICAL_FSM_TOKENS get_next_token(char *token) {
     const char *next_char = test;
 
     while (*next_char != '\0') {
@@ -20,29 +20,24 @@ int get_next_token(char *token) {
                 }
                 if (*next_char == '$') {
                     state = IDENTIFIER_STATE;
-                    char new_token[strlen(token) + 1];
-                    strcpy(new_token, token);
-                    new_token[strlen(token)] = *next_char;
-                    token = realloc(token, strlen(token) + 1);
-                    strcpy(token, new_token);
+                    string_add_char(token, *next_char);
                     break;
                 }
                 break;
             case IDENTIFIER_STATE:
-                if(isalpha(*next_char)) {
-                    char new_token[strlen(token) + 1];
-                    strcpy(new_token, token);
-                    new_token[strlen(token)] = *next_char;
-                    token = realloc(token, strlen(token) + 1);
-                    strcpy(token, new_token);
+                if (isalpha(*next_char) || isdigit(*next_char) || *next_char == '_') {
+                    string_add_char(token, *next_char);
                     break;
+                } else {
+                    state = START;
+                    return IDENTIFIER;
                 }
+            default:
                 break;
         }
 
         ++next_char;
     }
-
 
     return 0;
 }
