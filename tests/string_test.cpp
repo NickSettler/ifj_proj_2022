@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 extern "C" {
-    #include "../src/string.h"
-    #include "../src/string.c"
+    #include "../src/str.h"
+    #include "../src/str.c"
 }
 
 TEST(String, AppendChar) {

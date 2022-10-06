@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include "string.h"
+#include "str.h"
 #include "errors.h"
 
 /**
