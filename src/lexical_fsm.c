@@ -25,9 +25,9 @@ LEXICAL_FSM_TOKENS get_next_token(string_t *token) {
                         string_append_char(token, *next_char);
                         break;
                     case '=':
+                        state = EQUAL_STATE;
                         string_append_char(token, *next_char);
-                        test++;
-                        return ASSIGN;
+                        break;
                     case ';':
                         string_append_char(token, *next_char);
                         test++;
@@ -75,6 +75,12 @@ LEXICAL_FSM_TOKENS get_next_token(string_t *token) {
                     return IDENTIFIER;
                 }
                 break;
+            case EQUAL_STATE:
+                state = START;
+                if (*next_char == '=')
+                    string_append_char(token, *next_char);
+                test += token->length;
+                return *next_char == '=' ? EQUAL : ASSIGN;
             case INTEGER_STATE:
                 if (isdigit(*next_char)) {
                     string_append_char(token, *next_char);

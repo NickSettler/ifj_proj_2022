@@ -12,7 +12,7 @@
  * PHP Lexical Analyzer Tokens
  */
 typedef enum LEXICAL_FSM_TOKENS {
-    // special characters
+    // Special characters
     LEFT_BRACKET,
     RIGHT_BRACKET,
     LEFT_SQUARE_BRACKET,
@@ -22,13 +22,13 @@ typedef enum LEXICAL_FSM_TOKENS {
     COMMA,
     SEMICOLON,
 
-    // arithmetic operators
+    // Arithmetic operators
     PLUS,
     MINUS,
     MULTIPLY,
     DIVIDE,
 
-    // relational operators
+    // Relational operators
     LESS,
     GREATER,
     LESS_EQUAL,
@@ -36,10 +36,10 @@ typedef enum LEXICAL_FSM_TOKENS {
     EQUAL,
     NOT_EQUAL,
 
-    // assignment operator
+    // Assignment operator
     ASSIGN,
 
-    // keywords
+    // Keywords
     IF,
     ELSEIF,
     ELSE,
@@ -48,26 +48,35 @@ typedef enum LEXICAL_FSM_TOKENS {
     DO,
     RETURN,
 
-    // identifiers
+    // Identifiers
     IDENTIFIER,
 
-    // constants
+    // Data types
     INTEGER,
     FLOAT,
     STRING,
 
-    // end of file
+    // End Of File
     END_OF_FILE,
 } LEXICAL_FSM_TOKENS;
 
 typedef enum LEXICAL_FSM_STATES {
+    // Basic states
     START,
+
+    // Control states
     KEYWORD_STATE,
     IDENTIFIER_START_STATE,
     IDENTIFIER_STATE,
+
+    // Arithmetic states
+    EQUAL_STATE,
+
+    // Data types states
     INTEGER_STATE,
     FLOAT_STATE,
     STRING_STATE,
+    STRING_ESCAPE_STATE,
 } LEXICAL_FSM_STATES;
 
 LEXICAL_FSM_TOKENS get_next_token(string_t *token);
