@@ -2,7 +2,12 @@
 
 int state = START;
 
-char *test = "int $abc = 105;";
+char *test = "string $abc = \"Hello World\";"
+             "1 += 1;"
+             "int $b = 123;"
+             "$b++;"
+             "$b /= 2;"
+             "$c = $d = $e = 2;";
 
 LEXICAL_FSM_TOKENS get_next_token(string_t *token) {
     const char *next_char = test;
