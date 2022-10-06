@@ -32,6 +32,10 @@ LEXICAL_FSM_TOKENS get_next_token(string_t *token) {
                         string_append_char(token, *next_char);
                         test++;
                         return SEMICOLON;
+                    case '"':
+                        state = STRING_STATE;
+                        string_append_char(token, *next_char);
+                        break;
                     default:
                         if (isalpha(*next_char)) {
                             state = KEYWORD_STATE;
@@ -104,6 +108,24 @@ LEXICAL_FSM_TOKENS get_next_token(string_t *token) {
                     test += token->length;
                     return FLOAT;
                 }
+                break;
+            case STRING_STATE:
+                if (*next_char == '"') {
+                    state = START;
+                    string_append_char(token, *next_char);
+                    test += token->length;
+                    return STRING;
+                } else if (*next_char == '\\') {
+                    state = STRING_ESCAPE_STATE;
+                    string_append_char(token, *next_char);
+                } else {
+                    state = STRING_STATE;
+                    string_append_char(token, *next_char);
+                }
+                break;
+            case STRING_ESCAPE_STATE:
+                string_append_char(token, *next_char);
+                state = STRING_STATE;
                 break;
             default:
                 break;
