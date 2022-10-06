@@ -61,8 +61,9 @@ LEXICAL_FSM_TOKENS get_next_token(string_t *token) {
                     state = IDENTIFIER_STATE;
                     string_append_char(token, *next_char);
                 } else {
-                    return -1;
                     // TODO: handle Lexical error (identifier must start with letter or underscore)
+                    state = START;
+                    return END_OF_FILE;
                 }
                 break;
             case IDENTIFIER_STATE:
