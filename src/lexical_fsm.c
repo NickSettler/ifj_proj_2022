@@ -2,12 +2,18 @@
 
 int state = START;
 
-char *test = "string $abc = \"Hello World\";"
-             "1 += 1;"
-             "int $b = 123;"
-             "$b++;"
-             "$b /= 2;"
-             "$c = $d = $e = 2;";
+char *test = "$a <> $b;"
+             "10.5;"
+             "int $a = 5;"
+             "int $a = 5";
+//             "(a + b) * c;"
+//             "string $abc = \"Hello World\";"
+//             "1 += 1;"
+//             "int $b = 123;"
+//             "$b++"
+//             "$b /= 2;"
+//             "$c = $d = $e = 2;"
+//             "int $b = \"Hello World\";";
 
 LEXICAL_FSM_TOKENS get_next_token(string_t *token) {
     const char *next_char = test;
@@ -48,6 +54,40 @@ LEXICAL_FSM_TOKENS get_next_token(string_t *token) {
                         state = ARITHMETIC_STATE;
                         string_append_char(token, *next_char);
                         break;
+                    case ',':
+                        string_append_char(token, *next_char);
+                        test++;
+                        return COMMA;
+                    case '(':
+                        string_append_char(token, *next_char);
+                        test++;
+                        return LEFT_PARENTHESIS;
+                    case ')':
+                        string_append_char(token, *next_char);
+                        test++;
+                        return RIGHT_PARENTHESIS;
+                    case '{':
+                        string_append_char(token, *next_char);
+                        test++;
+                        return LEFT_CURLY_BRACKETS;
+                    case '}':
+                        string_append_char(token, *next_char);
+                        test++;
+                        return RIGHT_CURLY_BRACKETS;
+                    case '[':
+                        string_append_char(token, *next_char);
+                        test++;
+                        return LEFT_SQUARE_BRACKETS;
+                    case ']':
+                        string_append_char(token, *next_char);
+                        test++;
+                        return RIGHT_SQUARE_BRACKETS;
+                    case '<':
+                    case '>':
+                        state = SQUARE_PARENTHESIS_STATE;
+                        string_append_char(token, *next_char);
+                        break;
+
                     default:
                         if (isalpha(*next_char)) {
                             state = KEYWORD_STATE;
@@ -67,9 +107,17 @@ LEXICAL_FSM_TOKENS get_next_token(string_t *token) {
                 } else {
                     state = START;
                     test += token->length;
-                    if (strcmp(token->value, "int") != 0) return INTEGER;
-                    else if (strcmp(token->value, "float") != 0) return FLOAT;
-                    else if (strcmp(token->value, "string") != 0) return STRING;
+                    if (strcmp(token->value, "int") == 0) return INTEGER;
+                    else if (strcmp(token->value, "float") == 0) return FLOAT;
+                    else if (strcmp(token->value, "string") == 0) return STRING;
+                    else if (strcmp(token->value, "if") == 0) return IF;
+                    else if (strcmp(token->value, "elseif") == 0) return ELSEIF;
+                    else if (strcmp(token->value, "else") == 0) return ELSE;
+                    else if (strcmp(token->value, "while") == 0) return WHILE;
+                    else if (strcmp(token->value, "for") == 0) return FOR;
+                    else if (strcmp(token->value, "do") == 0) return DO;
+                    else if (strcmp(token->value, "return") == 0) return RETURN;
+                    else return 100;
                 }
                 break;
             case IDENTIFIER_START_STATE:
@@ -118,17 +166,32 @@ LEXICAL_FSM_TOKENS get_next_token(string_t *token) {
                     else if (strcmp(token->value, "--") == 0) return DECREMENT;
                 }
                 break;
+            case SQUARE_PARENTHESIS_STATE:
+                if (*next_char == '=' ||
+                    (strcmp(token->value, "<") == 0 && *next_char == '>')) {
+                    string_append_char(token, *next_char);
+                } else {
+                    state = START;
+                    test += token->length;
+
+                    if (strcmp(token->value, "<") == 0) return LESS;
+                    else if (strcmp(token->value, ">") == 0) return GREATER;
+                    else if (strcmp(token->value, "<=") == 0) return LESS_EQUAL;
+                    else if (strcmp(token->value, ">=") == 0) return GREATER_EQUAL;
+                    else if (strcmp(token->value, "<>") == 0) return NOT_EQUAL;
+                }
+                break;
             case INTEGER_STATE:
-                /* TODO: if digit if the last character in code, it is not handled as separate token
+                /* TODO: if digit is the last character in code, it is not handled as separate token
                  * for example: "1 == 1" will have 2 tokens: "1" and "==" instead of 3 tokens: "1", "==", "1"
                  */
                 if (isdigit(*next_char)) {
                     string_append_char(token, *next_char);
                 } else if (*next_char == '.') {
-                    state = START;
-                    test += token->length;
-                    return INTEGER;
-                } else {
+                    state = FLOAT_STATE;
+                    string_append_char(token, *next_char);
+                }
+                else {
                     // TODO handle Lexical error (integer must not contain any other characters)
                     state = START;
                     test += token->length;

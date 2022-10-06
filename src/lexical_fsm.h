@@ -13,12 +13,12 @@
  */
 typedef enum LEXICAL_FSM_TOKENS {
     // Special characters
-    LEFT_BRACKET,
-    RIGHT_BRACKET,
-    LEFT_SQUARE_BRACKET,
-    RIGHT_SQUARE_BRACKET,
-    LEFT_CURLY_BRACKET,
-    RIGHT_CURLY_BRACKET,
+    LEFT_PARENTHESIS,
+    RIGHT_PARENTHESIS,
+    LEFT_CURLY_BRACKETS,
+    RIGHT_CURLY_BRACKETS,
+    LEFT_SQUARE_BRACKETS,
+    RIGHT_SQUARE_BRACKETS,
     COMMA,
     SEMICOLON,
 
@@ -75,9 +75,13 @@ typedef enum LEXICAL_FSM_STATES {
     IDENTIFIER_START_STATE,
     IDENTIFIER_STATE,
 
+
     // Arithmetic states
     EQUAL_STATE,
     ARITHMETIC_STATE,
+
+    // Square parenthesis states
+    SQUARE_PARENTHESIS_STATE,
 
     // Data types states
     INTEGER_STATE,
