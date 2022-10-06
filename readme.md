@@ -14,7 +14,9 @@ stateDiagram-v2
     Start --> KeywordState: ? / a..z
     Start --> IdentifierState: $
     Start --> IntegerState: 0..9
-    Start --> "="
+    Start --> EqualState: =
+    Start --> ArithmeticState: +, -, *, /
+    Start --> StringState: "
     Start --> ";"
     
     state KeywordState {
@@ -27,6 +29,20 @@ stateDiagram-v2
         [*] --> Identifier: A..z, _
         Identifier --> Identifier: A..z, 0..9, _
         Identifier --> [*]
+    }
+    
+    state EqualState {
+        [*] --> [*]
+        [*] --> Assign: =
+        Assign --> [*]
+    }
+    
+    state ArithmeticState {
+        [*] --> [*]
+        [*] --> Inc/Dec: +, -
+        [*] --> ArithmeticAssign: =
+        Inc/Dec --> [*]
+        ArithmeticAssign --> [*]
     }
     
     state IntegerState {
@@ -43,6 +59,18 @@ stateDiagram-v2
         Float --> [*]
     }
     
-    "=" --> [*]
+    state StringState {
+        [*] --> String
+        String --> StringEscapeState: \
+        String --> String: any except \n" and \
+        StringEscapeState --> String: any
+        String --> [*]: "
+        
+        state StringEscapeState {
+            [*] --> StringEscape
+            StringEscape --> [*]
+        }
+    }
+    
     ";" --> [*]
 ```
