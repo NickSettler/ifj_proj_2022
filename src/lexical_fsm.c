@@ -36,6 +36,13 @@ LEXICAL_FSM_TOKENS get_next_token(string_t *token) {
                         state = STRING_STATE;
                         string_append_char(token, *next_char);
                         break;
+                    case '+':
+                    case '-':
+                    case '*':
+                    case '/':
+                        state = ARITHMETIC_STATE;
+                        string_append_char(token, *next_char);
+                        break;
                     default:
                         if (isalpha(*next_char)) {
                             state = KEYWORD_STATE;
@@ -85,7 +92,31 @@ LEXICAL_FSM_TOKENS get_next_token(string_t *token) {
                     string_append_char(token, *next_char);
                 test += token->length;
                 return *next_char == '=' ? EQUAL : ASSIGN;
+            case ARITHMETIC_STATE:
+                if (*next_char == '=' ||
+                    (strcmp(token->value, "+") == 0 && *next_char == '+') ||
+                    (strcmp(token->value, "-") == 0 && *next_char == '-')) {
+                    string_append_char(token, *next_char);
+                } else {
+                    state = START;
+                    test += token->length;
+
+                    if (strcmp(token->value, "+") == 0) return PLUS;
+                    else if (strcmp(token->value, "-") == 0) return MINUS;
+                    else if (strcmp(token->value, "*") == 0) return MULTIPLY;
+                    else if (strcmp(token->value, "/") == 0) return DIVIDE;
+                    else if (strcmp(token->value, "+=") == 0) return PLUS_ASSIGN;
+                    else if (strcmp(token->value, "-=") == 0) return MINUS_ASSIGN;
+                    else if (strcmp(token->value, "*=") == 0) return MULTIPLY_ASSIGN;
+                    else if (strcmp(token->value, "/=") == 0) return DIVIDE_ASSIGN;
+                    else if (strcmp(token->value, "++") == 0) return INCREMENT;
+                    else if (strcmp(token->value, "--") == 0) return DECREMENT;
+                }
+                break;
             case INTEGER_STATE:
+                /* TODO: if digit if the last character in code, it is not handled as separate token
+                 * for example: "1 == 1" will have 2 tokens: "1" and "==" instead of 3 tokens: "1", "==", "1"
+                 */
                 if (isdigit(*next_char)) {
                     string_append_char(token, *next_char);
                 } else if (*next_char == '.') {

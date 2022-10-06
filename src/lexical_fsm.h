@@ -27,6 +27,12 @@ typedef enum LEXICAL_FSM_TOKENS {
     MINUS,
     MULTIPLY,
     DIVIDE,
+    PLUS_ASSIGN,
+    MINUS_ASSIGN,
+    MULTIPLY_ASSIGN,
+    DIVIDE_ASSIGN,
+    INCREMENT,
+    DECREMENT,
 
     // Relational operators
     LESS,
@@ -71,6 +77,7 @@ typedef enum LEXICAL_FSM_STATES {
 
     // Arithmetic states
     EQUAL_STATE,
+    ARITHMETIC_STATE,
 
     // Data types states
     INTEGER_STATE,
