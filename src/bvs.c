@@ -46,3 +46,50 @@ bool find_number(tree_node *root, int value){
         return find_number(root->right, value);
     }
 }
+
+void delete_number(tree_node **rootptr, int value) {
+    tree_node *root = *rootptr;
+
+    if (root == NULL) {
+        return;
+    }
+    if (value < root->value) {
+        return delete_number(&root->left, value);
+    }
+    if (value > root->value) {
+        return delete_number(&root->right, value);
+    }
+    if (value == root->value) {
+        //node has no children
+        if (root->left == NULL && root->right == NULL) {
+            free(root);
+            *rootptr = NULL;
+            return;
+        }
+        //node has one child (right)
+        if (root->left == NULL) {
+            tree_node *temp = root->right;
+            root = root->right;
+            free(temp);
+            *rootptr = NULL;
+            return;
+        } //node has one child (left)
+        if (root->right == NULL) {
+            tree_node *temp = root->left;
+            root = root->left;
+            free(temp);
+            *rootptr = NULL;
+            return;
+        }
+        //node has two children
+        if (root->left != NULL && root->right != NULL) {
+            tree_node *temp = root->right;
+            while (temp->left != NULL) {
+                temp = temp->left;
+            }
+            root->value = temp->value;
+            delete_number(&root->right, temp->value);
+            return;
+        }
+    }
+}

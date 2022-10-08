@@ -29,6 +29,7 @@ bool insert_number(tree_node **rootptr, int value);
 //find numbers into the node
 bool find_number(tree_node *root, int value);
 
-
+//delete numbers and reorganise tree
+void delete_number(tree_node **rootptr, int value)
 
 
