@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
 #include "str.h"
@@ -90,6 +91,6 @@ typedef enum LEXICAL_FSM_STATES {
     STRING_ESCAPE_STATE,
 } LEXICAL_FSM_STATES;
 
-LEXICAL_FSM_TOKENS get_next_token(string_t *token);
+LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token);
 
 #endif //IFJ_PROJ_2022_LEXICAL_FSM_H
