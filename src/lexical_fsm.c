@@ -94,19 +94,23 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 if (isalpha(current_char)) {
                     string_append_char(token, current_char);
                 } else {
-                    state = IDENTIFIER_STATE;
-                    ungetc(current_char, fd);
+                    int keyword = -1;
 
-                    if (!strcmp(token->value, "int") || !strcmp(token->value, "?int")) return KEYWORD_INTEGER;
-                    else if (!strcmp(token->value, "float") || !strcmp(token->value, "?float")) return KEYWORD_FLOAT;
-                    else if (!strcmp(token->value, "string") || !strcmp(token->value, "?string")) return KEYWORD_STRING;
-                    else if (!strcmp(token->value, "if")) return IF;
-                    else if (!strcmp(token->value, "elseif")) return ELSEIF;
-                    else if (!strcmp(token->value, "else")) return ELSE;
-                    else if (!strcmp(token->value, "while")) return WHILE;
-                    else if (!strcmp(token->value, "for")) return FOR;
-                    else if (!strcmp(token->value, "do")) return DO;
-                    else if (!strcmp(token->value, "return")) return RETURN;
+                    if (!strcmp(token->value, "int") || !strcmp(token->value, "?int")) keyword = KEYWORD_INTEGER;
+                    else if (!strcmp(token->value, "float") || !strcmp(token->value, "?float")) keyword = KEYWORD_FLOAT;
+                    else if (!strcmp(token->value, "string") || !strcmp(token->value, "?string"))
+                        keyword = KEYWORD_STRING;
+                    else if (!strcmp(token->value, "if")) keyword = KEYWORD_IF;
+                    else if (!strcmp(token->value, "else")) keyword = KEYWORD_ELSE;
+                    else if (!strcmp(token->value, "while")) keyword = KEYWORD_WHILE;
+                    else if (!strcmp(token->value, "function")) keyword = KEYWORD_FUNCTION;
+                    else if (!strcmp(token->value, "return")) keyword = KEYWORD_RETURN;
+                    else if (!strcmp(token->value, "null")) keyword = KEYWORD_NULL;
+                    else if (!strcmp(token->value, "void")) keyword = KEYWORD_VOID;
+
+                    state = keyword != -1 ? START : IDENTIFIER_STATE;
+                    ungetc(current_char, fd);
+                    if (keyword != -1) return (LEXICAL_FSM_TOKENS) keyword;
                 }
                 break;
             case IDENTIFIER_STATE:

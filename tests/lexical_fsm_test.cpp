@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wwritable-strings"
 extern "C" {
 #include "../src/lexical_fsm.h"
 #include "../src/lexical_fsm.c"
@@ -165,6 +167,11 @@ namespace ifj {
                                (lexical_token_t) {IDENTIFIER, "$b"},
                                (lexical_token_t) {SEMICOLON, ";"}
                 );
+                IsStackCorrect("!$a;", 3,
+                               (lexical_token_t) {LOGICAL_NOT, "!"},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
             }
 
             TEST_F(LexicalAnalyzerTest, RelationalOperators) {
@@ -205,17 +212,122 @@ namespace ifj {
                                (lexical_token_t) {FLOAT, "3.25"},
                                (lexical_token_t) {SEMICOLON, ";"}
                 );
-//                IsStackCorrect("( \"string\" * 4) &&", 8,
-//                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
-//                               (lexical_token_t) {INTEGER, "1"},
-//                               (lexical_token_t) {PLUS, "+"},
-//                               (lexical_token_t) {IDENTIFIER, "$b"},
-//                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
-//                               (lexical_token_t) {DIVIDE, "/"},
-//                               (lexical_token_t) {FLOAT, "3.25"},
-//                               (lexical_token_t) {SEMICOLON, ";"}
-//                );
+                IsStackCorrect("( \"a\" * 4 == \"aaaa\")&& (2 + $b===7.5 );", 16,
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {STRING, "\"a\""},
+                               (lexical_token_t) {MULTIPLY, "*"},
+                               (lexical_token_t) {INTEGER, "4"},
+                               (lexical_token_t) {EQUAL, "=="},
+                               (lexical_token_t) {STRING, "\"aaaa\""},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {LOGICAL_AND, "&&"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {INTEGER, "2"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {TYPED_EQUAL, "==="},
+                               (lexical_token_t) {FLOAT, "7.5"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+            }
+
+            TEST_F(LexicalAnalyzerTest, IfElseConditions) {
+                IsStackCorrect("if($a === 4) {"
+                               "   $b = 5;"
+                               "}", 12,
+                               (lexical_token_t) {KEYWORD_IF, "if"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {TYPED_EQUAL, "==="},
+                               (lexical_token_t) {INTEGER, "4"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "5"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
+                );
+                IsStackCorrect("$cond= $a ==4 &&$c===\"123\";"
+                               "if ($cond) {"
+                               "   $b = 5;"
+                               "}else if ($a === 2.13) {"
+                               "   $b = 6.1;"
+                               "} else{"
+                               "   $b = \"74\";"
+                               "}", 40,
+                               (lexical_token_t) {IDENTIFIER, "$cond"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {EQUAL, "=="},
+                               (lexical_token_t) {INTEGER, "4"},
+                               (lexical_token_t) {LOGICAL_AND, "&&"},
+                               (lexical_token_t) {IDENTIFIER, "$c"},
+                               (lexical_token_t) {TYPED_EQUAL, "==="},
+                               (lexical_token_t) {STRING, "\"123\""},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {KEYWORD_IF, "if"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {IDENTIFIER, "$cond"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "5"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"},
+                               (lexical_token_t) {KEYWORD_ELSE, "else"},
+                               (lexical_token_t) {KEYWORD_IF, "if"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {TYPED_EQUAL, "==="},
+                               (lexical_token_t) {FLOAT, "2.13"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {FLOAT, "6.1"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"},
+                               (lexical_token_t) {KEYWORD_ELSE, "else"},
+                               (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {STRING, "\"74\""},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
+                );
+            }
+
+            TEST_F(LexicalAnalyzerTest, Loops) {
+                IsStackCorrect("while ($str1 !== \"abcdefgh\") {\n"
+                               "    write(\"Wrong string\\n\"); "
+                               "    $str1 = reads();"
+                               "}", 19,
+                               (lexical_token_t) {KEYWORD_WHILE, "while"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {IDENTIFIER, "$str1"},
+                               (lexical_token_t) {TYPED_NOT_EQUAL, "!=="},
+                               (lexical_token_t) {STRING, "\"abcdefgh\""},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
+                               (lexical_token_t) {IDENTIFIER, "write"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {STRING, "\"Wrong string\\n\""},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {IDENTIFIER, "$str1"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {IDENTIFIER, "reads"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
+                );
             }
         }
     }
 }
+
+#pragma clang diagnostic pop
