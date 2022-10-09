@@ -89,22 +89,85 @@ namespace ifj {
                                (lexical_token_t) {STRING, "\"abcdef\""},
                                (lexical_token_t) {SEMICOLON, ";"}
                 );
+                IsStackCorrect("float $a = 12.33;", 5,
+                               (lexical_token_t) {KEYWORD_FLOAT, "float"},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {FLOAT, "12.33"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
             }
 
+            TEST_F(LexicalAnalyzerTest, ArithmeticOperators) {
+                IsStackCorrect("$a+3;", 4,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {INTEGER, "3"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+                IsStackCorrect("5 - 3;", 4,
+                               (lexical_token_t) {INTEGER, "5"},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {INTEGER, "3"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+                IsStackCorrect("$b * 3.23;", 4,
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {MULTIPLY, "*"},
+                               (lexical_token_t) {FLOAT, "3.23"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+                IsStackCorrect("$b / $a;", 4,
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {DIVIDE, "/"},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+            }
 
-            TEST_F(LexicalAnalyzerTest, VariablesOperators) {
+            TEST_F(LexicalAnalyzerTest, EqualOperators) {
                 IsStackCorrect("$a == $b;", 4,
                                (lexical_token_t) {IDENTIFIER, "$a"},
                                (lexical_token_t) {EQUAL, "=="},
                                (lexical_token_t) {IDENTIFIER, "$b"},
                                (lexical_token_t) {SEMICOLON, ";"}
                 );
-                IsStackCorrect("$a <> $b;", 4,
+                IsStackCorrect("$a=== 2;", 4,
                                (lexical_token_t) {IDENTIFIER, "$a"},
-                               (lexical_token_t) {NOT_EQUAL, "<>"},
+                               (lexical_token_t) {TYPED_EQUAL, "==="},
+                               (lexical_token_t) {INTEGER, "2"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+                IsStackCorrect("$a != 4;", 4,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {NOT_EQUAL, "!="},
+                               (lexical_token_t) {INTEGER, "4"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+                IsStackCorrect("$a !== \"abc\";", 4,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {TYPED_NOT_EQUAL, "!=="},
+                               (lexical_token_t) {STRING, "\"abc\""},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+            }
+
+            TEST_F(LexicalAnalyzerTest, LogicalOperators) {
+                IsStackCorrect("$a && $b;", 4,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {LOGICAL_AND, "&&"},
                                (lexical_token_t) {IDENTIFIER, "$b"},
                                (lexical_token_t) {SEMICOLON, ";"}
                 );
+                IsStackCorrect("$a || $b;", 4,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {LOGICAL_OR, "||"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+            }
+
+            TEST_F(LexicalAnalyzerTest, RelationalOperators) {
                 IsStackCorrect("$a < $b;", 4,
                                (lexical_token_t) {IDENTIFIER, "$a"},
                                (lexical_token_t) {LESS, "<"},
@@ -129,6 +192,29 @@ namespace ifj {
                                (lexical_token_t) {IDENTIFIER, "$b"},
                                (lexical_token_t) {SEMICOLON, ";"}
                 );
+            }
+
+            TEST_F(LexicalAnalyzerTest, ArithmeticExpressions) {
+                IsStackCorrect(" (1 + $b ) /3.25;", 8,
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {INTEGER, "1"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {DIVIDE, "/"},
+                               (lexical_token_t) {FLOAT, "3.25"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+//                IsStackCorrect("( \"string\" * 4) &&", 8,
+//                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+//                               (lexical_token_t) {INTEGER, "1"},
+//                               (lexical_token_t) {PLUS, "+"},
+//                               (lexical_token_t) {IDENTIFIER, "$b"},
+//                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+//                               (lexical_token_t) {DIVIDE, "/"},
+//                               (lexical_token_t) {FLOAT, "3.25"},
+//                               (lexical_token_t) {SEMICOLON, ";"}
+//                );
             }
         }
     }
