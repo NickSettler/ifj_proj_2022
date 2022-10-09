@@ -301,7 +301,7 @@ namespace ifj {
             }
 
             TEST_F(LexicalAnalyzerTest, Loops) {
-                IsStackCorrect("while ($str1 !== \"abcdefgh\") {\n"
+                IsStackCorrect("while ( $str1 !== \"abcdefgh\") {\n"
                                "    write(\"Wrong string\\n\"); "
                                "    $str1 = reads();"
                                "}", 19,
@@ -322,6 +322,26 @@ namespace ifj {
                                (lexical_token_t) {IDENTIFIER, "reads"},
                                (lexical_token_t) {LEFT_PARENTHESIS, "("},
                                (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
+                );
+            }
+
+            TEST_F(LexicalAnalyzerTest, Functions) {
+                IsStackCorrect("function factorial(int $n) : void {"
+                               "return null;"
+                               "}", 13,
+                               (lexical_token_t) {KEYWORD_FUNCTION, "function"},
+                               (lexical_token_t) {IDENTIFIER, "factorial"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {KEYWORD_INTEGER, "int"},
+                               (lexical_token_t) {IDENTIFIER, "$n"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {COLON, ":"},
+                               (lexical_token_t) {KEYWORD_VOID, "void"},
+                               (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
+                               (lexical_token_t) {KEYWORD_RETURN, "return"},
+                               (lexical_token_t) {KEYWORD_NULL, "null"},
                                (lexical_token_t) {SEMICOLON, ";"},
                                (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
                 );
