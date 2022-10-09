@@ -90,16 +90,16 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     string_append_char(token, current_char);
                 } else {
                     state = START;
-                    if (strcmp(token->value, "int") == 0) return KEYWORD_INTEGER;
-                    else if (strcmp(token->value, "float") == 0) return KEYWORD_FLOAT;
-                    else if (strcmp(token->value, "string") == 0) return KEYWORD_STRING;
-                    else if (strcmp(token->value, "if") == 0) return IF;
-                    else if (strcmp(token->value, "elseif") == 0) return ELSEIF;
-                    else if (strcmp(token->value, "else") == 0) return ELSE;
-                    else if (strcmp(token->value, "while") == 0) return WHILE;
-                    else if (strcmp(token->value, "for") == 0) return FOR;
-                    else if (strcmp(token->value, "do") == 0) return DO;
-                    else if (strcmp(token->value, "return") == 0) return RETURN;
+                    if (!strcmp(token->value, "int") || !strcmp(token->value, "?int")) return KEYWORD_INTEGER;
+                    else if (!strcmp(token->value, "float") || !strcmp(token->value, "?float")) return KEYWORD_FLOAT;
+                    else if (!strcmp(token->value, "string") || !strcmp(token->value, "?string")) return KEYWORD_STRING;
+                    else if (!strcmp(token->value, "if")) return IF;
+                    else if (!strcmp(token->value, "elseif")) return ELSEIF;
+                    else if (!strcmp(token->value, "else")) return ELSE;
+                    else if (!strcmp(token->value, "while")) return WHILE;
+                    else if (!strcmp(token->value, "for")) return FOR;
+                    else if (!strcmp(token->value, "do")) return DO;
+                    else if (!strcmp(token->value, "return")) return RETURN;
                 }
                 break;
             case IDENTIFIER_START_STATE:
@@ -128,36 +128,36 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 return current_char == '=' ? EQUAL : ASSIGN;
             case ARITHMETIC_STATE:
                 if (current_char == '=' ||
-                    (strcmp(token->value, "+") == 0 && current_char == '+') ||
-                    (strcmp(token->value, "-") == 0 && current_char == '-')) {
+                    (!strcmp(token->value, "+") && current_char == '+') ||
+                    (!strcmp(token->value, "-") && current_char == '-')) {
                     string_append_char(token, current_char);
                 } else {
                     state = START;
 
-                    if (strcmp(token->value, "+") == 0) return PLUS;
-                    else if (strcmp(token->value, "-") == 0) return MINUS;
-                    else if (strcmp(token->value, "*") == 0) return MULTIPLY;
-                    else if (strcmp(token->value, "/") == 0) return DIVIDE;
-                    else if (strcmp(token->value, "+=") == 0) return PLUS_ASSIGN;
-                    else if (strcmp(token->value, "-=") == 0) return MINUS_ASSIGN;
-                    else if (strcmp(token->value, "*=") == 0) return MULTIPLY_ASSIGN;
-                    else if (strcmp(token->value, "/=") == 0) return DIVIDE_ASSIGN;
-                    else if (strcmp(token->value, "++") == 0) return INCREMENT;
-                    else if (strcmp(token->value, "--") == 0) return DECREMENT;
+                    if (!strcmp(token->value, "+")) return PLUS;
+                    else if (!strcmp(token->value, "-")) return MINUS;
+                    else if (!strcmp(token->value, "*")) return MULTIPLY;
+                    else if (!strcmp(token->value, "/")) return DIVIDE;
+                    else if (!strcmp(token->value, "+=")) return PLUS_ASSIGN;
+                    else if (!strcmp(token->value, "-=")) return MINUS_ASSIGN;
+                    else if (!strcmp(token->value, "*=")) return MULTIPLY_ASSIGN;
+                    else if (!strcmp(token->value, "/=")) return DIVIDE_ASSIGN;
+                    else if (!strcmp(token->value, "--")) return DECREMENT;
+                    else if (!strcmp(token->value, "++")) return INCREMENT;
                 }
                 break;
             case SQUARE_PARENTHESIS_STATE:
                 if (current_char == '=' ||
-                    (strcmp(token->value, "<") == 0 && current_char == '>')) {
+                    (!strcmp(token->value, "<") && current_char == '>')) {
                     string_append_char(token, current_char);
                 } else {
                     state = START;
 
-                    if (strcmp(token->value, "<") == 0) return LESS;
-                    else if (strcmp(token->value, ">") == 0) return GREATER;
-                    else if (strcmp(token->value, "<=") == 0) return LESS_EQUAL;
-                    else if (strcmp(token->value, ">=") == 0) return GREATER_EQUAL;
-                    else if (strcmp(token->value, "<>") == 0) return NOT_EQUAL;
+                    if (!strcmp(token->value, "<")) return LESS;
+                    else if (!strcmp(token->value, ">")) return GREATER;
+                    else if (!strcmp(token->value, "<=")) return LESS_EQUAL;
+                    else if (!strcmp(token->value, ">=")) return GREATER_EQUAL;
+                    else if (!strcmp(token->value, "<>")) return NOT_EQUAL;
                 }
                 break;
             case INTEGER_STATE:
