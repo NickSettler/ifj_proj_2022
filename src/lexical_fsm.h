@@ -76,7 +76,6 @@ typedef enum LEXICAL_FSM_STATES {
 
     // Control states
     KEYWORD_STATE,
-    IDENTIFIER_START_STATE,
     IDENTIFIER_STATE,
 
 

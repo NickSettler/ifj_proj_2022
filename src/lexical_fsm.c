@@ -23,7 +23,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                         string_append_char(token, current_char);
                         break;
                     case '$':
-                        state = IDENTIFIER_START_STATE;
+                        state = IDENTIFIER_STATE;
                         string_append_char(token, current_char);
                         break;
                     case '=':
@@ -102,18 +102,14 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, "return")) return RETURN;
                 }
                 break;
-            case IDENTIFIER_START_STATE:
-                if (isalpha(current_char) || current_char == '_') {
-                    state = IDENTIFIER_STATE;
-                    string_append_char(token, current_char);
-                } else {
-                    // TODO: handle Lexical error (identifier must start with letter or underscore)
-                    state = START;
-                    return END_OF_FILE;
-                }
-                break;
             case IDENTIFIER_STATE:
-                if (isalpha(current_char) || isdigit(current_char) || current_char == '_') {
+                if (!strcmp(token->value, "$")) {
+                    if (isalpha(current_char) || current_char == '_') {
+                        string_append_char(token, current_char);
+                    } else {
+                        LEXICAL_ERROR("Identifier must start with letter or underscore");
+                    }
+                } else if (isalpha(current_char) || isdigit(current_char) || current_char == '_') {
                     string_append_char(token, current_char);
                 } else {
                     state = START;
