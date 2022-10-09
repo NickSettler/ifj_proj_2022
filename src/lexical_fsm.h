@@ -89,6 +89,7 @@ typedef enum LEXICAL_FSM_STATES {
     // Arithmetic states
     ARITHMETIC_STATE,
     EQUAL_STATE,
+    LOGICAL_STATE,
 
     // Square parenthesis states
     SQUARE_PARENTHESIS_STATE,
