@@ -1,7 +1,3 @@
-//
-// Created by Елена Марочкина on 08.10.2022.
-//
-
 #ifndef IFJ_PROJ_2022_BVS_H
 #define IFJ_PROJ_2022_BVS_H
 

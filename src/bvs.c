@@ -1,7 +1,3 @@
-//
-// Created by Елена Марочкина on 08.10.2022.
-//
-
 #include "bvs.h"
 
 tree_node *create_node(int value){
