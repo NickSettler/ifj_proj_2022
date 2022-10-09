@@ -85,7 +85,6 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                         } else if (isdigit(current_char)) {
                             state = INTEGER_STATE;
                             string_append_char(token, current_char);
-//                            if (*(current_char + 1) == '\0') return INTEGER;
                             break;
                         }
                         break;
@@ -95,7 +94,9 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 if (isalpha(current_char)) {
                     string_append_char(token, current_char);
                 } else {
-                    state = START;
+                    state = IDENTIFIER_STATE;
+                    ungetc(current_char, fd);
+
                     if (!strcmp(token->value, "int") || !strcmp(token->value, "?int")) return KEYWORD_INTEGER;
                     else if (!strcmp(token->value, "float") || !strcmp(token->value, "?float")) return KEYWORD_FLOAT;
                     else if (!strcmp(token->value, "string") || !strcmp(token->value, "?string")) return KEYWORD_STRING;
