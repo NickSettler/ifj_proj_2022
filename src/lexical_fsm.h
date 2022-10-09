@@ -10,7 +10,7 @@
 #include "errors.h"
 
 /**
- * PHP Lexical Analyzer Tokens
+ * Lexical Analyzer Tokens
  */
 typedef enum LEXICAL_FSM_TOKENS {
     // Special characters
@@ -102,6 +102,12 @@ typedef enum LEXICAL_FSM_STATES {
     STRING_ESCAPE_STATE,
 } LEXICAL_FSM_STATES;
 
+/**
+ * Get next lexical token from file stream
+ * @param fd file stream
+ * @param token pointer to string to store token
+ * @return token type
+ */
 LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token);
 
 #endif //IFJ_PROJ_2022_LEXICAL_FSM_H
