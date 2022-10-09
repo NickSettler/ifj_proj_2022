@@ -90,9 +90,9 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     string_append_char(token, current_char);
                 } else {
                     state = START;
-                    if (strcmp(token->value, "int") == 0) return INTEGER;
-                    else if (strcmp(token->value, "float") == 0) return FLOAT;
-                    else if (strcmp(token->value, "string") == 0) return STRING;
+                    if (strcmp(token->value, "int") == 0) return KEYWORD_INTEGER;
+                    else if (strcmp(token->value, "float") == 0) return KEYWORD_FLOAT;
+                    else if (strcmp(token->value, "string") == 0) return KEYWORD_STRING;
                     else if (strcmp(token->value, "if") == 0) return IF;
                     else if (strcmp(token->value, "elseif") == 0) return ELSEIF;
                     else if (strcmp(token->value, "else") == 0) return ELSE;

@@ -54,6 +54,9 @@ typedef enum LEXICAL_FSM_TOKENS {
     FOR,
     DO,
     RETURN,
+    KEYWORD_INTEGER,
+    KEYWORD_FLOAT,
+    KEYWORD_STRING,
 
     // Identifiers
     IDENTIFIER,
