@@ -6,8 +6,6 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
     char current_char = (char) getc(fd);
 
     while (true) {
-        printf("Current char: %c. State: %d\n", current_char, state);
-
         switch (state) {
             case START:
                 string_clear(token);
