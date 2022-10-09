@@ -246,3 +246,9 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
 
     return END_OF_FILE;
 }
+
+
+FILE *test_lex_input(char *input) {
+    FILE *fd = fmemopen(input, strlen(input), "r");
+    return fd;
+}

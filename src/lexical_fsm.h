@@ -110,4 +110,11 @@ typedef enum LEXICAL_FSM_STATES {
  */
 LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token);
 
+/**
+ * Generate file stream from text for lexical analysis
+ * @param input text
+ * @return pointer to file stream
+ */
+FILE *test_lex_input(char *input);
+
 #endif //IFJ_PROJ_2022_LEXICAL_FSM_H
