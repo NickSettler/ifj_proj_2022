@@ -5,7 +5,7 @@ int state = START;
 LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
     char current_char = (char) getc(fd);
 
-    while (current_char != EOF) {
+    while (true) {
         printf("Current char: %c. State: %d\n", current_char, state);
 
         switch (state) {
@@ -16,6 +16,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     case ' ':
                         break;
                     case '\0':
+                    case EOF:
                         return END_OF_FILE;
                     case '?':
                         state = KEYWORD_STATE;
