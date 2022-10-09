@@ -21,9 +21,11 @@
 #define INTERNAL_ERROR_CODE 99
 
 #define ERROR(code, ...) \
-    fprintf(stderr, __VA_ARGS__ "\n"); \
+    fprintf(stderr, __VA_ARGS__); \
     exit(code);
 
 #define LEXICAL_ERROR(...) ERROR(LEXICAL_ERROR_CODE, "[LEXICAL ERROR] " __VA_ARGS__)
+
+#define INTERNAL_ERROR(...) ERROR(INTERNAL_ERROR_CODE, "[INTERNAL ERROR] " __VA_ARGS__)
 
 #endif //IFJ_PROJ_ERRORS_H
