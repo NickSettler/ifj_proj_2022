@@ -169,6 +169,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 } else {
                     // TODO handle Lexical error (integer must not contain any other characters)
                     state = START;
+                    ungetc(current_char, fd);
                     return INTEGER;
                 }
                 break;
@@ -178,6 +179,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 } else {
                     // TODO handle Lexical error (float must not contain any other characters)
                     state = START;
+                    ungetc(current_char, fd);
                     return FLOAT;
                 }
                 break;
