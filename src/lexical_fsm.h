@@ -42,6 +42,13 @@ typedef enum LEXICAL_FSM_TOKENS {
     GREATER_EQUAL,
     EQUAL,
     NOT_EQUAL,
+    TYPED_EQUAL,
+    TYPED_NOT_EQUAL,
+
+    // Logical operators
+    LOGICAL_NOT,
+    LOGICAL_AND,
+    LOGICAL_OR,
 
     // Assignment operator
     ASSIGN,
@@ -80,8 +87,8 @@ typedef enum LEXICAL_FSM_STATES {
 
 
     // Arithmetic states
-    EQUAL_STATE,
     ARITHMETIC_STATE,
+    EQUAL_STATE,
 
     // Square parenthesis states
     SQUARE_PARENTHESIS_STATE,

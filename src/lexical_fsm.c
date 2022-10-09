@@ -26,6 +26,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                         state = IDENTIFIER_STATE;
                         string_append_char(token, current_char);
                         break;
+                    case '!':
                     case '=':
                         state = EQUAL_STATE;
                         string_append_char(token, current_char);
@@ -118,12 +119,19 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 }
                 break;
             case EQUAL_STATE:
-                state = START;
                 if (current_char == '=')
                     string_append_char(token, current_char);
-                else
+                else {
+                    state = START;
                     ungetc(current_char, fd);
-                return current_char == '=' ? EQUAL : ASSIGN;
+                    
+                    if (!strcmp(token->value, "=")) return ASSIGN;
+                    else if (!strcmp(token->value, "==")) return EQUAL;
+                    else if (!strcmp(token->value, "!=")) return NOT_EQUAL;
+                    else if (!strcmp(token->value, "===")) return TYPED_EQUAL;
+                    else if (!strcmp(token->value, "!==")) return TYPED_NOT_EQUAL;
+                }
+                break;
             case ARITHMETIC_STATE:
                 if (current_char == '=' ||
                     (!strcmp(token->value, "+") && current_char == '+') ||
