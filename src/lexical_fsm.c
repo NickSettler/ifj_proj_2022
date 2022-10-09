@@ -30,6 +30,9 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                         state = EQUAL_STATE;
                         string_append_char(token, current_char);
                         break;
+                    case ':':
+                        string_append_char(token, current_char);
+                        return COLON;
                     case ';':
                         string_append_char(token, current_char);
                         return SEMICOLON;

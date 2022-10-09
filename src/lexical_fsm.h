@@ -21,6 +21,7 @@ typedef enum LEXICAL_FSM_TOKENS {
     LEFT_SQUARE_BRACKETS,
     RIGHT_SQUARE_BRACKETS,
     COMMA,
+    COLON,
     SEMICOLON,
 
     // Arithmetic operators
