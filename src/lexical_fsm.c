@@ -140,6 +140,10 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 } else {
                     state = START;
 
+                    if (current_char != '+' && current_char != '-' && current_char != '*' && current_char != '/') {
+                        ungetc(current_char, fd);
+                    }
+
                     if (!strcmp(token->value, "+")) return PLUS;
                     else if (!strcmp(token->value, "-")) return MINUS;
                     else if (!strcmp(token->value, "*")) return MULTIPLY;
