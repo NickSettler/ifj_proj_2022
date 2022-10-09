@@ -14,6 +14,16 @@ tree_node *create_node(int value){
     return result;
 }
 
+int comparator(tree_node *root, int value){
+    if(root->value == value){
+        return 0;
+    }
+    if(root->value > value){
+        return -1;
+    }
+    return 1;
+}
+
 bool insert_number(tree_node **rootptr, int value){
     tree_node *root = *rootptr;
     if (root == NULL){
@@ -21,13 +31,13 @@ bool insert_number(tree_node **rootptr, int value){
         (*rootptr) = create_node(value);
         return true;
     }
-    if (root->value == value){
+    if (comparator(root, value) == 0){
         return false;
     }
-    if (value < root->value){
+    if (comparator(root, value) == -1){
         return insert_number(&(root->left), value);
     }
-    if (value > root->value){
+    if (comparator(root, value) == 1){
         return insert_number(&(root->right), value);
     }
 }
@@ -36,50 +46,48 @@ bool find_number(tree_node *root, int value){
     if (root == NULL) {
         return false;
     }
-    if (value == root->value){
+    if (comparator(root, value) == 0){
         return true;
     }
-    if (value < root->value){
+    if (comparator(root, value) == -1){
         return find_number(root->left, value);
     }
-    if (value > root->value){
+    if (comparator(root, value) == 1){
         return find_number(root->right, value);
     }
 }
 
-void delete_number(tree_node **rootptr, int value) {
+bool delete_number(tree_node **rootptr, int value) {
     tree_node *root = *rootptr;
 
     if (root == NULL) {
-        return;
+        return false;
     }
-    if (value < root->value) {
+    if (comparator(root, value) == -1) {
         return delete_number(&root->left, value);
     }
-    if (value > root->value) {
+    if (comparator(root, value) == 1) {
         return delete_number(&root->right, value);
     }
-    if (value == root->value) {
+    if (comparator(root, value) == 0) {
         //node has no children
         if (root->left == NULL && root->right == NULL) {
             free(root);
             *rootptr = NULL;
-            return;
+            return true;
         }
         //node has one child (right)
         if (root->left == NULL) {
             tree_node *temp = root->right;
-            root = root->right;
             free(temp);
             *rootptr = NULL;
-            return;
+            return true;
         } //node has one child (left)
         if (root->right == NULL) {
             tree_node *temp = root->left;
-            root = root->left;
             free(temp);
             *rootptr = NULL;
-            return;
+            return true;
         }
         //node has two children
         if (root->left != NULL && root->right != NULL) {
@@ -89,7 +97,7 @@ void delete_number(tree_node **rootptr, int value) {
             }
             root->value = temp->value;
             delete_number(&root->right, temp->value);
-            return;
+            return true;
         }
     }
 }

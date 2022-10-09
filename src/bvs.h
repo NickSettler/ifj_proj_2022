@@ -23,6 +23,9 @@ tree_node *create_node(int value);
 //tree initialization
 tree_node *create_node(int value);
 
+//comparator
+int comparator(tree_node *root, int value);
+
 //insert numbers into the node
 bool insert_number(tree_node **rootptr, int value);
 
@@ -30,6 +33,6 @@ bool insert_number(tree_node **rootptr, int value);
 bool find_number(tree_node *root, int value);
 
 //delete numbers and reorganise tree
-void delete_number(tree_node **rootptr, int value)
+bool delete_number(tree_node **rootptr, int value);
 
 
