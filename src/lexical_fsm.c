@@ -121,6 +121,8 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 state = START;
                 if (current_char == '=')
                     string_append_char(token, current_char);
+                else
+                    ungetc(current_char, fd);
                 return current_char == '=' ? EQUAL : ASSIGN;
             case ARITHMETIC_STATE:
                 if (current_char == '=' ||
