@@ -1,3 +1,14 @@
+/**
+ * Implementace překladače imperativního jazyka IFJ22.
+ * @authors
+ *   xmoise01, Nikita Moiseev
+ *   xpasyn00, Nikita Pasynkov
+ *
+ * @file lexical_token.c
+ * @brief Lexical Token and Lexical Token Structure Implementation
+ * @date 06.10.2022
+ */
+
 #include "lexical_token.h"
 
 lexical_token_stack_t *lexical_token_stack_init() {

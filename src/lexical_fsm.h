@@ -1,3 +1,14 @@
+/**
+ * Implementace překladače imperativního jazyka IFJ22.
+ * @authors
+ *   xmoise01, Nikita Moiseev
+ *   xpasyn00, Nikita Pasynkov
+ *
+ * @file lexical_fsm.h
+ * @brief Lexical Analyser FSM
+ * @date 05.10.2022
+ */
+
 #ifndef IFJ_PROJ_2022_LEXICAL_FSM_H
 #define IFJ_PROJ_2022_LEXICAL_FSM_H
 

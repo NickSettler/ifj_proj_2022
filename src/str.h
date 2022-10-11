@@ -1,3 +1,13 @@
+/**
+ * Implementace překladače imperativního jazyka IFJ22.
+ * @authors
+ *   xmoise01, Nikita Moiseev
+ *
+ * @file str.h
+ * @brief Custom String Implementation
+ * @date 05.10.2022
+ */
+
 #ifndef IFJ_PROJ_STRING_H
 #define IFJ_PROJ_STRING_H
 
