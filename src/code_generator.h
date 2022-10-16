@@ -146,12 +146,7 @@ void generate_operation(instructions_t instruction, char *result, char *symbol1,
  * @param *symbol1 first symbol
  * @param *symbol2 second symbol
  */
-generate_stack_operation(stack_instructions_t
-instruction,
-char *result,
-char *symbol1,
-char *symbol2
-);
+void generate_stack_operation(stack_instructions_t instruction, char *result, char *symbol1, char *symbol2);
 
 /**
  * @brief function for choosing a stack relational operation using a switch case

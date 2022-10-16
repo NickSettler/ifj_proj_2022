@@ -198,7 +198,7 @@ void generate_int_to_char() {
     fprintf(fd, "DEFVAR LF@retval1\n");
     fprintf(fd, "MOVE LF@retval1 nil@nil\n");
     fprintf(fd, "DEFVAR LF@i\n");
-    fprintf(fd, "MOVE LF@i LF@%1\n");
+    fprintf(fd, "MOVE LF@i LF@1\n");
     fprintf(fd, "DEFVAR LF@i\n");
     fprintf(fd, "MOVE LF@tmp nil@nil\n");
     fprintf(fd, "TYPE LF@tmp LF@int\n");
