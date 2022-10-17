@@ -1,0 +1,30 @@
+<prog> -> <?php <stat-list>
+<prog> -> <? <stat-list>
+
+<stat> -> ;
+<stat> -> ID = <expr>
+<stat> -> function ID ( <args> ) <stat>
+<stat> -> { <stat-list>
+<stat> -> }
+
+<stat-list> -> <stat>, <stat-list>
+<stat-list> -> ?>
+<stat-list> -> e
+
+<args> -> <arg>
+<args> -> <arg>, <args>
+
+<arg> -> <type> ID
+<arg> -> ID
+
+<expr> ->
+
+<type> -> integer
+<type> -> float
+<type> -> string
+<type> -> NULL
+
+<term> -> integer
+<term> -> float
+<term> -> string
+<term> -> NULL
