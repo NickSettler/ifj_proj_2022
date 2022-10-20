@@ -98,6 +98,46 @@ namespace ifj {
                 );
             }
 
+            TEST_F(LexicalAnalyzerTest, PHPBrackets) {
+                IsStackCorrect("<?php ?>", 2,
+                               (lexical_token_t) {OPEN_PHP_BRACKET, "<?php"},
+                               (lexical_token_t) {CLOSE_PHP_BRACKET, "?>"}
+                );
+
+                IsStackCorrect("<?php  "
+                               "$test = \"abc\""
+                               " ?>", 5,
+                               (lexical_token_t) {OPEN_PHP_BRACKET, "<?php"},
+                               (lexical_token_t) {IDENTIFIER, "$test"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {STRING, "\"abc\""},
+                               (lexical_token_t) {CLOSE_PHP_BRACKET, "?>"}
+                );
+
+                IsStackCorrect("<? "
+                               "$test = \"abc\""
+                               " ?>", 5,
+                               (lexical_token_t) {OPEN_PHP_BRACKET, "<?"},
+                               (lexical_token_t) {IDENTIFIER, "$test"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {STRING, "\"abc\""},
+                               (lexical_token_t) {CLOSE_PHP_BRACKET, "?>"}
+                );
+
+                EXPECT_EXIT({
+                                IsStackCorrect("<?p  "
+                                               "$test = \"abc\""
+                                               " ?>", 5,
+                                               (lexical_token_t) {OPEN_PHP_BRACKET, "<?p"},
+                                               (lexical_token_t) {IDENTIFIER, "$test"},
+                                               (lexical_token_t) {ASSIGN, "="},
+                                               (lexical_token_t) {STRING, "\"abc\""},
+                                               (lexical_token_t) {CLOSE_PHP_BRACKET, "?>"}
+                                );
+                            }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid PHP open bracket");
+            }
+
             TEST_F(LexicalAnalyzerTest, ArithmeticOperators) {
                 IsStackCorrect("$a+3;", 4,
                                (lexical_token_t) {IDENTIFIER, "$a"},
