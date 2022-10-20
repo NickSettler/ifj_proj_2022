@@ -37,6 +37,10 @@ typedef enum LEXICAL_FSM_TOKENS {
     COLON,
     SEMICOLON,
 
+    // Special PHP brackets
+    OPEN_PHP_BRACKET,
+    CLOSE_PHP_BRACKET,
+
     // Arithmetic operators
     PLUS,
     MINUS,
@@ -99,6 +103,8 @@ typedef enum LEXICAL_FSM_STATES {
     KEYWORD_STATE,
     IDENTIFIER_STATE,
 
+    // PHP brackets state
+    PHP_BRACKET_STATE,
 
     // Arithmetic states
     ARITHMETIC_STATE,

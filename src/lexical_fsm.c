@@ -103,7 +103,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 }
                 break;
             case KEYWORD_STATE:
-                if (isalpha(current_char)) {
+                if (isalpha(current_char) || (!strcmp(token->value, "?") && current_char == '>')) {
                     string_append_char(token, current_char);
                 } else {
                     int keyword = -1;
@@ -119,6 +119,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, "return")) keyword = KEYWORD_RETURN;
                     else if (!strcmp(token->value, "null")) keyword = KEYWORD_NULL;
                     else if (!strcmp(token->value, "void")) keyword = KEYWORD_VOID;
+                    else if (!strcmp(token->value, "?>")) keyword = CLOSE_PHP_BRACKET;
 
                     state = keyword != -1 ? START : IDENTIFIER_STATE;
                     ungetc(current_char, fd);
@@ -138,6 +139,22 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     state = START;
                     ungetc(current_char, fd);
                     return IDENTIFIER;
+                }
+                break;
+            case PHP_BRACKET_STATE:
+                if (current_char == 'p' || current_char == 'P' || current_char == 'h' || current_char == 'H') {
+                    string_append_char(token, current_char);
+                } else {
+                    bool is_php_bracket = !strcmp(token->value, "<?") || !strcmp(token->value, "<?php") ||
+                                          !strcmp(token->value, "<?PHP");
+
+                    if (!is_php_bracket) {
+                        LEXICAL_ERROR("Invalid PHP open bracket");
+                    }
+
+                    state = START;
+                    ungetc(current_char, fd);
+                    return OPEN_PHP_BRACKET;
                 }
                 break;
             case EQUAL_STATE:
@@ -195,7 +212,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 break;
             case SQUARE_PARENTHESIS_STATE:
                 if (current_char == '=' ||
-                    (!strcmp(token->value, "<") && current_char == '>')) {
+                    (!strcmp(token->value, "<") && current_char == '?')) {
                     string_append_char(token, current_char);
                 } else {
                     state = START;
@@ -204,6 +221,10 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, ">")) return GREATER;
                     else if (!strcmp(token->value, "<=")) return LESS_EQUAL;
                     else if (!strcmp(token->value, ">=")) return GREATER_EQUAL;
+                    else if (!strcmp(token->value, "<?")) {
+                        state = PHP_BRACKET_STATE;
+                        ungetc(current_char, fd);
+                    };
                 }
                 break;
             case INTEGER_STATE:
