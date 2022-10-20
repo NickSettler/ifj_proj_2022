@@ -8,8 +8,6 @@
 extern "C" {
 #include "../src/lexical_fsm.h"
 #include "../src/lexical_fsm.c"
-#include "../src/lexical_token.h"
-#include "../src/lexical_token.c"
 }
 
 namespace ifj {
