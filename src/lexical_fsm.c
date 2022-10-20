@@ -283,6 +283,21 @@ FILE *test_lex_input(char *input) {
     return fd;
 }
 
+lexical_token_t *get_token(FILE *fd) {
+    string_t *token_string = string_init("");
+    LEXICAL_FSM_TOKENS token_type = get_next_token(fd, token_string);
+
+    lexical_token_t *token = (lexical_token_t *) malloc(sizeof(lexical_token_t));
+    if (token == NULL) {
+        INTERNAL_ERROR("Unable to allocate memory for lexical token");
+    }
+
+    token->type = token_type;
+    token->value = token_string->value;
+
+    return token;
+}
+
 lexical_token_stack_t *lexical_token_stack_init() {
     lexical_token_stack_t *stack = (lexical_token_stack_t *) malloc(sizeof(lexical_token_stack_t));
     if (stack == NULL) {
