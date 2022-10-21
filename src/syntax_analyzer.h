@@ -12,8 +12,6 @@
 #define IFJ_PROJ_SYNTAX_ANALYZER_H
 
 #include <stdbool.h>
-#include "str.h"
-#include "lexical_fsm.h"
 #include "lexical_token.h"
 
 typedef enum {
@@ -21,11 +19,20 @@ typedef enum {
 } syntax_non_terminal_t;
 
 typedef enum {
+    // Token types
+    SYN_EOF,
     SYN_IDENTIFIER,
     SYN_STRING,
     SYN_INTEGER,
     SYN_FLOAT,
+    SYN_ADD,
+    SYN_SUB,
+    SYN_NEGATE,
     SYN_ASSIGN,
+    SYN_SEMICOLON,
+
+    // Node types
+    SYN_SEQUENCE,
 } syntax_ast_node_type;
 
 typedef struct syntax_abstract_tree syntax_abstract_tree_t;
@@ -44,6 +51,8 @@ make_node(syntax_ast_node_type type, syntax_abstract_tree_t *left, syntax_abstra
 syntax_abstract_tree_t *make_leaf(syntax_ast_node_type type, string_t *value);
 
 syntax_ast_node_type get_token_type(LEXICAL_FSM_TOKENS token);
+
+syntax_abstract_tree_t *expression(int precedence);
 
 syntax_abstract_tree_t *stmt();
 

@@ -10,6 +10,26 @@
 
 #include "syntax_analyzer.h"
 
+struct {
+    char *text, *enum_text;
+    syntax_ast_node_type token_type;
+    bool right_associative, is_binary, is_unary;
+    int precedence;
+    syntax_ast_node_type node_type;
+} attributes[] = {
+        {"EOF",     "End_of_file", SYN_EOF,        false, false, false, -1, -1},
+        {"ID",      "Identifier",  SYN_IDENTIFIER, false, false, false, -1, SYN_IDENTIFIER},
+        {"STRING",  "String",      SYN_STRING,     false, false, false, -1, SYN_STRING},
+        {"INTEGER", "Integer",     SYN_INTEGER,    false, false, false, -1, SYN_INTEGER},
+        {"FLOAT",   "Float",       SYN_FLOAT,      false, false, false, -1, SYN_FLOAT},
+        {"+",       "Op_add",      SYN_ADD,        false, true,  false, 12, SYN_ADD},
+        {"-",       "Op_sub",      SYN_SUB,        false, true,  false, 12, SYN_SUB},
+        {"-",       "Op_negate",   SYN_NEGATE,     false, false, true,  14, SYN_NEGATE},
+        {"=",       "Op_Assign",   SYN_ASSIGN,     false, false, false, -1, SYN_ASSIGN},
+        {";",       "Semicolon",   SYN_SEMICOLON,  false, false, false, -1, -1}
+};
+
+
 static FILE *fd;
 
 syntax_abstract_tree_t *
@@ -38,23 +58,82 @@ syntax_abstract_tree_t *make_leaf(syntax_ast_node_type type, string_t *value) {
     return tree;
 }
 
-syntax_abstract_tree_t *stmt() {
-    syntax_abstract_tree_t *tree = NULL, *v;
+syntax_abstract_tree_t *expression(int precedence) {
+    syntax_abstract_tree_t *x = NULL, *node;
+    syntax_ast_node_type op;
+
     string_t *token_string = string_init("");
+    LEXICAL_FSM_TOKENS token_type;
+
+    switch (lexical_token->type) {
+        case INTEGER:
+            x = make_leaf(SYN_INTEGER, string_init(lexical_token->value));
+            token_type = get_next_token(fd, token_string);
+            lexical_token->type = token_type;
+            lexical_token->value = token_string->value;
+            break;
+        default:
+        SYNTAX_ERROR("Expected expression, got: %s", lexical_token->value);
+    }
+
+    syntax_ast_node_type lt_type = get_token_type(lexical_token->type);
+
+    while (attributes[lt_type].is_binary && attributes[lt_type].precedence >= precedence) {
+        syntax_ast_node_type op = get_token_type(lexical_token->type);
+
+        token_type = get_next_token(fd, token_string);
+        lexical_token->type = token_type;
+        lexical_token->value = token_string->value;
+
+        int q = attributes[op].precedence;
+        if (!attributes[op].right_associative) {
+            q++;
+        }
+
+        node = expression(q);
+        x = make_node(attributes[op].node_type, x, node);
+    }
+
+    return x;
+}
+
+syntax_abstract_tree_t *stmt() {
+    syntax_abstract_tree_t *tree = NULL, *v, *e;
+    string_t *token_string = string_init("");
+    LEXICAL_FSM_TOKENS token_type;
 
     switch (lexical_token->type) {
         case IDENTIFIER:
             v = make_leaf(SYN_IDENTIFIER, string_init(lexical_token->value));
-            lexical_token = get_next_token(fd, lexical_token);
+            token_type = get_next_token(fd, token_string);
+            lexical_token->type = token_type;
+            lexical_token->value = token_string->value;
+            if (lexical_token->type != ASSIGN) {
+                SYNTAX_ERROR("Expected assignment");
+            }
+            token_type = get_next_token(fd, token_string);
+            lexical_token->type = token_type;
+            lexical_token->value = token_string->value;
+            e = expression(0);
+            tree = make_node(SYN_ASSIGN, v, e);
+            if (lexical_token->type != SEMICOLON) {
+                SYNTAX_ERROR("Expected semicolon");
+            }
+            token_type = get_next_token(fd, token_string);
+            lexical_token->type = token_type;
+            lexical_token->value = token_string->value;
+            break;
+        case END_OF_FILE:
+            break;
         default:
-        SYNTAX_ERROR("Unexpected token: %s", lexical_token->value);
+        SYNTAX_ERROR("Expected expression, got: %s", lexical_token->value);
     }
 
     return tree;
 }
 
 syntax_abstract_tree_t *load_syntax_tree() {
-    fd = test_lex_input("$a = 3;");
+    fd = test_lex_input("$a = 4;");
 
     string_t *token_string = string_init("");
     LEXICAL_FSM_TOKENS token_type = get_next_token(fd, token_string);
@@ -67,24 +146,19 @@ syntax_abstract_tree_t *load_syntax_tree() {
     lexical_token->type = token_type;
     lexical_token->value = token_string->value;
 
-    if (lexical_token->type == SEMICOLON) {
-        return NULL;
+    syntax_abstract_tree_t *tree = NULL;
+
+    while (lexical_token->type != END_OF_FILE) {
+        tree = make_node(SYN_SEQUENCE, tree, stmt());
     }
 
-    printf("Current token: %s [%d]\n", lexical_token->value, lexical_token->type);
-
-    syntax_ast_node_type type = get_token_type(lexical_token->type);
-    if (lexical_token->type != END_OF_FILE) {
-        return make_leaf(type, string_init(lexical_token->value));
-    }
-
-    syntax_abstract_tree_t *left = load_syntax_tree();
-    syntax_abstract_tree_t *right = load_syntax_tree();
-    return make_node(type, left, right);
+    return tree;
 }
 
 syntax_ast_node_type get_token_type(LEXICAL_FSM_TOKENS token) {
     switch (token) {
+        case END_OF_FILE:
+            return SYN_EOF;
         case IDENTIFIER:
             return SYN_IDENTIFIER;
         case STRING:
@@ -93,8 +167,14 @@ syntax_ast_node_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_INTEGER;
         case FLOAT:
             return SYN_FLOAT;
+        case PLUS:
+            return SYN_ADD;
+        case MINUS:
+            return SYN_SUB;
         case ASSIGN:
             return SYN_ASSIGN;
+        case SEMICOLON:
+            return SYN_SEMICOLON;
         default:
             return -1;
     }
