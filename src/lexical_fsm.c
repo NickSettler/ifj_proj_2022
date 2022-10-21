@@ -103,7 +103,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 }
                 break;
             case KEYWORD_STATE:
-                if (isalpha(current_char)) {
+                if (isalpha(current_char) || (!strcmp(token->value, "?") && current_char == '>')) {
                     string_append_char(token, current_char);
                 } else {
                     int keyword = -1;
@@ -119,6 +119,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, "return")) keyword = KEYWORD_RETURN;
                     else if (!strcmp(token->value, "null")) keyword = KEYWORD_NULL;
                     else if (!strcmp(token->value, "void")) keyword = KEYWORD_VOID;
+                    else if (!strcmp(token->value, "?>")) keyword = CLOSE_PHP_BRACKET;
 
                     state = keyword != -1 ? START : IDENTIFIER_STATE;
                     ungetc(current_char, fd);
@@ -138,6 +139,22 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     state = START;
                     ungetc(current_char, fd);
                     return IDENTIFIER;
+                }
+                break;
+            case PHP_BRACKET_STATE:
+                if (current_char == 'p' || current_char == 'P' || current_char == 'h' || current_char == 'H') {
+                    string_append_char(token, current_char);
+                } else {
+                    bool is_php_bracket = !strcmp(token->value, "<?") || !strcmp(token->value, "<?php") ||
+                                          !strcmp(token->value, "<?PHP");
+
+                    if (!is_php_bracket) {
+                        LEXICAL_ERROR("Invalid PHP open bracket");
+                    }
+
+                    state = START;
+                    ungetc(current_char, fd);
+                    return OPEN_PHP_BRACKET;
                 }
                 break;
             case EQUAL_STATE:
@@ -195,7 +212,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 break;
             case SQUARE_PARENTHESIS_STATE:
                 if (current_char == '=' ||
-                    (!strcmp(token->value, "<") && current_char == '>')) {
+                    (!strcmp(token->value, "<") && current_char == '?')) {
                     string_append_char(token, current_char);
                 } else {
                     state = START;
@@ -204,6 +221,10 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, ">")) return GREATER;
                     else if (!strcmp(token->value, "<=")) return LESS_EQUAL;
                     else if (!strcmp(token->value, ">=")) return GREATER_EQUAL;
+                    else if (!strcmp(token->value, "<?")) {
+                        state = PHP_BRACKET_STATE;
+                        ungetc(current_char, fd);
+                    };
                 }
                 break;
             case INTEGER_STATE:
@@ -260,4 +281,97 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
 FILE *test_lex_input(char *input) {
     FILE *fd = fmemopen(input, strlen(input), "r");
     return fd;
+}
+
+lexical_token_t *get_token(FILE *fd) {
+    string_t *token_string = string_init("");
+    LEXICAL_FSM_TOKENS token_type = get_next_token(fd, token_string);
+
+    lexical_token_t *token = (lexical_token_t *) malloc(sizeof(lexical_token_t));
+    if (token == NULL) {
+        INTERNAL_ERROR("Unable to allocate memory for lexical token");
+    }
+
+    token->type = token_type;
+    token->value = token_string->value;
+
+    return token;
+}
+
+lexical_token_stack_t *lexical_token_stack_init() {
+    lexical_token_stack_t *stack = (lexical_token_stack_t *) malloc(sizeof(lexical_token_stack_t));
+    if (stack == NULL) {
+        INTERNAL_ERROR("Failed to allocate memory for lexical token stack");
+    }
+
+    lexical_token_t *items = (lexical_token_t *) malloc(sizeof(lexical_token_t) * LEXICAL_TOKEN_STACK_INITIAL_SIZE);
+    if (items == NULL) {
+        INTERNAL_ERROR("Failed to allocate memory for lexical token stack items");
+    }
+
+    stack->items = items;
+    stack->top = -1;
+    stack->capacity = LEXICAL_TOKEN_STACK_INITIAL_SIZE;
+
+    return stack;
+}
+
+void lexical_token_stack_destroy(lexical_token_stack_t *stack) {
+    if (stack == NULL) {
+        INTERNAL_ERROR("Failed to destroy lexical token stack, stack is NULL");
+    }
+
+    free(stack->items);
+    free(stack);
+}
+
+void lexical_token_stack_increase(lexical_token_stack_t *stack) {
+    if (stack == NULL) {
+        INTERNAL_ERROR("Failed to increase lexical token stack, stack is NULL");
+    }
+
+    int new_capacity = stack->capacity * 2;
+    lexical_token_t *new_items = (lexical_token_t *) malloc(sizeof(lexical_token_t) * new_capacity);
+    if (new_items == NULL) {
+        INTERNAL_ERROR("Failed to increase lexical token stack items");
+    }
+
+    for (int i = 0; i <= stack->top; i++) {
+        new_items[i] = stack->items[i];
+    }
+
+    free(stack->items);
+    stack->items = new_items;
+    stack->capacity = new_capacity;
+}
+
+bool lexical_token_stack_empty(lexical_token_stack_t *stack) {
+    if (stack == NULL) {
+        INTERNAL_ERROR("Failed to check if lexical token stack is empty, stack is NULL");
+    }
+    return stack->top < 0;
+}
+
+void lexical_token_stack_push(lexical_token_stack_t *stack, lexical_token_t token) {
+    if (stack->top == stack->capacity - 1) {
+        lexical_token_stack_increase(stack);
+    }
+
+    stack->items[++stack->top] = token;
+}
+
+lexical_token_t lexical_token_stack_pop(lexical_token_stack_t *stack) {
+    if (lexical_token_stack_empty(stack)) {
+        INTERNAL_ERROR("Failed to pop lexical token stack, stack is empty");
+    }
+
+    return stack->items[stack->top--];
+}
+
+int lexical_token_stack_size(lexical_token_stack_t *stack) {
+    if (stack == NULL) {
+        INTERNAL_ERROR("Failed to get size of lexical token stack, stack is NULL");
+    }
+
+    return stack->top + 1;
 }
