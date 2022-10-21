@@ -1,3 +1,13 @@
+/**
+ * Implementace překladače imperativního jazyka IFJ22.
+ * @authors
+ *   xmaroc00, Elena Marochkina
+ *
+ * @file bvs.h
+ * @brief Binary search tree
+ * @date 21.10.2022
+ */
+
 #ifndef IFJ_PROJ_2022_BVS_H
 #define IFJ_PROJ_2022_BVS_H
 

@@ -1,3 +1,13 @@
+/**
+ * Implementace překladače imperativního jazyka IFJ22.
+ * @authors
+ *   xmaroc00, Elena Marochkina
+ *
+ * @file bvs.c
+ * @brief Binary search tree
+ * @date 21.10.2022
+ */
+
 #include "bvs.h"
 
 tree_node *create_node(int value) {
