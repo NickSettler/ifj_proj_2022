@@ -12,11 +12,13 @@
 
 tree_node *create_node(int value) {
     tree_node *result = (tree_node *) malloc(sizeof(tree_node));
-    if (result != 0) {
-        result->left = NULL;
-        result->right = NULL;
-        result->value = value;
+    if (result == 0) {
+        INTERNAL_ERROR("Malloc for BST failed");
     }
+    result->left = NULL;
+    result->right = NULL;
+    result->value = value;
+    
     return result;
 }
 
@@ -51,7 +53,7 @@ bool find_number(tree_node *root, int value) {
     if (root == NULL) {
         return false;
     }
-    switch(comparator(root, value)){
+    switch (comparator(root, value)) {
         case 0:
             return true;
         case -1:
