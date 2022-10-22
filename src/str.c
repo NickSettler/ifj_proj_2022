@@ -81,3 +81,21 @@ void string_clear(string_t *str) {
     str->length = 0;
     str->value[str->length] = '\0';
 }
+
+bool string_check_by(string_t *str, int (*func)(int)) {
+    if (str == NULL) return false;
+
+    for (size_t i = 0; i < str->length; i++) {
+        if (!func(str->value[i])) return false;
+    }
+
+    return true;
+}
+
+void string_convert_by(string_t *str, int (*func)(int)) {
+    if (str == NULL) return;
+
+    for (size_t i = 0; i < str->length; i++) {
+        str->value[i] = (char) func(str->value[i]);
+    }
+}
