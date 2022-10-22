@@ -1,30 +1,50 @@
-<prog> -> <?php <stat-list>
-<prog> -> <? <stat-list>
+<prog> -> <?php declare <f-dec-stats> <stat-list> ?>
+<prog> -> <? declare <f-dec-stats> <stat-list> ?>
+
+<f-dec-stats> -> <f-dec-stat>
+<f-dec-stats> -> <f-dec-stat> <f-dec-stats>
+
+<f-dec-stat> -> function function-ID ( <f-args> ) : <f-type> { <stat-list> }
+
+<f-type> -> int
+<f-type> -> float
+<f-type> -> string
+<f-type> -> void
+
+<f-args> -> <f-arg>
+<f-args> -> <f-arg>, <f-args>
+<f-args> -> e
+
+<f-arg> -> <type> ID
 
 <stat> -> ;
 <stat> -> ID = <expr>
-<stat> -> function ID ( <args> ) <stat>
-<stat> -> { <stat-list>
-<stat> -> }
-
-<stat-list> -> <stat>, <stat-list>
-<stat-list> -> ?>
-<stat-list> -> e
+<stat> -> ID = function-ID ( <args> )
+<stat> -> function-ID ( <args> )
+<stat> -> return <expr>
 
 <args> -> <arg>
 <args> -> <arg>, <args>
 
-<arg> -> <type> ID
-<arg> -> ID
+<arg> -> <term>
+<arg> -> e
 
-<expr> ->
-
-<type> -> integer
-<type> -> float
-<type> -> string
-<type> -> NULL
-
-<term> -> integer
+<term> -> int
 <term> -> float
 <term> -> string
 <term> -> NULL
+<term> -> ID
+
+<stat-list> -> <stat> <stat-list>
+<stat-list> -> if ( <expr> ) { <stat-list> }
+<stat-list> -> if ( <expr> ) { <stat-list> } else { <stat-list> }
+<stat-list> -> while ( <expr> { <stat-list> }
+<stat-list> -> ;
+<stat-list> -> e
+
+
+<expr> -> EXPR <expr>
+<expr> -> function-ID ( <args> )
+<expr> -> e
+
+
