@@ -107,6 +107,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     string_append_char(token, current_char);
                 } else {
                     int keyword = -1;
+                    string_convert_by(token, tolower);  // all keywords are not case-sensitive
 
                     if (!strcmp(token->value, "int") || !strcmp(token->value, "?int")) keyword = KEYWORD_INTEGER;
                     else if (!strcmp(token->value, "float") || !strcmp(token->value, "?float")) keyword = KEYWORD_FLOAT;
@@ -119,6 +120,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, "return")) keyword = KEYWORD_RETURN;
                     else if (!strcmp(token->value, "null")) keyword = KEYWORD_NULL;
                     else if (!strcmp(token->value, "void")) keyword = KEYWORD_VOID;
+                    else if (!strcmp(token->value, "declare")) keyword = KEYWORD_DECLARE;
                     else if (!strcmp(token->value, "?>")) keyword = CLOSE_PHP_BRACKET;
 
                     state = keyword != -1 ? START : IDENTIFIER_STATE;
@@ -142,11 +144,11 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 }
                 break;
             case PHP_BRACKET_STATE:
-                if (current_char == 'p' || current_char == 'P' || current_char == 'h' || current_char == 'H') {
+                if (tolower(current_char) == 'p' || tolower(current_char) == 'h') {
                     string_append_char(token, current_char);
                 } else {
-                    bool is_php_bracket = !strcmp(token->value, "<?") || !strcmp(token->value, "<?php") ||
-                                          !strcmp(token->value, "<?PHP");
+                    string_convert_by(token, tolower);
+                    bool is_php_bracket = !strcmp(token->value, "<?") || !strcmp(token->value, "<?php");
 
                     if (!is_php_bracket) {
                         LEXICAL_ERROR("Invalid PHP open bracket");

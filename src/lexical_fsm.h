@@ -82,6 +82,7 @@ typedef enum LEXICAL_FSM_TOKENS {
     KEYWORD_INTEGER,
     KEYWORD_FLOAT,
     KEYWORD_STRING,
+    KEYWORD_DECLARE,
 
     // Identifiers
     IDENTIFIER,
@@ -105,6 +106,9 @@ typedef enum LEXICAL_FSM_STATES {
 
     // PHP brackets state
     PHP_BRACKET_STATE,
+
+    // Start of file declare state
+    DECLARE_STATE,
 
     // Arithmetic states
     ARITHMETIC_STATE,
