@@ -99,7 +99,7 @@ namespace ifj {
             }
 
             TEST_F(LexicalAnalyzerTest, PHPBrackets) {
-                IsStackCorrect("<?php ?>", 2,
+                IsStackCorrect("<?PHP ?>", 2,
                                (lexical_token_t) {OPEN_PHP_BRACKET, "<?php"},
                                (lexical_token_t) {CLOSE_PHP_BRACKET, "?>"}
                 );
@@ -380,6 +380,37 @@ namespace ifj {
                                (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
                                (lexical_token_t) {KEYWORD_RETURN, "return"},
                                (lexical_token_t) {KEYWORD_NULL, "null"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
+                );
+            }
+
+            TEST_F(LexicalAnalyzerTest, CaseSensitiveKeywords) {
+                IsStackCorrect("Function foo(int $a){\n"
+                               "    $a = NuLl;"
+                               "    IF ($a == NULL) {"
+                               "    $a = 5;}", 23,
+                               (lexical_token_t) {KEYWORD_FUNCTION, "function"},
+                               (lexical_token_t) {IDENTIFIER, "foo"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {KEYWORD_INTEGER, "int"},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {KEYWORD_NULL, "null"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {KEYWORD_IF, "if"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {EQUAL, "=="},
+                               (lexical_token_t) {KEYWORD_NULL, "null"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "5"},
                                (lexical_token_t) {SEMICOLON, ";"},
                                (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
                 );
