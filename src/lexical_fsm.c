@@ -120,6 +120,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, "return")) keyword = KEYWORD_RETURN;
                     else if (!strcmp(token->value, "null")) keyword = KEYWORD_NULL;
                     else if (!strcmp(token->value, "void")) keyword = KEYWORD_VOID;
+                    else if (!strcmp(token->value, "declare")) keyword = KEYWORD_DECLARE;
                     else if (!strcmp(token->value, "?>")) keyword = CLOSE_PHP_BRACKET;
                     else if (!strcmp(token->value, "declare")) {
                         keyword = KEYWORD_DECLARE;
