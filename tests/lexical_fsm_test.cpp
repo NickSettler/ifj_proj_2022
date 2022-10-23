@@ -386,7 +386,7 @@ namespace ifj {
             }
 
             TEST_F(LexicalAnalyzerTest, CaseSensitiveKeywords) {
-                IsStackCorrect("Function foo(int $a){\n"
+                IsStackCorrect("Function foo(int $a){"
                                "    $a = NuLl;"
                                "    IF ($a == NULL) {"
                                "    $a = 5;}", 23,
@@ -413,6 +413,61 @@ namespace ifj {
                                (lexical_token_t) {INTEGER, "5"},
                                (lexical_token_t) {SEMICOLON, ";"},
                                (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
+                );
+            }
+
+            TEST_F(LexicalAnalyzerTest, NegativeExpressions) {
+                IsStackCorrect("$a = -4 + $b"
+                               "$a = -sum(1, $c) + $b"
+                               "$a = -(4 + $b) + (-(-func1()+(-2 * sum($c, 2))))", 47,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {INTEGER, "4"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {IDENTIFIER, "sum"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {INTEGER, "1"},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {IDENTIFIER, "$c"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {INTEGER, "4"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {IDENTIFIER, "func1"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {INTEGER, "2"},
+                               (lexical_token_t) {MULTIPLY, "*"},
+                               (lexical_token_t) {IDENTIFIER, "sum"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {IDENTIFIER, "$c"},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {INTEGER, "2"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"}
+
                 );
             }
         }
