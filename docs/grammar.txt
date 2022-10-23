@@ -1,10 +1,10 @@
-<prog> -> <?php declare <f-dec-stats> <stat-list> ?>
-<prog> -> <? declare <f-dec-stats> <stat-list> ?>
+<prog> -> <?php <declare> <f-dec-stats> <stat-list> ?>
+<prog> -> <? <declare> <f-dec-stats> <stat-list> ?>
 
 <f-dec-stats> -> <f-dec-stat>
 <f-dec-stats> -> <f-dec-stat> <f-dec-stats>
 
-<f-dec-stat> -> function function-ID ( <f-args> ) : <f-type> { <stat-list> }
+<f-dec-stat> -> function ID ( <f-args> ) : <f-type> { <stat-list> }
 
 <f-type> -> int
 <f-type> -> float
@@ -15,13 +15,15 @@
 <f-args> -> <f-arg>, <f-args>
 <f-args> -> e
 
-<f-arg> -> <type> ID
+<f-arg> -> <f-type> ID
 
-<stat> -> ;
-<stat> -> ID = <expr>
-<stat> -> ID = function-ID ( <args> )
-<stat> -> function-ID ( <args> )
-<stat> -> return <expr>
+<stat> -> ID = <expr> ;
+<stat> -> ID = ID ( <args> ) ;
+<stat> -> function-ID ( <args> ) ;
+<stat> -> return <expr> ;
+<stat> -> if ( <expr> ) { <stat-list> }
+<stat> -> if ( <expr> ) { <stat-list> } else { <stat-list> }
+<stat> -> while ( <expr> ) { <stat-list> }
 
 <args> -> <arg>
 <args> -> <arg>, <args>
@@ -36,15 +38,13 @@
 <term> -> ID
 
 <stat-list> -> <stat> <stat-list>
-<stat-list> -> if ( <expr> ) { <stat-list> }
-<stat-list> -> if ( <expr> ) { <stat-list> } else { <stat-list> }
-<stat-list> -> while ( <expr> { <stat-list> }
-<stat-list> -> ;
 <stat-list> -> e
 
-
 <expr> -> EXPR <expr>
-<expr> -> function-ID ( <args> )
+<expr> -> ID ( <args> )
 <expr> -> e
+
+<declare> -> declare(strict-types = 0) ;
+<declare> -> declare(strict-types = 1) ;
 
 
