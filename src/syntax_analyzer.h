@@ -27,6 +27,8 @@ typedef enum {
     SYN_FLOAT,
     SYN_ADD,
     SYN_SUB,
+    SYN_MUL,
+    SYN_DIV,
     SYN_NEGATE,
     SYN_ASSIGN,
     SYN_SEMICOLON,

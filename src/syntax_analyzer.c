@@ -24,6 +24,8 @@ struct {
         {"FLOAT",   "Float",       SYN_FLOAT,      false, false, false, -1, SYN_FLOAT},
         {"+",       "Op_add",      SYN_ADD,        false, true,  false, 12, SYN_ADD},
         {"-",       "Op_sub",      SYN_SUB,        false, true,  false, 12, SYN_SUB},
+        {"*",       "Op_multiply", SYN_MUL,        false, true,  false, 13, SYN_MUL},
+        {"/",       "Op_divide",   SYN_DIV,        false, true,  false, 13, SYN_DIV},
         {"-",       "Op_negate",   SYN_NEGATE,     false, false, true,  14, SYN_NEGATE},
         {"=",       "Op_Assign",   SYN_ASSIGN,     false, false, false, -1, SYN_ASSIGN},
         {";",       "Semicolon",   SYN_SEMICOLON,  false, false, false, -1, -1}
@@ -133,7 +135,7 @@ syntax_abstract_tree_t *stmt() {
 }
 
 syntax_abstract_tree_t *load_syntax_tree() {
-    fd = test_lex_input("$a = 4;");
+    fd = test_lex_input("$a = 4 * 3 + 5 / 2;");
 
     string_t *token_string = string_init("");
     LEXICAL_FSM_TOKENS token_type = get_next_token(fd, token_string);
@@ -171,6 +173,10 @@ syntax_ast_node_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_ADD;
         case MINUS:
             return SYN_SUB;
+        case MULTIPLY:
+            return SYN_MUL;
+        case DIVIDE:
+            return SYN_DIV;
         case ASSIGN:
             return SYN_ASSIGN;
         case SEMICOLON:
