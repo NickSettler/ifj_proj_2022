@@ -120,8 +120,13 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, "return")) keyword = KEYWORD_RETURN;
                     else if (!strcmp(token->value, "null")) keyword = KEYWORD_NULL;
                     else if (!strcmp(token->value, "void")) keyword = KEYWORD_VOID;
-                    else if (!strcmp(token->value, "declare")) keyword = KEYWORD_DECLARE;
                     else if (!strcmp(token->value, "?>")) keyword = CLOSE_PHP_BRACKET;
+                    else if (!strcmp(token->value, "declare")) {
+                        keyword = KEYWORD_DECLARE;
+                        state= STRICT_TYPES_STATE;
+                        break;
+                    }
+
 
                     state = keyword != -1 ? START : IDENTIFIER_STATE;
                     ungetc(current_char, fd);
@@ -158,6 +163,20 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     ungetc(current_char, fd);
                     return OPEN_PHP_BRACKET;
                 }
+                break;
+            case STRICT_TYPES_STATE:
+                if (current_char == 's' || current_char == 't' || current_char == 'r' ||
+                    current_char == 'i' || current_char == 'c' || current_char == 'e' ||
+                    current_char == 't' || current_char == 'y' || current_char == 'p' ||
+                    current_char == 'e' || current_char == 's') {
+                    string_append_char(token, current_char);
+                } else {
+                    if (!strcmp(token->value, "strict_types")) {
+                        LEXICAL_ERROR("Invalid strict_types declaration");
+                    }
+                    state = START;
+                    ungetc(current_char, fd);
+                    return KEYWORD_STRICT_TYPES;
                 break;
             case EQUAL_STATE:
                 if (current_char == '=')

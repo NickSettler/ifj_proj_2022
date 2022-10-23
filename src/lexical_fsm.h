@@ -83,6 +83,7 @@ typedef enum LEXICAL_FSM_TOKENS {
     KEYWORD_FLOAT,
     KEYWORD_STRING,
     KEYWORD_DECLARE,
+    KEYWORD_STRICT_TYPES,
 
     // Identifiers
     IDENTIFIER,
@@ -123,6 +124,9 @@ typedef enum LEXICAL_FSM_STATES {
     FLOAT_STATE,
     STRING_STATE,
     STRING_ESCAPE_STATE,
+
+    // Strict-types state
+    STRICT_TYPES_STATE,
 } LEXICAL_FSM_STATES;
 
 /**
