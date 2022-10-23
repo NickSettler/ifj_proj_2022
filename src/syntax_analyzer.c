@@ -76,9 +76,9 @@ syntax_abstract_tree_t *expression(int precedence) {
         SYNTAX_ERROR("Expected expression, got: %s", lexical_token->value);
     }
 
-    syntax_ast_node_type lt_type = get_token_type(lexical_token->type);
 
-    while (attributes[lt_type].is_binary && attributes[lt_type].precedence >= precedence) {
+    while (attributes[get_token_type(lexical_token->type)].is_binary &&
+           attributes[get_token_type(lexical_token->type)].precedence >= precedence) {
         syntax_ast_node_type op = get_token_type(lexical_token->type);
 
         token_type = get_next_token(fd, token_string);
