@@ -12,7 +12,7 @@
 #define IFJ_PROJ_SYNTAX_ANALYZER_H
 
 #include <stdbool.h>
-#include "lexical_token.h"
+#include "lexical_fsm.h"
 
 typedef enum {
     PROGRAM,
@@ -54,10 +54,10 @@ syntax_abstract_tree_t *make_leaf(syntax_ast_node_type type, string_t *value);
 
 syntax_ast_node_type get_token_type(LEXICAL_FSM_TOKENS token);
 
-syntax_abstract_tree_t *expression(int precedence);
+syntax_abstract_tree_t *expression(FILE *fd, int precedence);
 
-syntax_abstract_tree_t *stmt();
+syntax_abstract_tree_t *stmt(FILE *fd);
 
-syntax_abstract_tree_t *load_syntax_tree();
+syntax_abstract_tree_t *load_syntax_tree(FILE *fd);
 
 #endif //IFJ_PROJ_SYNTAX_ANALYZER_H

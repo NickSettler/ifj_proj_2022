@@ -11,7 +11,7 @@
 #ifndef IFJ_PROJ_EXPRESSION_H
 #define IFJ_PROJ_EXPRESSION_H
 
-#include "lexical_token.h"
+#include "lexical_fsm.h"
 #include <stdbool.h>
 
 #define PRECEDENCE_TABLE_SIZE 10
