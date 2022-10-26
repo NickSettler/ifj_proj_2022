@@ -1,0 +1,50 @@
+<prog> -> <?php <declare> <f-dec-stats> <stat-list> ?>
+<prog> -> <? <declare> <f-dec-stats> <stat-list> ?>
+
+<f-dec-stats> -> <f-dec-stat>
+<f-dec-stats> -> <f-dec-stat> <f-dec-stats>
+
+<f-dec-stat> -> function ID ( <f-args> ) : <f-type> { <stat-list> }
+
+<f-type> -> int
+<f-type> -> float
+<f-type> -> string
+<f-type> -> void
+
+<f-args> -> <f-arg>
+<f-args> -> <f-arg>, <f-args>
+<f-args> -> e
+
+<f-arg> -> <f-type> ID
+
+<stat> -> ID = <expr> ;
+<stat> -> ID = ID ( <args> ) ;
+<stat> -> function-ID ( <args> ) ;
+<stat> -> return <expr> ;
+<stat> -> if ( <expr> ) { <stat-list> }
+<stat> -> if ( <expr> ) { <stat-list> } else { <stat-list> }
+<stat> -> while ( <expr> ) { <stat-list> }
+
+<args> -> <arg>
+<args> -> <arg>, <args>
+
+<arg> -> <term>
+<arg> -> e
+
+<term> -> int
+<term> -> float
+<term> -> string
+<term> -> NULL
+<term> -> ID
+
+<stat-list> -> <stat> <stat-list>
+<stat-list> -> e
+
+<expr> -> EXPR <expr>
+<expr> -> ID ( <args> )
+<expr> -> e
+
+<declare> -> declare(strict-types = 0) ;
+<declare> -> declare(strict-types = 1) ;
+
+
