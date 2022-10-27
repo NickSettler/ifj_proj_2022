@@ -1,15 +1,17 @@
 /**
- * Imperative IFJ22 language compiler implementation
- * @author xkalut00, Maksim Kalutski
+ * Implementace překladače imperativního jazyka IFJ22.
+ * @authors
+ *  xkalut00, Maksim Kalutski
+ *
  * @file   code_generator.c
  * @brief  Code generator source file
- * @date   ??.10.2022
+ * @date   13.10.2022
  */
 
 #include "code_generator.h"
 
-void generate_move(char *variable_frame, char *variable, char *symbol_frame, char *symbol) {
-    fprintf(fd, "MOVE %s@%s %s@%s\n", variable_frame, variable, symbol_frame, symbol);
+void generate_move(frames_t frame, char *variable, char *symbol) {
+    fprintf(fd, "MOVE %s@%s %s@%s\n", frames[frame], variable, frames[frame], symbol);
 }
 
 void generate_create_frame() {
@@ -24,20 +26,16 @@ void generate_pop_frame() {
     fprintf(fd, "POPFRAME\n");
 }
 
-void generate_declaration(char *variable_frame, char *variable) {
-    fprintf(fd, "DEFVAR %s@%s\n", variable_frame, variable);
+void generate_declaration(frames_t frame, char *variable) {
+    fprintf(fd, "DEFVAR %s@%s\n", frames[frame], variable);
 }
 
-void generate_call(char *label) {
-    fprintf(fd, "CALL %s\n", label);
+void generate_add_on_top(frames_t frame, char *variable) {
+    fprintf(fd, "PUSHS %s@%s\n", frames[frame], variable);
 }
 
-void generate_add_on_top(char *type, char *variable) {
-    fprintf(fd, "PUSHS %s@%s\n", type, variable);
-}
-
-void generate_pop_from_top(char *variable_frame, char *variable) {
-    fprintf(fd, "POPS %s@%s\n", variable_frame, variable);
+void generate_pop_from_top(frames_t frame, char *variable) {
+    fprintf(fd, "POPS %s@%s\n", frames[frame], variable);
 }
 
 void generate_clear_stack() {
@@ -49,120 +47,23 @@ void generate_clear_stack() {
     fprintf(fd, "RETURN\n");
 }
 
-void generate_operation(instructions_t instruction, char *result, char *symbol1, char *symbol2) {
-    switch (instruction) {
-        case ADD:
-            fprintf(fd, "ADD LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case SUB:
-            fprintf(fd, "SUB LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case MUL:
-            fprintf(fd, "MUL LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case IMUL:
-            fprintf(fd, "IMUL LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case DIV:
-            fprintf(fd, "DIV LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case IDIV:
-            fprintf(fd, "IDIV LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case LT:
-            fprintf(fd, "LT LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case GT:
-            fprintf(fd, "GT LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case EQ:
-            fprintf(fd, "EQ LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case NOTLT:
-            fprintf(fd, "LT LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            fprintf(fd, "NOT LF@%s LF@%s\n", result, result);
-            break;
-        case NOTGT:
-            fprintf(fd, "GT LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            fprintf(fd, "NOT LF@%s LF@%s\n", result, result);
-            break;
-        case NOTEQ:
-            fprintf(fd, "EQ LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            fprintf(fd, "NOT LF@%s LF@%s\n", result, result);
-            break;
-        case AND:
-            fprintf(fd, "AND LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case OR:
-            fprintf(fd, "OR LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case NOT:
-            fprintf(fd, "NOT LF@%s LF@%s\n", result, symbol1);
-            break;
-        default:
-            fprintf(stderr, "Unknown operation");
-    }
-}
-
-void generate_stack_operation(stack_instructions_t instruction, char *result, char *symbol1, char *symbol2) {
-    switch (instruction) {
-        case ADDS:
-            fprintf(fd, "ADDS LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case SUBS:
-            fprintf(fd, "SUBS LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case MULS:
-            fprintf(fd, "MULS LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case DIVS:
-            fprintf(fd, "DIVS LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case IDIVS:
-            fprintf(fd, "IDIVS LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        default:
-            fprintf(stderr, "Unknown operation");
-    }
-}
-
-void generate_string_relational_operation(instructions_t instruction, char *result, char *symbol1, char *symbol2) {
-    switch (instruction) {
-        case CONCAT:
-            fprintf(fd, "CONCAT LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case STRLEN:
-            fprintf(fd, "STRLEN LF@%s LF@%s\n", result, symbol1);
-            break;
-        case GETCHAR:
-            fprintf(fd, "GETCHAR LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case SETCHAR:
-            fprintf(fd, "SETCHAR LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case LT:
-            fprintf(fd, "LT LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case GT:
-            fprintf(fd, "GT LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case EQ:
-            fprintf(fd, "EQ LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            break;
-        case NOTLT:
-            fprintf(fd, "LT LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            fprintf(fd, "NOT LF@%s LF@%s\n", result, result);
-            break;
-        case NOTGT:
-            fprintf(fd, "GT LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            fprintf(fd, "NOT LF@%s LF@%s\n", result, result);
-            break;
-        case NOTEQ:
-            fprintf(fd, "EQ LF@%s LF@%s LF@%s\n", result, symbol1, symbol2);
-            fprintf(fd, "NOT LF@%s LF@%s\n", result, result);
-            break;
-        default:
-            fprintf(stderr, "Unknown operation");
+void generate_operation(instructions_t instruction, frames_t frame, char *result, char *symbol1, char *symbol2) {
+    if (instruction == NOTLT) {
+        fprintf(fd, "LT %s@%s %s@%s %s@%s\n", frames[frame], result, frames[frame], symbol1, frames[frame], symbol2);
+        fprintf(fd, "NOT %s@%s %s@%s\n", frames[frame], result, frames[frame], result);
+    } else if (instruction == NOTGT) {
+        fprintf(fd, "GT %s@%s %s@%s %s@%s\n", frames[frame], result, frames[frame], symbol1, frames[frame], symbol2);
+        fprintf(fd, "NOT %s@%s %s@%s\n", frames[frame], result, frames[frame], result);
+    } else if (instruction == NOTEQ) {
+        fprintf(fd, "EQ %s@%s %s@%s %s@%s\n", frames[frame], result, frames[frame], symbol1, frames[frame], symbol2);
+        fprintf(fd, "NOT %s@%s %s@%s\n", frames[frame], result, frames[frame], result);
+    } else if (instruction == NOT || instruction == NOTS || instruction == STRLEN || instruction == INT2FLOATS ||
+               instruction == FLOAT2INTS ||
+               instruction == INT2CHARS) {
+        fprintf(fd, "%s %s@%s %s@%s\n", instructions[instruction], frames[frame], result, frames[frame], symbol1);
+    } else {
+        fprintf(fd, "%s %s@%s %s@%s %s@%s\n", instructions[instruction], frames[frame], result, frames[frame], symbol1,
+                frames[frame], symbol2);
     }
 }
 
@@ -238,25 +139,6 @@ void generate_string_to_int() {
     fprintf(fd, "LABEL nil_return\n");
     fprintf(fd, "POPFRAME\n");
     fprintf(fd, "RETURN\n");
-}
-
-void generate_conversion_operation(stack_conversion_t instruction) {
-    switch (instruction) {
-        case INT2FLOATS:
-            fprintf(fd, "INT2FLOATS\n");
-            break;
-        case FLOAT2INTS:
-            fprintf(fd, "FLOAT2INTS\n");
-            break;
-        case INT2CHARS:
-            fprintf(fd, "INT2CHARS\n");
-            break;
-        case STRI2INTS:
-            fprintf(fd, "STRI2INTS\n");
-            break;
-        default:
-            fprintf(stderr, "Unknown operation");
-    }
 }
 
 void generate_reads() {
