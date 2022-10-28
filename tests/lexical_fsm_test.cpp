@@ -472,6 +472,21 @@ namespace ifj {
 
                 );
             }
+            TEST_F(LexicalAnalyzerTest, Comments) {
+                isStackCorrect("$a = 5 // double-slash comment\n"
+                               "$b = 6 /* comment\n new-line comment*/\n"
+                               "$c = 7 # sharp comment", 9,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "5"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "6"},
+                               (lexical_token_t) {IDENTIFIER, "$c"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "7"}
+                );
+            }
         }
     }
 }
