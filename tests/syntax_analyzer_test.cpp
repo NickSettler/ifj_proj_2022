@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 
 extern "C" {
 #include "../src/syntax_analyzer.h"
@@ -23,53 +22,53 @@ namespace ifj {
                     fclose(input_fd);
                 }
 
-                void IsSyntaxTreeCorrect(char *input, int n, ...) {
+                void IsSyntaxTreeCorrect(char *input, const std::vector<int> &expected) {
                     input_fd = fmemopen(input, strlen(input), "r");
 
                     char output[100];
                     output_fd = fmemopen(output, sizeof(output) / sizeof(char), "w");
 
-                    string_t *check_output = string_init("");
+                    std::string expected_str;
 
-                    va_list tokens;
-                    va_start(tokens, n);
+                    for (auto &i: expected)
+                        expected_str += std::to_string(i) + " ";
 
-                    for (int i = 0; i < n; i++) {
-                        int arg_token = va_arg(tokens, int);
-                        string_append_string(check_output, std::to_string(arg_token).c_str());
-                        string_append_char(check_output, ' ');
-                    }
-
-                    va_end(tokens);
 
                     syntax_abstract_tree_t *tree = load_syntax_tree(input_fd);
                     syntax_abstract_tree_print(output_fd, tree);
 
-                    EXPECT_STREQ(check_output->value, output);
+                    EXPECT_STREQ(expected_str.c_str(), output);
                 }
             };
 
             TEST_F(SyntaxAnalyzerTest, Assignment) {
-                IsSyntaxTreeCorrect("$a = 12 + 32;", 6, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
-                                    SYN_NODE_INTEGER, SYN_NODE_ADD, SYN_NODE_INTEGER);
+                IsSyntaxTreeCorrect("$a = 12 + 32;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                     SYN_NODE_ADD, SYN_NODE_INTEGER});
             }
 
             TEST_F(SyntaxAnalyzerTest, ArithmeticExpressionBasic) {
-                IsSyntaxTreeCorrect("1 + 2;", 4, SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_ADD, SYN_NODE_INTEGER);
+                IsSyntaxTreeCorrect("1 + 2;", {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_ADD, SYN_NODE_INTEGER});
 
-                IsSyntaxTreeCorrect("4 - $a;", 4, SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_SUB,
-                                    SYN_NODE_IDENTIFIER);
+                IsSyntaxTreeCorrect("4 - $a;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_SUB, SYN_NODE_IDENTIFIER});
 
-                IsSyntaxTreeCorrect("12 * 3;", 4, SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_MUL,
-                                    SYN_NODE_INTEGER);
+                IsSyntaxTreeCorrect("12 * 3;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_MUL, SYN_NODE_INTEGER});
 
-                IsSyntaxTreeCorrect("33 / 11;", 4, SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_DIV, SYN_NODE_INTEGER);
+                IsSyntaxTreeCorrect("33 / 11;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_DIV, SYN_NODE_INTEGER});
             }
 
             TEST_F(SyntaxAnalyzerTest, ArithmeticExpressionAdvanced) {
-                IsSyntaxTreeCorrect("1 + 2 * 3 / 12;", 8, SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_ADD,
-                                    SYN_NODE_INTEGER, SYN_NODE_MUL, SYN_NODE_INTEGER, SYN_NODE_DIV,
-                                    SYN_NODE_INTEGER);
+                IsSyntaxTreeCorrect("1 + 2 * 3 / 12;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_ADD, SYN_NODE_INTEGER, SYN_NODE_MUL,
+                                     SYN_NODE_INTEGER, SYN_NODE_DIV, SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("$a = (1 + 2) / (3 * 4);",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                     SYN_NODE_ADD, SYN_NODE_INTEGER, SYN_NODE_DIV, SYN_NODE_INTEGER, SYN_NODE_MUL,
+                                     SYN_NODE_INTEGER});
             }
         }
     }
