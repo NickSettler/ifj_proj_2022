@@ -19,27 +19,37 @@ typedef enum {
 } syntax_non_terminal_t;
 
 typedef enum {
-    // Token types
-    SYN_EOF,
-    SYN_IDENTIFIER,
-    SYN_STRING,
-    SYN_INTEGER,
-    SYN_FLOAT,
-    SYN_ADD,
-    SYN_SUB,
-    SYN_MUL,
-    SYN_DIV,
-    SYN_NEGATE,
-    SYN_ASSIGN,
-    SYN_SEMICOLON,
+    SYN_TOKEN_EOF,
+    SYN_TOKEN_IDENTIFIER,
+    SYN_TOKEN_STRING,
+    SYN_TOKEN_INTEGER,
+    SYN_TOKEN_FLOAT,
+    SYN_TOKEN_ADD,
+    SYN_TOKEN_SUB,
+    SYN_TOKEN_MUL,
+    SYN_TOKEN_DIV,
+    SYN_TOKEN_NEGATE,
+    SYN_TOKEN_ASSIGN,
+    SYN_TOKEN_SEMICOLON,
+} syntax_tree_token_type;
 
-    // Node types
-    SYN_SEQUENCE,
-} syntax_ast_node_type;
+typedef enum {
+    SYN_NODE_IDENTIFIER,
+    SYN_NODE_STRING,
+    SYN_NODE_INTEGER,
+    SYN_NODE_FLOAT,
+    SYN_NODE_SEQUENCE,
+    SYN_NODE_ADD,
+    SYN_NODE_SUB,
+    SYN_NODE_MUL,
+    SYN_NODE_DIV,
+    SYN_NODE_NEGATE,
+    SYN_NODE_ASSIGN
+} syntax_tree_node_type;
 
 typedef struct syntax_abstract_tree syntax_abstract_tree_t;
 struct syntax_abstract_tree {
-    syntax_ast_node_type type;
+    syntax_tree_node_type type;
     syntax_abstract_tree_t *left;
     syntax_abstract_tree_t *right;
     string_t *value;
@@ -48,11 +58,17 @@ struct syntax_abstract_tree {
 static lexical_token_t *lexical_token;
 
 syntax_abstract_tree_t *
-make_node(syntax_ast_node_type type, syntax_abstract_tree_t *left, syntax_abstract_tree_t *right);
+make_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, syntax_abstract_tree_t *right);
 
-syntax_abstract_tree_t *make_leaf(syntax_ast_node_type type, string_t *value);
+syntax_abstract_tree_t *make_leaf(syntax_tree_node_type type, string_t *value);
 
-syntax_ast_node_type get_token_type(LEXICAL_FSM_TOKENS token);
+int syntax_abstract_tree_height(syntax_abstract_tree_t *tree);
+
+void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree);
+
+void syntax_abstract_tree_print_level(FILE *output, syntax_abstract_tree_t *tree, int level);
+
+syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token);
 
 syntax_abstract_tree_t *expression(FILE *fd, int precedence);
 
