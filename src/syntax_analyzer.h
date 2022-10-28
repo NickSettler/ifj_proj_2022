@@ -62,11 +62,7 @@ make_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, syntax_abstr
 
 syntax_abstract_tree_t *make_leaf(syntax_tree_node_type type, string_t *value);
 
-int syntax_abstract_tree_height(syntax_abstract_tree_t *tree);
-
 void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree);
-
-void syntax_abstract_tree_print_level(FILE *output, syntax_abstract_tree_t *tree, int level);
 
 void expect_token(const char *msg, syntax_tree_token_type type);
 

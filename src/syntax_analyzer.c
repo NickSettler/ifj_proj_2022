@@ -57,34 +57,12 @@ syntax_abstract_tree_t *make_leaf(syntax_tree_node_type type, string_t *value) {
     return tree;
 }
 
-int syntax_abstract_tree_height(syntax_abstract_tree_t *tree) {
-    if (tree == NULL) {
-        return 0;
-    } else {
-        int left_height = syntax_abstract_tree_height(tree->left);
-        int right_height = syntax_abstract_tree_height(tree->right);
-
-        return left_height > right_height ? left_height + 1 : right_height + 1;
-    }
-}
-
 void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree) {
-    int height = syntax_abstract_tree_height(tree);
-    int i;
-    for (i = 1; i <= height; i++) {
-        syntax_abstract_tree_print_level(output, tree, i);
-    }
-}
-
-void syntax_abstract_tree_print_level(FILE *output, syntax_abstract_tree_t *tree, int level) {
     if (tree == NULL) return;
 
-    if (level == 1) {
-        fprintf(output, "%d", tree->type);
-    } else if (level > 1) {
-        syntax_abstract_tree_print_level(output, tree->left, level - 1);
-        syntax_abstract_tree_print_level(output, tree->right, level - 1);
-    }
+    syntax_abstract_tree_print(output, tree->left);
+    fprintf(output, "%d ", tree->type);
+    syntax_abstract_tree_print(output, tree->right);
 }
 
 void expect_token(const char *msg, syntax_tree_token_type type) {

@@ -26,7 +26,7 @@ namespace ifj {
                 void IsSyntaxTreeCorrect(char *input, int n, ...) {
                     input_fd = fmemopen(input, strlen(input), "r");
 
-                    char output[n + 1];
+                    char output[100];
                     output_fd = fmemopen(output, sizeof(output) / sizeof(char), "w");
 
                     string_t *check_output = string_init("");
@@ -36,7 +36,8 @@ namespace ifj {
 
                     for (int i = 0; i < n; i++) {
                         int arg_token = va_arg(tokens, int);
-                        string_append_char(check_output, arg_token + '0');
+                        string_append_string(check_output, std::to_string(arg_token).c_str());
+                        string_append_char(check_output, ' ');
                     }
 
                     va_end(tokens);
@@ -48,20 +49,27 @@ namespace ifj {
                 }
             };
 
-            TEST_F(SyntaxAnalyzerTest, ArithmeticExpressionBasic) {
-                IsSyntaxTreeCorrect("1 + 2;", 4, SYN_NODE_SEQUENCE, SYN_NODE_ADD, SYN_NODE_INTEGER, SYN_NODE_INTEGER);
+            TEST_F(SyntaxAnalyzerTest, Assignment) {
+                IsSyntaxTreeCorrect("$a = 12 + 32;", 6, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER, SYN_NODE_ADD, SYN_NODE_INTEGER);
+            }
 
-                IsSyntaxTreeCorrect("4 - $a;", 4, SYN_NODE_SEQUENCE, SYN_NODE_SUB, SYN_NODE_INTEGER,
+            TEST_F(SyntaxAnalyzerTest, ArithmeticExpressionBasic) {
+                IsSyntaxTreeCorrect("1 + 2;", 4, SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_ADD, SYN_NODE_INTEGER);
+
+                IsSyntaxTreeCorrect("4 - $a;", 4, SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_SUB,
                                     SYN_NODE_IDENTIFIER);
 
-                IsSyntaxTreeCorrect("12 * 3;", 4, SYN_NODE_SEQUENCE, SYN_NODE_MUL, SYN_NODE_INTEGER, SYN_NODE_INTEGER);
+                IsSyntaxTreeCorrect("12 * 3;", 4, SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_MUL,
+                                    SYN_NODE_INTEGER);
 
-                IsSyntaxTreeCorrect("33 / 11;", 4, SYN_NODE_SEQUENCE, SYN_NODE_DIV, SYN_NODE_INTEGER, SYN_NODE_INTEGER);
+                IsSyntaxTreeCorrect("33 / 11;", 4, SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_DIV, SYN_NODE_INTEGER);
             }
 
             TEST_F(SyntaxAnalyzerTest, ArithmeticExpressionAdvanced) {
-                IsSyntaxTreeCorrect("1 + 2 * 3 / 12;", 8, SYN_NODE_SEQUENCE, SYN_NODE_ADD, SYN_NODE_INTEGER,
-                                    SYN_NODE_DIV, SYN_NODE_MUL, SYN_NODE_INTEGER, SYN_NODE_INTEGER, SYN_NODE_INTEGER);
+                IsSyntaxTreeCorrect("1 + 2 * 3 / 12;", 8, SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_ADD,
+                                    SYN_NODE_INTEGER, SYN_NODE_MUL, SYN_NODE_INTEGER, SYN_NODE_DIV,
+                                    SYN_NODE_INTEGER);
             }
         }
     }
