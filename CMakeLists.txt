@@ -21,6 +21,8 @@ add_executable(
         tests/main.cpp
         tests/string_test.cpp
         tests/lexical_fsm_test.cpp
+        tests/lexical_analyzer_test.cpp
+        tests/code_generator_test.cpp
 )
 
 target_link_libraries(
@@ -32,4 +34,4 @@ target_link_libraries(
 include(GoogleTest)
 gtest_discover_tests(AllTests)
 
-add_executable(ifj_proj src/main.c src/errors.c src/errors.h src/lexical_fsm.c src/lexical_fsm.h src/str.c src/str.h)
+add_executable(ifj_proj src/main.c src/errors.c src/errors.h src/lexical_fsm.c src/lexical_fsm.h src/str.c src/str.h src/code_generator.c src/code_generator_h)
