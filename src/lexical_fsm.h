@@ -127,6 +127,10 @@ typedef enum LEXICAL_FSM_STATES {
 
     // Strict-types state
     STRICT_TYPES_STATE,
+
+    // Comment states
+    COMMENT_STATE
+    MULTILINE_COMMENT_STATE,
 } LEXICAL_FSM_STATES;
 
 /**
