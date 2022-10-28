@@ -23,9 +23,9 @@ FILE *fd;
  * @brief structure with frames
  */
 typedef enum {
-    GF,
-    LF,
-    TF,
+    CODE_GENERATOR_GLOBAL_FRAME,
+    CODE_GENERATOR_LOCAL_FRAME,
+    CODE_GENERATOR_TEMPORARY_FRAME,
 } frames_t;
 
 /**
@@ -39,39 +39,39 @@ static const char *frames[] = {
  * @brief structure with instructions
  */
 typedef enum {
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-    IDIV,
-    ADDS,
-    SUBS,
-    MULS,
-    DIVS,
-    IDIVS,
-    LT,
-    GT,
-    EQ,
-    LTS,
-    GTS,
-    EQS,
-    NOTLT,
-    NOTGT,
-    NOTEQ,
-    AND,
-    OR,
-    NOT,
-    ANDS,
-    ORS,
-    NOTS,
-    INT2FLOATS,
-    FLOAT2INTS,
-    INT2CHARS,
-    STRI2INTS,
-    CONCAT,
-    STRLEN,
-    GETCHAR,
-    SETCHAR,
+    CODE_GEN_ADD_INSTRUCTION,
+    CODE_GEN_SUB_INSTRUCTION,
+    CODE_GEN_MUL_INSTRUCTION,
+    CODE_GEN_DIV_INSTRUCTION,
+    CODE_GEN_IDIV_INSTRUCTION,
+    CODE_GEN_ADDS_INSTRUCTION,
+    CODE_GEN_SUBS_INSTRUCTION,
+    CODE_GEN_MULS_INSTRUCTION,
+    CODE_GEN_DIVS_INSTRUCTION,
+    CODE_GEN_IDIVS_INSTRUCTION,
+    CODE_GEN_LT_INSTRUCTION,
+    CODE_GEN_GT_INSTRUCTION,
+    CODE_GEN_EQ_INSTRUCTION,
+    CODE_GEN_LTS_INSTRUCTION,
+    CODE_GEN_GTS_INSTRUCTION,
+    CODE_GEN_EQS_INSTRUCTION,
+    CODE_GEN_NOTLT_INSTRUCTION,
+    CODE_GEN_NOTGT_INSTRUCTION,
+    CODE_GEN_NOTEQ_INSTRUCTION,
+    CODE_GEN_AND_INSTRUCTION,
+    CODE_GEN_OR_INSTRUCTION,
+    CODE_GEN_NOT_INSTRUCTION,
+    CODE_GEN_ANDS_INSTRUCTION,
+    CODE_GEN_ORS_INSTRUCTION,
+    CODE_GEN_NOTS_INSTRUCTION,
+    CODE_GEN_INT2FLOATS_INSTRUCTION,
+    CODE_GEN_FLOAT2INTS_INSTRUCTION,
+    CODE_GEN_INT2CHARS_INSTRUCTION,
+    CODE_GEN_STRI2INTS_INSTRUCTION,
+    CODE_GEN_CONCAT_INSTRUCTION,
+    CODE_GEN_STRLEN_INSTRUCTION,
+    CODE_GEN_GETCHAR_INSTRUCTION,
+    CODE_GEN_SETCHAR_INSTRUCTION,
 } instructions_t;
 
 /**
@@ -136,8 +136,9 @@ void generate_pop_from_top(frames_t frame, char *variable);
 
 /**
  * @brief erases the data stack
+ * @param *frame variable frame
  */
-void generate_clear_stack();
+void generate_clear_stack(frames_t frame);
 
 /**
  * @brief function for choosing a float operation using a switch case
@@ -173,43 +174,51 @@ void generate_operation(instructions_t instruction, frames_t frame, char *result
 
 /**
  * @brief generate an integer to decimal conversion
+ * @param *frame variable frame
  */
-void generate_int_to_float();
+void generate_int_to_float(frames_t frame);
 
 /**
  * @brief generate a decimal to integer conversion
+ * @param frame symbol frame
  */
-void generate_float_to_int();
+void generate_float_to_int(frames_t frame);
 
 /**
  * @brief generate a decimal to string conversion
+ * @param *variable variable name
  */
-void generate_int_to_char();
+void generate_int_to_char(frames_t frame);
 
 /**
  * @brief generate a string to decimal conversion
+ * @param *symbol symbol name
  */
-void generate_string_to_int();
+void generate_string_to_int(frames_t frame);
 
 /**
  * @brief read string from standard input
+ * @param *frame variable frame
  */
-void generate_reads();
+void generate_reads(frames_t frame);
 
 /**
  * @brief read int from standard input
+ * @param frame variable frame
  */
-void generate_readi();
+void generate_readi(frames_t frame);
 
 /**
  * @brief read float from standard input
+ * @param frame variable frame
  */
-void generate_readf();
+void generate_readf(frames_t frame);
 
 /**
  * @brief print value to standard output
+ * @param frame symbol frame
  */
-void generate_write();
+void generate_write(frames_t frame);
 
 /**
  * @brief own substring function
