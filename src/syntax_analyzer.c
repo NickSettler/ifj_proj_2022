@@ -17,21 +17,29 @@ struct {
     int precedence;
     syntax_tree_node_type node_type;
 } attributes[] = {
-        {"EOF",     "End_of_file",      SYN_TOKEN_EOF,               false, false, false, -1, (syntax_tree_node_type) -1},
-        {"ID",      "Identifier",       SYN_TOKEN_IDENTIFIER,        false, false, false, -1, SYN_NODE_IDENTIFIER},
-        {"STRING",  "String",           SYN_TOKEN_STRING,            false, false, false, -1, SYN_NODE_STRING},
-        {"INTEGER", "Integer",          SYN_TOKEN_INTEGER,           false, false, false, -1, SYN_NODE_INTEGER},
-        {"FLOAT",   "Float",            SYN_TOKEN_FLOAT,             false, false, false, -1, SYN_NODE_FLOAT},
-        {"+",       "Op_add",           SYN_TOKEN_ADD,               false, true,  false, 12, SYN_NODE_ADD},
-        {"-",       "Op_sub",           SYN_TOKEN_SUB,               false, true,  false, 12, SYN_NODE_SUB},
-        {"*",       "Op_multiply",      SYN_TOKEN_MUL,               false, true,  false, 13, SYN_NODE_MUL},
-        {"/",       "Op_divide",        SYN_TOKEN_DIV,               false, true,  false, 13, SYN_NODE_DIV},
-        {"-",       "Op_negate",        SYN_TOKEN_NEGATE,            false, false, true,  14, SYN_NODE_NEGATE},
-        {"=",       "Op_Assign",        SYN_TOKEN_ASSIGN,            false, false, false, -1, SYN_NODE_ASSIGN},
-        {";",       "Semicolon",        SYN_TOKEN_SEMICOLON,         false, false, false, -1, (syntax_tree_node_type) -1},
-        {"if",      "Keyword_IF",       SYN_TOKEN_KEYWORD_IF,        false, false, false, -1, SYN_NODE_KEYWORD_IF},
-        {"(",       "LeftParenthesis",  SYN_TOKEN_LEFT_PARENTHESIS,  false, false, false, -1, (syntax_tree_node_type) -1},
-        {")",       "RightParenthesis", SYN_TOKEN_RIGHT_PARENTHESIS, false, false, false, -1, (syntax_tree_node_type) -1}
+        {"EOF",     "End_of_file",       SYN_TOKEN_EOF,                  false, false, false, -1, (syntax_tree_node_type) -1},
+        {"ID",      "Identifier",        SYN_TOKEN_IDENTIFIER,           false, false, false, -1, SYN_NODE_IDENTIFIER},
+        {"STRING",  "String",            SYN_TOKEN_STRING,               false, false, false, -1, SYN_NODE_STRING},
+        {"INTEGER", "Integer",           SYN_TOKEN_INTEGER,              false, false, false, -1, SYN_NODE_INTEGER},
+        {"FLOAT",   "Float",             SYN_TOKEN_FLOAT,                false, false, false, -1, SYN_NODE_FLOAT},
+        {"+",       "Op_add",            SYN_TOKEN_ADD,                  false, true,  false, 12, SYN_NODE_ADD},
+        {"-",       "Op_sub",            SYN_TOKEN_SUB,                  false, true,  false, 12, SYN_NODE_SUB},
+        {"*",       "Op_multiply",       SYN_TOKEN_MUL,                  false, true,  false, 13, SYN_NODE_MUL},
+        {"/",       "Op_divide",         SYN_TOKEN_DIV,                  false, true,  false, 13, SYN_NODE_DIV},
+        {"-",       "Op_negate",         SYN_TOKEN_NEGATE,               false, false, true,  14, SYN_NODE_NEGATE},
+        {"<",       "Op_less",           SYN_TOKEN_LESS,                 false, true,  false, 10, SYN_NODE_LESS},
+        {"<=",      "Op_lessequal",      SYN_TOKEN_LESS_EQUAL,           false, true,  false, 10, SYN_NODE_LESS_EQUAL},
+        {">",       "Op_greater",        SYN_TOKEN_GREATER,              false, true,  false, 10, SYN_NODE_GREATER},
+        {">=",      "Op_greaterequal",   SYN_TOKEN_GREATER_EQUAL,        false, true,  false, 10, SYN_NODE_GREATER_EQUAL},
+        {"==",      "Op_equal",          SYN_TOKEN_EQUAL,                false, true,  false, 9,  SYN_NODE_EQUAL},
+        {"!=",      "Op_not_equal",      SYN_TOKEN_NOT_EQUAL,            false, true,  false, 9,  SYN_NODE_NOT_EQUAL},
+        {"=",       "Op_Assign",         SYN_TOKEN_ASSIGN,               false, false, false, -1, SYN_NODE_ASSIGN},
+        {";",       "Semicolon",         SYN_TOKEN_SEMICOLON,            false, false, false, -1, (syntax_tree_node_type) -1},
+        {"if",      "Keyword_IF",        SYN_TOKEN_KEYWORD_IF,           false, false, false, -1, SYN_NODE_KEYWORD_IF},
+        {"(",       "LeftParenthesis",   SYN_TOKEN_LEFT_PARENTHESIS,     false, false, false, -1, (syntax_tree_node_type) -1},
+        {")",       "RightParenthesis",  SYN_TOKEN_RIGHT_PARENTHESIS,    false, false, false, -1, (syntax_tree_node_type) -1},
+        {"{",       "LeftCurlyBracket",  SYN_TOKEN_RIGHT_CURLY_BRACKETS, false, false, false, -1, (syntax_tree_node_type) -1},
+        {"}",       "RightCurlyBracket", SYN_TOKEN_RIGHT_CURLY_BRACKETS, false, false, false, -1, (syntax_tree_node_type) -1}
 };
 
 syntax_abstract_tree_t *
@@ -123,7 +131,7 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
 }
 
 syntax_abstract_tree_t *stmt(FILE *fd) {
-    syntax_abstract_tree_t *tree = NULL, *v, *e;
+    syntax_abstract_tree_t *tree = NULL, *v, *e, *s, *s2;
 
     switch (lexical_token->type) {
         case IDENTIFIER:
@@ -139,6 +147,21 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
         case INTEGER:
             tree = expression(fd, 0);
             expect_token("Expected semicolon", SYN_TOKEN_SEMICOLON);
+            lexical_token = get_token(fd);
+            break;
+        case KEYWORD_IF:
+            lexical_token = get_token(fd);
+            e = parenthesis_expression(fd);
+            s = stmt(fd);
+            tree = make_node(SYN_NODE_KEYWORD_IF, e, s);
+            break;
+        case LEFT_CURLY_BRACKETS:
+            expect_token("Right curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
+            lexical_token = get_token(fd);
+            while (lexical_token->type != RIGHT_CURLY_BRACKETS && lexical_token->type != END_OF_FILE) {
+                tree = make_node(SYN_NODE_SEQUENCE, tree, stmt(fd));
+            }
+            expect_token("Right curly brackets", SYN_TOKEN_RIGHT_CURLY_BRACKETS);
             lexical_token = get_token(fd);
             break;
         case END_OF_FILE:
@@ -182,6 +205,18 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_MUL;
         case DIVIDE:
             return SYN_TOKEN_DIV;
+        case LESS:
+            return SYN_TOKEN_LESS;
+        case LESS_EQUAL:
+            return SYN_TOKEN_LESS_EQUAL;
+        case GREATER:
+            return SYN_TOKEN_GREATER;
+        case GREATER_EQUAL:
+            return SYN_TOKEN_GREATER_EQUAL;
+        case EQUAL:
+            return SYN_TOKEN_EQUAL;
+        case NOT_EQUAL:
+            return SYN_TOKEN_NOT_EQUAL;
         case ASSIGN:
             return SYN_TOKEN_ASSIGN;
         case SEMICOLON:
@@ -190,6 +225,10 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_LEFT_PARENTHESIS;
         case RIGHT_PARENTHESIS:
             return SYN_TOKEN_RIGHT_PARENTHESIS;
+        case LEFT_CURLY_BRACKETS:
+            return SYN_TOKEN_LEFT_CURLY_BRACKETS;
+        case RIGHT_CURLY_BRACKETS:
+            return SYN_TOKEN_RIGHT_CURLY_BRACKETS;
         case KEYWORD_IF:
             return SYN_TOKEN_KEYWORD_IF;
         default:
