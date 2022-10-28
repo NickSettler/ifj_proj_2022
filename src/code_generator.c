@@ -38,28 +38,28 @@ void generate_pop_from_top(frames_t frame, char *variable) {
     fprintf(fd, "POPS %s@%s\n", frames[frame], variable);
 }
 
-void generate_clear_stack() {
+void generate_clear_stack(frames_t frame) {
     fprintf(fd, "LABEL clear_stack\n");
-    fprintf(fd, "MOVE GT@clear_var bool@true\n");
-    fprintf(fd, "JUMPIFEQ clear_stack_end GF@clear_top_var bool@true\n");
-    fprintf(fd, "POPS GT@_clear_stack\n");
+    fprintf(fd, "MOVE %s@clear_var bool@true\n", frames[frame]);
+    fprintf(fd, "JUMPIFEQ clear_stack_end %s@clear_top_var bool@true\n", frames[frame]);
+    fprintf(fd, "POPS %s@_clear_stack\n", frames[frame]);
     fprintf(fd, "JUMP clear_stack\n");
     fprintf(fd, "RETURN\n");
 }
 
 void generate_operation(instructions_t instruction, frames_t frame, char *result, char *symbol1, char *symbol2) {
-    if (instruction == NOTLT) {
+    if (instruction == CODE_GEN_NOTLT_INSTRUCTION) {
         fprintf(fd, "LT %s@%s %s@%s %s@%s\n", frames[frame], result, frames[frame], symbol1, frames[frame], symbol2);
         fprintf(fd, "NOT %s@%s %s@%s\n", frames[frame], result, frames[frame], result);
-    } else if (instruction == NOTGT) {
+    } else if (instruction == CODE_GEN_NOTGT_INSTRUCTION) {
         fprintf(fd, "GT %s@%s %s@%s %s@%s\n", frames[frame], result, frames[frame], symbol1, frames[frame], symbol2);
         fprintf(fd, "NOT %s@%s %s@%s\n", frames[frame], result, frames[frame], result);
-    } else if (instruction == NOTEQ) {
+    } else if (instruction == CODE_GEN_NOTEQ_INSTRUCTION) {
         fprintf(fd, "EQ %s@%s %s@%s %s@%s\n", frames[frame], result, frames[frame], symbol1, frames[frame], symbol2);
         fprintf(fd, "NOT %s@%s %s@%s\n", frames[frame], result, frames[frame], result);
-    } else if (instruction == NOT || instruction == NOTS || instruction == STRLEN || instruction == INT2FLOATS ||
-               instruction == FLOAT2INTS ||
-               instruction == INT2CHARS) {
+    } else if (instruction == CODE_GEN_NOT_INSTRUCTION || instruction == CODE_GEN_NOTS_INSTRUCTION ||
+               instruction == CODE_GEN_STRLEN_INSTRUCTION || instruction == CODE_GEN_INT2FLOATS_INSTRUCTION ||
+               instruction == CODE_GEN_FLOAT2INTS_INSTRUCTION || instruction == CODE_GEN_INT2CHARS_INSTRUCTION) {
         fprintf(fd, "%s %s@%s %s@%s\n", instructions[instruction], frames[frame], result, frames[frame], symbol1);
     } else {
         fprintf(fd, "%s %s@%s %s@%s %s@%s\n", instructions[instruction], frames[frame], result, frames[frame], symbol1,
@@ -67,119 +67,119 @@ void generate_operation(instructions_t instruction, frames_t frame, char *result
     }
 }
 
-void generate_int_to_float() {
+void generate_int_to_float(frames_t frame) {
     fprintf(fd, "LABEL float2int\n");
     fprintf(fd, "CREATEFRAME\n");
     fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR LF@retval1\n");
-    fprintf(fd, "MOVE LF@retval1 nil@nil\n");
-    fprintf(fd, "DEFVAR LF@float2int\n");
-    fprintf(fd, "MOVE LF@float2int LF@1\n");
-    fprintf(fd, "INT2FLOAT LF@retval1 LF@float2int\n");
+    fprintf(fd, "DEFVAR %s@retval1\n", frames[frame]);
+    fprintf(fd, "MOVE %s@retval1 nil@nil\n", frames[frame]);
+    fprintf(fd, "DEFVAR %s@float2int\n", frames[frame]);
+    fprintf(fd, "MOVE %s@float2int %s@1\n", frames[frame], frames[frame]);
+    fprintf(fd, "INT2FLOAT %s@retval1 %s@float2int\n", frames[frame], frames[frame]);
     fprintf(fd, "POPFRAME\n");
     fprintf(fd, "RETURN\n");
 }
 
-void generate_float_to_int() {
+void generate_float_to_int(frames_t frame) {
     fprintf(fd, "LABEL int2float\n");
     fprintf(fd, "CREATEFRAME\n");
     fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR LF@retval1\n");
-    fprintf(fd, "MOVE LF@retval1 nil@nil\n");
-    fprintf(fd, "DEFVAR LF@int2float\n");
-    fprintf(fd, "MOVE LF@int2float LF@1\n");
-    fprintf(fd, "FLOAT2INT LF@retval1 LF@int2float\n");
+    fprintf(fd, "DEFVAR %s@retval1\n", frames[frame]);
+    fprintf(fd, "MOVE %s@retval1 nil@nil\n", frames[frame]);
+    fprintf(fd, "DEFVAR %s@int2float\n", frames[frame]);
+    fprintf(fd, "MOVE %s@int2float %s@1\n", frames[frame], frames[frame]);
+    fprintf(fd, "FLOAT2INT %s@retval1 %s@int2float\n", frames[frame], frames[frame]);
     fprintf(fd, "POPFRAME\n");
     fprintf(fd, "RETURN\n");
 }
 
-void generate_int_to_char() {
+void generate_int_to_char(frames_t frame) {
     fprintf(fd, "LABEL int2char\n");
     fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR LF@retval1\n");
-    fprintf(fd, "MOVE LF@retval1 nil@nil\n");
-    fprintf(fd, "DEFVAR LF@i\n");
-    fprintf(fd, "MOVE LF@i LF@1\n");
-    fprintf(fd, "DEFVAR LF@i\n");
-    fprintf(fd, "MOVE LF@tmp nil@nil\n");
-    fprintf(fd, "TYPE LF@tmp LF@int\n");
-    fprintf(fd, "JUMPIFEQ error_label LF@tmp string@nil\n");
-    fprintf(fd, "LT LF@tmp LF@i int@0\n");
-    fprintf(fd, "JUMPIFEQ nil_return LF@tmp bool@true\n");
-    fprintf(fd, "GT LF@tmp LF@i int@255\n");
-    fprintf(fd, "JUMPIFEQ nil_return LF@tmp bool@true\n");
-    fprintf(fd, "INT2CHAR LF@retval1 LF@int\n");
+    fprintf(fd, "DEFVAR %s@retval1\n", frames[frame]);
+    fprintf(fd, "MOVE %s@retval1 nil@nil\n", frames[frame]);
+    fprintf(fd, "DEFVAR %s@i\n", frames[frame]);
+    fprintf(fd, "MOVE %s@i %s@1\n", frames[frame], frames[frame]);
+    fprintf(fd, "DEFVAR %s@i\n", frames[frame]);
+    fprintf(fd, "MOVE %s@tmp nil@nil\n", frames[frame]);
+    fprintf(fd, "TYPE %s@tmp %s@int\n", frames[frame], frames[frame]);
+    fprintf(fd, "JUMPIFEQ error_label %s@tmp string@nil\n", frames[frame]);
+    fprintf(fd, "LT %s@tmp %s@i int@0\n", frames[frame], frames[frame]);
+    fprintf(fd, "JUMPIFEQ nil_return %s@tmp bool@true\n", frames[frame]);
+    fprintf(fd, "GT %s@tmp %s@i int@255\n", frames[frame], frames[frame]);
+    fprintf(fd, "JUMPIFEQ nil_return %s@tmp bool@true\n", frames[frame]);
+    fprintf(fd, "INT2CHAR %s@retval1 %s@int\n", frames[frame], frames[frame]);
     fprintf(fd, "LABEL nil_return\n");
     fprintf(fd, "POPFRAME\n");
     fprintf(fd, "RETURN\n");
 }
 
-void generate_string_to_int() {
+void generate_string_to_int(frames_t frame) {
     fprintf(fd, "LABEL stri2int\n");
     fprintf(fd, "CREATEFRAME\n");
     fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR LF@s\n");
-    fprintf(fd, "MOVE LF@s LF@1\n");
-    fprintf(fd, "DEFVAR LF@i\n");
-    fprintf(fd, "MOVE LF@i LF@2\n");
-    fprintf(fd, "DEFVAR LF@lenght\n");
-    fprintf(fd, "MOVE LF@length nil@nil\n");
-    fprintf(fd, "DEFVAR LF@tmp\n");
-    fprintf(fd, "MOVE LF@tmp nil@nil\n");
-    fprintf(fd, "TYPE LF@tmp LF@s\n");
-    fprintf(fd, "JUMPIFEQ error_label LF@tmp string@nil\n");
-    fprintf(fd, "TYPE LF@tmp LF@i\n");
-    fprintf(fd, "JUMPIFEQ error_label LF@tmp string@nil\n");
-    fprintf(fd, "STRLEN LF@length LF@s\n");
-    fprintf(fd, "LT LF@tmp LF@i int@0\n");
-    fprintf(fd, "JUMPIFEQ nil_return LF@tmp bool@true\n");
-    fprintf(fd, "GT LF@tmp LF@i LF@length\n");
-    fprintf(fd, "JUMPIFEQ nil_return LF@tmp bool@true\n");
-    fprintf(fd, "STRI2INT LF@retval1 LF@s LF@i\n");
+    fprintf(fd, "DEFVAR %s@s\n", frames[frame]);
+    fprintf(fd, "MOVE %s@s %s@1\n", frames[frame], frames[frame]);
+    fprintf(fd, "DEFVAR %s@i\n", frames[frame]);
+    fprintf(fd, "MOVE %s@i %s@2\n", frames[frame], frames[frame]);
+    fprintf(fd, "DEFVAR %s@lenght\n", frames[frame]);
+    fprintf(fd, "MOVE %s@length nil@nil\n", frames[frame]);
+    fprintf(fd, "DEFVAR %s@tmp\n", frames[frame]);
+    fprintf(fd, "MOVE %s@tmp nil@nil\n", frames[frame]);
+    fprintf(fd, "TYPE %s@tmp %s@s\n", frames[frame], frames[frame]);
+    fprintf(fd, "JUMPIFEQ error_label %s@tmp string@nil\n", frames[frame]);
+    fprintf(fd, "TYPE %s@tmp %s@i\n", frames[frame], frames[frame]);
+    fprintf(fd, "JUMPIFEQ error_label %s@tmp string@nil\n", frames[frame]);
+    fprintf(fd, "STRLEN %s@length %s@s\n", frames[frame], frames[frame]);
+    fprintf(fd, "LT %s@tmp %s@i int@0\n", frames[frame], frames[frame]);
+    fprintf(fd, "JUMPIFEQ nil_return %s@tmp bool@true\n", frames[frame]);
+    fprintf(fd, "GT %s@tmp %s@i %s@length\n", frames[frame], frames[frame], frames[frame]);
+    fprintf(fd, "JUMPIFEQ nil_return %s@tmp bool@true\n", frames[frame]);
+    fprintf(fd, "STRI2INT %s@retval1 %s@s %s@i\n", frames[frame], frames[frame], frames[frame]);
     fprintf(fd, "LABEL nil_return\n");
     fprintf(fd, "POPFRAME\n");
     fprintf(fd, "RETURN\n");
 }
 
-void generate_reads() {
+void generate_reads(frames_t frame) {
     fprintf(fd, "LABEL reads\n");
     fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR LF@retval1\n");
-    fprintf(fd, "MOVE LF@retval1\n");
-    fprintf(fd, "READ LF@retval1 string\n");
+    fprintf(fd, "DEFVAR %s@retval1\n", frames[frame]);
+    fprintf(fd, "MOVE %s@retval1\n", frames[frame]);
+    fprintf(fd, "READ %s@retval1 string\n", frames[frame]);
     fprintf(fd, "POPFRAME\n");
     fprintf(fd, "RETURN\n");
 }
 
-void generate_readi() {
+void generate_readi(frames_t frame) {
     fprintf(fd, "LABEL readi\n");
     fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR LF@retval1\n");
-    fprintf(fd, "MOVE LF@retval1\n");
-    fprintf(fd, "READ LF@retval1 int\n");
+    fprintf(fd, "DEFVAR %s@retval1\n", frames[frame]);
+    fprintf(fd, "MOVE %s@retval1\n", frames[frame]);
+    fprintf(fd, "READ %s@retval1 int\n", frames[frame]);
     fprintf(fd, "POPFRAME\n");
     fprintf(fd, "RETURN\n");
 }
 
-void generate_readf() {
+void generate_readf(frames_t frame) {
     fprintf(fd, "LABEL readf\n");
     fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR LF@retval1\n");
-    fprintf(fd, "MOVE LF@retval1\n");
-    fprintf(fd, "READ LF@retval1 float\n");
+    fprintf(fd, "DEFVAR %s@retval1\n", frames[frame]);
+    fprintf(fd, "MOVE %s@retval1\n", frames[frame]);
+    fprintf(fd, "READ %s@retval1 float\n", frames[frame]);
     fprintf(fd, "POPFRAME\n");
     fprintf(fd, "RETURN\n");
 }
 
-void generate_write() {
+void generate_write(frames_t frame) {
     fprintf(fd, "LABEL write\n");
     fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR LF@write_to\n");
-    fprintf(fd, "DEFVAR LF@check_for_nil\n");
-    fprintf(fd, "POPS LF@write_to\n");
-    fprintf(fd, "TYPE LF@check_for_nil LF@write_to\n");
+    fprintf(fd, "DEFVAR %s@write_to\n", frames[frame]);
+    fprintf(fd, "DEFVAR %s@check_for_nil\n", frames[frame]);
+    fprintf(fd, "POPS %s@write_to\n", frames[frame]);
+    fprintf(fd, "TYPE %s@check_for_nil %s@write_to\n", frames[frame], frames[frame]);
     fprintf(fd, "JUMPIFEQ its_nil\n");
-    fprintf(fd, "WRITE LF@write_to\n");
+    fprintf(fd, "WRITE %s@write_to\n", frames[frame]);
     fprintf(fd, "POPFRAME\n");
     fprintf(fd, "RETURN\n");
     fprintf(fd, "LABEL its_nil\n");
