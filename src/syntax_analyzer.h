@@ -31,6 +31,9 @@ typedef enum {
     SYN_TOKEN_NEGATE,
     SYN_TOKEN_ASSIGN,
     SYN_TOKEN_SEMICOLON,
+    SYN_TOKEN_KEYWORD_IF,
+    SYN_TOKEN_LEFT_PARENTHESIS,
+    SYN_TOKEN_RIGHT_PARENTHESIS,
 } syntax_tree_token_type;
 
 typedef enum {
@@ -44,7 +47,8 @@ typedef enum {
     SYN_NODE_MUL,
     SYN_NODE_DIV,
     SYN_NODE_NEGATE,
-    SYN_NODE_ASSIGN
+    SYN_NODE_ASSIGN,
+    SYN_NODE_KEYWORD_IF
 } syntax_tree_node_type;
 
 typedef struct syntax_abstract_tree syntax_abstract_tree_t;
@@ -67,6 +71,8 @@ void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree);
 void expect_token(const char *msg, syntax_tree_token_type type);
 
 syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token);
+
+syntax_abstract_tree_t *parenthesis_expression(FILE *fd);
 
 syntax_abstract_tree_t *expression(FILE *fd, int precedence);
 

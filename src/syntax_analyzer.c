@@ -17,18 +17,21 @@ struct {
     int precedence;
     syntax_tree_node_type node_type;
 } attributes[] = {
-        {"EOF",     "End_of_file", SYN_TOKEN_EOF,        false, false, false, -1, (syntax_tree_node_type) -1},
-        {"ID",      "Identifier",  SYN_TOKEN_IDENTIFIER, false, false, false, -1, SYN_NODE_IDENTIFIER},
-        {"STRING",  "String",      SYN_TOKEN_STRING,     false, false, false, -1, SYN_NODE_STRING},
-        {"INTEGER", "Integer",     SYN_TOKEN_INTEGER,    false, false, false, -1, SYN_NODE_INTEGER},
-        {"FLOAT",   "Float",       SYN_TOKEN_FLOAT,      false, false, false, -1, SYN_NODE_FLOAT},
-        {"+",       "Op_add",      SYN_TOKEN_ADD,        false, true,  false, 12, SYN_NODE_ADD},
-        {"-",       "Op_sub",      SYN_TOKEN_SUB,        false, true,  false, 12, SYN_NODE_SUB},
-        {"*",       "Op_multiply", SYN_TOKEN_MUL,        false, true,  false, 13, SYN_NODE_MUL},
-        {"/",       "Op_divide",   SYN_TOKEN_DIV,        false, true,  false, 13, SYN_NODE_DIV},
-        {"-",       "Op_negate",   SYN_TOKEN_NEGATE,     false, false, true,  14, SYN_NODE_NEGATE},
-        {"=",       "Op_Assign",   SYN_TOKEN_ASSIGN,     false, false, false, -1, SYN_NODE_ASSIGN},
-        {";",       "Semicolon",   SYN_TOKEN_SEMICOLON,  false, false, false, -1, (syntax_tree_node_type) -1}
+        {"EOF",     "End_of_file",      SYN_TOKEN_EOF,               false, false, false, -1, (syntax_tree_node_type) -1},
+        {"ID",      "Identifier",       SYN_TOKEN_IDENTIFIER,        false, false, false, -1, SYN_NODE_IDENTIFIER},
+        {"STRING",  "String",           SYN_TOKEN_STRING,            false, false, false, -1, SYN_NODE_STRING},
+        {"INTEGER", "Integer",          SYN_TOKEN_INTEGER,           false, false, false, -1, SYN_NODE_INTEGER},
+        {"FLOAT",   "Float",            SYN_TOKEN_FLOAT,             false, false, false, -1, SYN_NODE_FLOAT},
+        {"+",       "Op_add",           SYN_TOKEN_ADD,               false, true,  false, 12, SYN_NODE_ADD},
+        {"-",       "Op_sub",           SYN_TOKEN_SUB,               false, true,  false, 12, SYN_NODE_SUB},
+        {"*",       "Op_multiply",      SYN_TOKEN_MUL,               false, true,  false, 13, SYN_NODE_MUL},
+        {"/",       "Op_divide",        SYN_TOKEN_DIV,               false, true,  false, 13, SYN_NODE_DIV},
+        {"-",       "Op_negate",        SYN_TOKEN_NEGATE,            false, false, true,  14, SYN_NODE_NEGATE},
+        {"=",       "Op_Assign",        SYN_TOKEN_ASSIGN,            false, false, false, -1, SYN_NODE_ASSIGN},
+        {";",       "Semicolon",        SYN_TOKEN_SEMICOLON,         false, false, false, -1, (syntax_tree_node_type) -1},
+        {"if",      "Keyword_IF",       SYN_TOKEN_KEYWORD_IF,        false, false, false, -1, SYN_NODE_KEYWORD_IF},
+        {"(",       "LeftParenthesis",  SYN_TOKEN_LEFT_PARENTHESIS,  false, false, false, -1, (syntax_tree_node_type) -1},
+        {")",       "RightParenthesis", SYN_TOKEN_RIGHT_PARENTHESIS, false, false, false, -1, (syntax_tree_node_type) -1}
 };
 
 syntax_abstract_tree_t *
@@ -72,10 +75,22 @@ void expect_token(const char *msg, syntax_tree_token_type type) {
     }
 }
 
+syntax_abstract_tree_t *parenthesis_expression(FILE *fd) {
+    expect_token("Left parenthesis", SYN_TOKEN_LEFT_PARENTHESIS);
+    lexical_token = get_token(fd);
+    syntax_abstract_tree_t *tree = expression(fd, 0);
+    expect_token("Right parenthesis", SYN_TOKEN_RIGHT_PARENTHESIS);
+    lexical_token = get_token(fd);
+    return tree;
+}
+
 syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
     syntax_abstract_tree_t *x = NULL, *node;
 
     switch (lexical_token->type) {
+        case LEFT_PARENTHESIS:
+            x = parenthesis_expression(fd);
+            break;
         case IDENTIFIER:
             x = make_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
             lexical_token = get_token(fd);
@@ -171,6 +186,12 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_ASSIGN;
         case SEMICOLON:
             return SYN_TOKEN_SEMICOLON;
+        case LEFT_PARENTHESIS:
+            return SYN_TOKEN_LEFT_PARENTHESIS;
+        case RIGHT_PARENTHESIS:
+            return SYN_TOKEN_RIGHT_PARENTHESIS;
+        case KEYWORD_IF:
+            return SYN_TOKEN_KEYWORD_IF;
         default:
             return (syntax_tree_token_type) -1;
     }
