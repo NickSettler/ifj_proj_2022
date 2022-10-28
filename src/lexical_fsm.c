@@ -49,13 +49,26 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                         state = STRING_STATE;
                         string_append_char(token, current_char);
                         break;
+                    case '#' :
+                        state = COMMENT_STATE
+                    case '/':
+                        string_append_char(token, current_char);
+                        current_char = (char) getc(fd);
+                        if (current_char == '*')
+                            state = MULTILINE_COMMENT_STATE
+                        else if (current_char == '/') {
+                            state = COMMENT_STATE
+
+                        } else {
+                            state = ARITHMETIC_STATE;
+                            ungetc(current_char, fd)
+                        }
+                        break;
                     case '+':
                     case '-':
                     case '*':
-                    case '/':
                         state = ARITHMETIC_STATE;
                         string_append_char(token, current_char);
-                        break;
                     case '&':
                     case '|':
                     case '!':
@@ -167,9 +180,8 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 break;
             case STRICT_TYPES_STATE:
                 if (current_char == 's' || current_char == 't' || current_char == 'r' ||
-                    current_char == 'i' || current_char == 'c' || current_char == 'e' ||
-                    current_char == 't' || current_char == 'y' || current_char == 'p' ||
-                    current_char == 'e' || current_char == 's') {
+                    current_char == 'c' || current_char == 'e' ||
+                    current_char == 'y' || current_char == 'p') {
                     string_append_char(token, current_char);
                 } else {
                     if (!strcmp(token->value, "strict_types")) {
@@ -289,6 +301,20 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     case STRING_ESCAPE_STATE:
                         string_append_char(token, current_char);
                     state = STRING_STATE;
+                    break;
+                    case COMMENT_STATE:
+                        if (current_char == '\n' || current_char == '\0' || current_char == EOF) {
+                            state = START;
+                        }
+                    break;
+                    case MULTILINE_COMMENT_STATE:
+                        if (current_char == '*') {
+                            current_char = (char) getc(fd);
+                            if (current_char == '/') {
+                                state = START;
+                            } else
+                                ungetc(current_char, fd);
+                        }
                     break;
                     default:
                         break;
