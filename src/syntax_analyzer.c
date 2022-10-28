@@ -87,6 +87,13 @@ void syntax_abstract_tree_print_level(FILE *output, syntax_abstract_tree_t *tree
     }
 }
 
+void expect_token(const char *msg, syntax_tree_token_type type) {
+    if (get_token_type(lexical_token->type) != type) {
+        SYNTAX_ERROR("%s Expecting %s, found: %s\n", msg, attributes[type].text,
+                     attributes[get_token_type(lexical_token->type)].text);
+    }
+}
+
 syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
     syntax_abstract_tree_t *x = NULL, *node;
 
@@ -100,7 +107,7 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
             lexical_token = get_token(fd);
             break;
         default:
-        SYNTAX_ERROR("Expected expression, got: %s", lexical_token->value);
+        SYNTAX_ERROR("Expected expression, got: %s\n", lexical_token->value);
     }
 
 
@@ -129,28 +136,22 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
         case IDENTIFIER:
             v = make_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
             lexical_token = get_token(fd);
-            if (lexical_token->type != ASSIGN) {
-                SYNTAX_ERROR("Expected assignment");
-            }
+            expect_token("Expected assignment operator", SYN_TOKEN_ASSIGN);
             lexical_token = get_token(fd);
             e = expression(fd, 0);
             tree = make_node(SYN_NODE_ASSIGN, v, e);
-            if (lexical_token->type != SEMICOLON) {
-                SYNTAX_ERROR("Expected semicolon");
-            }
+            expect_token("Expected semicolon", SYN_TOKEN_SEMICOLON);
             lexical_token = get_token(fd);
             break;
         case INTEGER:
             tree = expression(fd, 0);
-            if (lexical_token->type != SEMICOLON) {
-                SYNTAX_ERROR("Expected semicolon");
-            }
+            expect_token("Expected semicolon", SYN_TOKEN_SEMICOLON);
             lexical_token = get_token(fd);
             break;
         case END_OF_FILE:
             break;
         default:
-        SYNTAX_ERROR("Expected expression, got: %s", lexical_token->value);
+        SYNTAX_ERROR("Expected expression, got: %s\n", lexical_token->value);
     }
 
     return tree;

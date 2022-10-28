@@ -68,6 +68,8 @@ void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree);
 
 void syntax_abstract_tree_print_level(FILE *output, syntax_abstract_tree_t *tree, int level);
 
+void expect_token(const char *msg, syntax_tree_token_type type);
+
 syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token);
 
 syntax_abstract_tree_t *expression(FILE *fd, int precedence);
