@@ -10,6 +10,7 @@
 
 #include "str.h"
 #include <stdio.h>
+#include <stdarg.h>
 
 string_t *string_base_init() {
     string_t *string = (string_t *) malloc(sizeof(string_t));
@@ -55,14 +56,23 @@ void string_append_char(string_t *str, char c) {
     str->value[str->length] = '\0';
 }
 
-void string_append_string(string_t *str, const char *value) {
+void string_append_string(string_t *str, const char *value, ...) {
     if (str == NULL || value == NULL)
         return;
 
-    size_t value_length = strlen(value);
+    va_list args;
+    va_start(args, value);
 
-    if (str->length + value_length + 1 >= str->capacity) {
-        size_t new_capacity = str->capacity + value_length + STRING_ALLOCATION_SIZE;
+    char *extra_value = (char *) malloc(sizeof(char) * strlen(value));
+
+    vsprintf(extra_value, value, args);
+
+    va_end(args);
+
+    size_t new_length = strlen(extra_value);
+
+    if (str->length + new_length >= str->capacity) {
+        size_t new_capacity = str->capacity + new_length;
         char *new_value = (char *) realloc(str->value, new_capacity);
         if (new_value == NULL)
             return;
@@ -70,9 +80,11 @@ void string_append_string(string_t *str, const char *value) {
         str->value = new_value;
         str->capacity = new_capacity;
     }
-    strcat(str->value, value);
-    str->length += value_length;
-    str->value[str->length] = '\0';
+
+    strcat(str->value, extra_value);
+    str->length += new_length;
+
+    free(extra_value);
 }
 
 void string_clear(string_t *str) {

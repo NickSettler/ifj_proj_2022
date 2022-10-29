@@ -26,6 +26,9 @@ namespace ifj {
                 string_t *str = string_init("Hello");
                 string_append_string(str, " world");
                 EXPECT_STREQ(str->value, "Hello world");
+
+                string_append_string(str, " %d", 123);
+                EXPECT_STREQ(str->value, "Hello world 123");
             }
 
             TEST(String, Clear) {
