@@ -13,18 +13,15 @@ namespace ifj {
         namespace {
             class SyntaxAnalyzerTest : public ::testing::Test {
             protected:
-                FILE *input_fd{};
                 FILE *output_fd{};
 
                 SyntaxAnalyzerTest() = default;
 
                 ~SyntaxAnalyzerTest() override {
-                    fclose(input_fd);
+                    fclose(output_fd);
                 }
 
                 void IsSyntaxTreeCorrect(char *input, const std::vector<int> &expected) {
-                    input_fd = fmemopen(input, strlen(input), "r");
-
                     std::string expected_str;
 
                     for (auto &i: expected)
@@ -34,7 +31,7 @@ namespace ifj {
                     output_fd = fmemopen(actual, 1000, "w");
                     setbuffer(output_fd, actual, 1000);
 
-                    syntax_abstract_tree_t *tree = load_syntax_tree(input_fd);
+                    syntax_abstract_tree_t *tree = load_syntax_tree(test_lex_input(input));
                     syntax_abstract_tree_print(output_fd, tree);
 
                     EXPECT_STREQ(expected_str.c_str(), actual);
