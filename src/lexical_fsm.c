@@ -52,23 +52,13 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     case '#' :
                         state = COMMENT_STATE;
                         break;
-                    case '/':
-                        current_char = (char) getc(fd);
-                        if (current_char == '*')
-                            state = MULTILINE_COMMENT_STATE;
-                        else if (current_char == '/') {
-                            state = COMMENT_STATE;
-                        } else {
-                            string_append_char(token, current_char);
-                            state = ARITHMETIC_STATE;
-                            ungetc(current_char, fd);
-                        }
-                        break;
                     case '+':
                     case '-':
                     case '*':
+                    case '/':
                         state = ARITHMETIC_STATE;
                         string_append_char(token, current_char);
+                        break;
                     case '&':
                     case '|':
                     case '!':
@@ -209,6 +199,18 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     (!strcmp(token->value, "+") && current_char == '+') ||
                     (!strcmp(token->value, "-") && current_char == '-')) {
                     string_append_char(token, current_char);
+                } else if (!strcmp(token->value, "/")) {
+                    switch (current_char) {
+                        case '/':
+                        case '*':
+                            string_append_char(token, current_char);
+                            state = current_char == '/' ? COMMENT_STATE : MULTILINE_COMMENT_STATE;
+                            break;
+                        default:
+                            state = START;
+                            ungetc(current_char, fd);
+                            return DIVIDE;
+                    }
                 } else {
                     state = START;
 
