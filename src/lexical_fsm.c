@@ -61,7 +61,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                         } else {
                             string_append_char(token, current_char);
                             state = ARITHMETIC_STATE;
-                            ungetc(current_char, fd)
+                            ungetc(current_char, fd);
                         }
                         break;
                     case '+':

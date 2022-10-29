@@ -438,7 +438,7 @@ namespace ifj {
                                (lexical_token_t) {PLUS, "+"},
                                (lexical_token_t) {IDENTIFIER, "$b"}
                 );
-                IsStackCorrect( "$a = -(4 + $b) + (-(-func1()+(-2 * sum($c, 2))))", 30,
+                IsStackCorrect("$a = -(4 + $b) + (-(-func1()+(-2 * sum($c, 2))))", 30,
                                (lexical_token_t) {IDENTIFIER, "$a"},
                                (lexical_token_t) {ASSIGN, "="},
                                (lexical_token_t) {MINUS, "-"},
@@ -472,8 +472,9 @@ namespace ifj {
 
                 );
             }
+
             TEST_F(LexicalAnalyzerTest, Comments) {
-                isStackCorrect("$a = 5 // double-slash comment\n"
+                IsStackCorrect("$a = 5 // double-slash comment\n"
                                "$b = 6 /* comment\n new-line comment*/\n"
                                "$c = 7 # sharp comment", 9,
                                (lexical_token_t) {IDENTIFIER, "$a"},
