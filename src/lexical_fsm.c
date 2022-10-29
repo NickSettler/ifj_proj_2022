@@ -190,135 +190,136 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     state = START;
                     ungetc(current_char, fd);
                     return KEYWORD_STRICT_TYPES;
-                    break;
-                    case EQUAL_STATE:
-                        if (current_char == '=')
-                            string_append_char(token, current_char);
-                        else {
-                            state = START;
-                            ungetc(current_char, fd);
-
-                            if (!strcmp(token->value, "=")) return ASSIGN;
-                            else if (!strcmp(token->value, "==")) return EQUAL;
-                            else if (!strcmp(token->value, "!=")) return NOT_EQUAL;
-                            else if (!strcmp(token->value, "===")) return TYPED_EQUAL;
-                            else if (!strcmp(token->value, "!==")) return TYPED_NOT_EQUAL;
-                        }
-                    break;
-                    case ARITHMETIC_STATE:
-                        if (current_char == '=' ||
-                            (!strcmp(token->value, "+") && current_char == '+') ||
-                            (!strcmp(token->value, "-") && current_char == '-')) {
-                            string_append_char(token, current_char);
-                        } else {
-                            state = START;
-
-                            if (current_char != '+' && current_char != '-' && current_char != '*' &&
-                                current_char != '/') {
-                                ungetc(current_char, fd);
-                            }
-
-                            if (!strcmp(token->value, "+")) return PLUS;
-                            else if (!strcmp(token->value, "-")) return MINUS;
-                            else if (!strcmp(token->value, "*")) return MULTIPLY;
-                            else if (!strcmp(token->value, "/")) return DIVIDE;
-                            else if (!strcmp(token->value, "+=")) return PLUS_ASSIGN;
-                            else if (!strcmp(token->value, "-=")) return MINUS_ASSIGN;
-                            else if (!strcmp(token->value, "*=")) return MULTIPLY_ASSIGN;
-                            else if (!strcmp(token->value, "/=")) return DIVIDE_ASSIGN;
-                            else if (!strcmp(token->value, "--")) return DECREMENT;
-                            else if (!strcmp(token->value, "++")) return INCREMENT;
-                        }
-                    break;
-                    case LOGICAL_STATE:
-                        if ((!strcmp(token->value, "&") && current_char == '&') ||
-                            (!strcmp(token->value, "|") && current_char == '|')) {
-                            string_append_char(token, current_char);
-                        } else {
-                            state = START;
-                            ungetc(current_char, fd);
-
-                            if (!strcmp(token->value, "!")) {
-                                if (current_char == '=') state = EQUAL_STATE;
-                                else return LOGICAL_NOT;
-                            } else if (!strcmp(token->value, "&&")) return LOGICAL_AND;
-                            else if (!strcmp(token->value, "||")) return LOGICAL_OR;
-                        }
-                    break;
-                    case SQUARE_PARENTHESIS_STATE:
-                        if (current_char == '=' ||
-                            (!strcmp(token->value, "<") && current_char == '?')) {
-                            string_append_char(token, current_char);
-                        } else {
-                            state = START;
-
-                            if (!strcmp(token->value, "<")) return LESS;
-                            else if (!strcmp(token->value, ">")) return GREATER;
-                            else if (!strcmp(token->value, "<=")) return LESS_EQUAL;
-                            else if (!strcmp(token->value, ">=")) return GREATER_EQUAL;
-                            else if (!strcmp(token->value, "<?")) {
-                                state = PHP_BRACKET_STATE;
-                                ungetc(current_char, fd);
-                            };
-                        }
-                    break;
-                    case INTEGER_STATE:
-                        if (isdigit(current_char)) {
-                            string_append_char(token, current_char);
-                        } else if (current_char == '.') {
-                            state = FLOAT_STATE;
-                            string_append_char(token, current_char);
-                        } else {
-                            // TODO handle Lexical error (integer must not contain any other characters)
-                            state = START;
-                            ungetc(current_char, fd);
-                            return INTEGER;
-                        }
-                    break;
-                    case FLOAT_STATE:
-                        if (isdigit(current_char)) {
-                            string_append_char(token, current_char);
-                        } else {
-                            // TODO handle Lexical error (float must not contain any other characters)
-                            state = START;
-                            ungetc(current_char, fd);
-                            return FLOAT;
-                        }
-                    break;
-                    case STRING_STATE:
-                        if (current_char == '"') {
-                            state = START;
-                            string_append_char(token, current_char);
-                            return STRING;
-                        } else if (current_char == '\\') {
-                            state = STRING_ESCAPE_STATE;
-                            string_append_char(token, current_char);
-                        } else {
-                            state = STRING_STATE;
-                            string_append_char(token, current_char);
-                        }
-                    break;
-                    case STRING_ESCAPE_STATE:
-                        string_append_char(token, current_char);
-                    state = STRING_STATE;
-                    break;
-                    case COMMENT_STATE:
-                        if (current_char == '\n' || current_char == '\0' || current_char == EOF) {
-                            state = START;
-                        }
-                    break;
-                    case MULTILINE_COMMENT_STATE:
-                        if (current_char == '*') {
-                            current_char = (char) getc(fd);
-                            if (current_char == '/') {
-                                state = START;
-                            } else
-                                ungetc(current_char, fd);
-                        }
-                    break;
-                    default:
-                        break;
                 }
+                break;
+            case EQUAL_STATE:
+                if (current_char == '=')
+                    string_append_char(token, current_char);
+                else {
+                    state = START;
+                    ungetc(current_char, fd);
+
+                    if (!strcmp(token->value, "=")) return ASSIGN;
+                    else if (!strcmp(token->value, "==")) return EQUAL;
+                    else if (!strcmp(token->value, "!=")) return NOT_EQUAL;
+                    else if (!strcmp(token->value, "===")) return TYPED_EQUAL;
+                    else if (!strcmp(token->value, "!==")) return TYPED_NOT_EQUAL;
+                }
+                break;
+            case ARITHMETIC_STATE:
+                if (current_char == '=' ||
+                    (!strcmp(token->value, "+") && current_char == '+') ||
+                    (!strcmp(token->value, "-") && current_char == '-')) {
+                    string_append_char(token, current_char);
+                } else {
+                    state = START;
+
+                    if (current_char != '+' && current_char != '-' && current_char != '*' &&
+                        current_char != '/') {
+                        ungetc(current_char, fd);
+                    }
+
+                    if (!strcmp(token->value, "+")) return PLUS;
+                    else if (!strcmp(token->value, "-")) return MINUS;
+                    else if (!strcmp(token->value, "*")) return MULTIPLY;
+                    else if (!strcmp(token->value, "/")) return DIVIDE;
+                    else if (!strcmp(token->value, "+=")) return PLUS_ASSIGN;
+                    else if (!strcmp(token->value, "-=")) return MINUS_ASSIGN;
+                    else if (!strcmp(token->value, "*=")) return MULTIPLY_ASSIGN;
+                    else if (!strcmp(token->value, "/=")) return DIVIDE_ASSIGN;
+                    else if (!strcmp(token->value, "--")) return DECREMENT;
+                    else if (!strcmp(token->value, "++")) return INCREMENT;
+                }
+                break;
+            case LOGICAL_STATE:
+                if ((!strcmp(token->value, "&") && current_char == '&') ||
+                    (!strcmp(token->value, "|") && current_char == '|')) {
+                    string_append_char(token, current_char);
+                } else {
+                    state = START;
+                    ungetc(current_char, fd);
+
+                    if (!strcmp(token->value, "!")) {
+                        if (current_char == '=') state = EQUAL_STATE;
+                        else return LOGICAL_NOT;
+                    } else if (!strcmp(token->value, "&&")) return LOGICAL_AND;
+                    else if (!strcmp(token->value, "||")) return LOGICAL_OR;
+                }
+                break;
+            case SQUARE_PARENTHESIS_STATE:
+                if (current_char == '=' ||
+                    (!strcmp(token->value, "<") && current_char == '?')) {
+                    string_append_char(token, current_char);
+                } else {
+                    state = START;
+
+                    if (!strcmp(token->value, "<")) return LESS;
+                    else if (!strcmp(token->value, ">")) return GREATER;
+                    else if (!strcmp(token->value, "<=")) return LESS_EQUAL;
+                    else if (!strcmp(token->value, ">=")) return GREATER_EQUAL;
+                    else if (!strcmp(token->value, "<?")) {
+                        state = PHP_BRACKET_STATE;
+                        ungetc(current_char, fd);
+                    };
+                }
+                break;
+            case INTEGER_STATE:
+                if (isdigit(current_char)) {
+                    string_append_char(token, current_char);
+                } else if (current_char == '.') {
+                    state = FLOAT_STATE;
+                    string_append_char(token, current_char);
+                } else {
+                    // TODO handle Lexical error (integer must not contain any other characters)
+                    state = START;
+                    ungetc(current_char, fd);
+                    return INTEGER;
+                }
+                break;
+            case FLOAT_STATE:
+                if (isdigit(current_char)) {
+                    string_append_char(token, current_char);
+                } else {
+                    // TODO handle Lexical error (float must not contain any other characters)
+                    state = START;
+                    ungetc(current_char, fd);
+                    return FLOAT;
+                }
+                break;
+            case STRING_STATE:
+                if (current_char == '"') {
+                    state = START;
+                    string_append_char(token, current_char);
+                    return STRING;
+                } else if (current_char == '\\') {
+                    state = STRING_ESCAPE_STATE;
+                    string_append_char(token, current_char);
+                } else {
+                    state = STRING_STATE;
+                    string_append_char(token, current_char);
+                }
+                break;
+            case STRING_ESCAPE_STATE:
+                string_append_char(token, current_char);
+                state = STRING_STATE;
+                break;
+            case COMMENT_STATE:
+                if (current_char == '\n' || current_char == '\0' || current_char == EOF) {
+                    state = START;
+                }
+                break;
+            case MULTILINE_COMMENT_STATE:
+                if (current_char == '*') {
+                    current_char = (char) getc(fd);
+                    if (current_char == '/') {
+                        state = START;
+                    } else
+                        ungetc(current_char, fd);
+                }
+                break;
+            default:
+                break;
+
         }
 
         current_char = getc(fd);
