@@ -135,14 +135,12 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, "void")) keyword = KEYWORD_VOID;
                     else if (!strcmp(token->value, "declare")) keyword = KEYWORD_DECLARE;
                     else if (!strcmp(token->value, "?>")) keyword = CLOSE_PHP_BRACKET;
-                    else if (!strcmp(token->value, "declare")) {
-                        keyword = KEYWORD_DECLARE;
-                        state = STRICT_TYPES_STATE;
-                        break;
+
+                    if (keyword != -1) {
+                        state = keyword == KEYWORD_DECLARE ? STRICT_TYPES_STATE : START;
+                    } else {
+                        state = IDENTIFIER_STATE;
                     }
-
-
-                    state = keyword != -1 ? START : IDENTIFIER_STATE;
                     ungetc(current_char, fd);
                     if (keyword != -1) return (LEXICAL_FSM_TOKENS) keyword;
                 }
@@ -214,8 +212,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 } else {
                     state = START;
 
-                    if (current_char != '+' && current_char != '-' && current_char != '*' &&
-                        current_char != '/') {
+                    if (current_char != '+' && current_char != '-' && current_char != '*' && current_char != '/') {
                         ungetc(current_char, fd);
                     }
 
@@ -319,7 +316,6 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 break;
             default:
                 break;
-
         }
 
         current_char = getc(fd);
