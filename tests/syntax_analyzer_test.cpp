@@ -32,6 +32,7 @@ namespace ifj {
 
                     char *actual = (char *) malloc(1000);
                     output_fd = fmemopen(actual, 1000, "w");
+                    setbuffer(output_fd, actual, 1000);
 
                     syntax_abstract_tree_t *tree = load_syntax_tree(input_fd);
                     syntax_abstract_tree_print(output_fd, tree);
