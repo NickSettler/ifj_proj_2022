@@ -85,8 +85,6 @@ void string_append_string(string_t *str, const char *value, ...) {
     str->length += new_length;
 
     free(extra_value);
-
-    str->value[str->length] = '\0';
 }
 
 void string_clear(string_t *str) {
