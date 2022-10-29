@@ -24,7 +24,7 @@ namespace ifj {
                     }
                 }
 
-                void IsSyntaxTreeCorrect(char *input, std::vector<int> expected_output) {
+                void IsSyntaxTreeCorrect(char *input, const std::vector<int> &expected_output) {
                     std::string expected_str;
 
                     for (auto &str: expected_output)
