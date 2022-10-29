@@ -25,13 +25,13 @@ namespace ifj {
                 void IsSyntaxTreeCorrect(char *input, const std::vector<int> &expected) {
                     input_fd = fmemopen(input, strlen(input), "r");
 
-                    char output[100];
-                    output_fd = fmemopen(output, sizeof(output) / sizeof(char), "w");
-
                     std::string expected_str;
 
                     for (auto &i: expected)
                         expected_str += std::to_string(i) + " ";
+
+                    char *output = (char *) malloc(expected_str.length() + 1);
+                    output_fd = fmemopen(output, expected_str.length(), "wb");
 
 
                     syntax_abstract_tree_t *tree = load_syntax_tree(input_fd);
