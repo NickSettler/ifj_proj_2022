@@ -14,10 +14,16 @@
 #include <stdbool.h>
 #include "lexical_fsm.h"
 
+/**
+ * Syntax non-terminal symbols enumeration
+ */
 typedef enum {
     PROGRAM,
 } syntax_non_terminal_t;
 
+/**
+ * Syntax token type enumeration
+ */
 typedef enum {
     SYN_TOKEN_EOF,
     SYN_TOKEN_IDENTIFIER,
@@ -44,6 +50,9 @@ typedef enum {
     SYN_TOKEN_RIGHT_CURLY_BRACKETS,
 } syntax_tree_token_type;
 
+/**
+ * Syntax tree node enumeration
+ */
 typedef enum {
     SYN_NODE_IDENTIFIER,
     SYN_NODE_STRING,
@@ -66,6 +75,22 @@ typedef enum {
 } syntax_tree_node_type;
 
 typedef struct syntax_abstract_tree syntax_abstract_tree_t;
+/**
+ * @struct syntax_ast_t
+ * Syntax abstract tree structure
+ *
+ * @var syntax_ast_t::type
+ * Type of the node
+ *
+ * @var syntax_ast_t::left
+ * Left child node
+ *
+ * @var syntax_ast_t::right
+ * Right child node
+ *
+ * @var syntax_ast_t::value
+ * Value of the node
+ */
 struct syntax_abstract_tree {
     syntax_tree_node_type type;
     syntax_abstract_tree_t *left;
@@ -75,23 +100,72 @@ struct syntax_abstract_tree {
 
 static lexical_token_t *lexical_token;
 
+/**
+ * Makes a new syntax abstract tree node
+ * @param type Type of the node
+ * @param left Left child
+ * @param right Right child
+ * @return New syntax abstract tree node
+ */
 syntax_abstract_tree_t *
 make_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, syntax_abstract_tree_t *right);
 
+/**
+ * Makes a new syntax abstract tree node without children
+ * @param type Type of the node
+ * @param value Value of the node
+ * @return New syntax abstract tree node
+ */
 syntax_abstract_tree_t *make_leaf(syntax_tree_node_type type, string_t *value);
 
+/**
+ * Prints the syntax abstract tree using the inorder traversal
+ * @param output Output file stream
+ * @param tree Syntax abstract tree
+ */
 void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree);
 
+/**
+ * Checks if the token matches the expected token, otherwise throws an error
+ * @param msg Error message
+ * @param type Expected token type
+ */
 void expect_token(const char *msg, syntax_tree_token_type type);
 
+/**
+ * Converts lexical analyzer token to syntax analyzer token
+ * @param token Lexical analyzer token
+ * @return Syntax analyzer token
+ */
 syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token);
 
+/**
+ * Parses expression in brackets
+ * @param fd File descriptor
+ * @return Syntax abstract tree
+ */
 syntax_abstract_tree_t *parenthesis_expression(FILE *fd);
 
+/**
+ * Parses expression
+ * @param fd File descriptor
+ * @param precedence Precedence
+ * @return Syntax abstract tree
+ */
 syntax_abstract_tree_t *expression(FILE *fd, int precedence);
 
+/**
+ * Parses statement non-terminal
+ * @param fd File descriptor
+ * @return Syntax abstract tree
+ */
 syntax_abstract_tree_t *stmt(FILE *fd);
 
+/**
+ * Parses all tree from file stream
+ * @param fd File descriptor
+ * @return Syntax abstract tree
+ */
 syntax_abstract_tree_t *load_syntax_tree(FILE *fd);
 
 #endif //IFJ_PROJ_SYNTAX_ANALYZER_H
