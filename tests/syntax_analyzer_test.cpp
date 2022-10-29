@@ -30,14 +30,13 @@ namespace ifj {
                     for (auto &i: expected)
                         expected_str += std::to_string(i) + " ";
 
-                    char *output = (char *) malloc(expected_str.length() + 1);
-                    output_fd = fmemopen(output, expected_str.length(), "w");
-
+                    char *actual = (char *) malloc(1000);
+                    output_fd = fmemopen(actual, 1000, "w");
 
                     syntax_abstract_tree_t *tree = load_syntax_tree(input_fd);
                     syntax_abstract_tree_print(output_fd, tree);
 
-                    EXPECT_STREQ(expected_str.c_str(), output);
+                    EXPECT_STREQ(expected_str.c_str(), actual);
                 }
             };
 
