@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 
 extern "C" {
 #include "../src/syntax_analyzer.h"
@@ -24,7 +23,7 @@ namespace ifj {
                     }
                 }
 
-                void IsSyntaxTreeCorrect(char *input, const std::vector<int> &expected_output) {
+                void IsSyntaxTreeCorrect(const std::string &input, const std::vector<int> &expected_output) {
                     std::string expected_str;
 
                     for (auto &str: expected_output)
@@ -33,7 +32,7 @@ namespace ifj {
                     char *actual = (char *) malloc(expected_str.length() + 1);
                     output_fd = fmemopen(actual, expected_str.length() + 1, "w");
 
-                    syntax_abstract_tree_t *tree = load_syntax_tree(test_lex_input(input));
+                    syntax_abstract_tree_t *tree = load_syntax_tree(test_lex_input((char *) input.c_str()));
                     syntax_abstract_tree_print(output_fd, tree);
 
                     fseek(output_fd, 0, SEEK_SET);
