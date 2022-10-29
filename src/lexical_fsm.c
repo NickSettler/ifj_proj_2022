@@ -52,14 +52,13 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     case '#' :
                         state = COMMENT_STATE
                     case '/':
-                        string_append_char(token, current_char);
                         current_char = (char) getc(fd);
                         if (current_char == '*')
                             state = MULTILINE_COMMENT_STATE
                         else if (current_char == '/') {
-                            state = COMMENT_STATE
-
+                            state = COMMENT_STATE;
                         } else {
+                            string_append_char(token, current_char);
                             state = ARITHMETIC_STATE;
                             ungetc(current_char, fd)
                         }
