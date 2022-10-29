@@ -57,19 +57,15 @@ make_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, syntax_abstr
 }
 
 syntax_abstract_tree_t *make_leaf(syntax_tree_node_type type, string_t *value) {
-    syntax_abstract_tree_t *tree = (syntax_abstract_tree_t *) malloc(sizeof(syntax_abstract_tree_t));
-    if (tree == NULL) {
-        INTERNAL_ERROR("Failed to allocate memory for syntax tree node");
-    }
+    syntax_abstract_tree_t *tree = make_node(type, NULL, NULL);
 
-    tree->type = type;
     tree->value = value;
 
     return tree;
 }
 
 void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree) {
-    if (tree == NULL) return;
+    if (!tree) return;
 
     syntax_abstract_tree_print(output, tree->left);
     fprintf(output, "%d ", tree->type);
