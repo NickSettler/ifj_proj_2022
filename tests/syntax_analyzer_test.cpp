@@ -19,38 +19,32 @@ namespace ifj {
                 SyntaxAnalyzerTest() = default;
 
                 ~SyntaxAnalyzerTest() override {
-                    fclose(output_fd);
+                    if (output_fd) {
+                        fclose(output_fd);
+                    }
                 }
 
-                void IsSyntaxTreeCorrect(char *input, int n, ...) {
-                    string_t *expected_str = string_init("");
+                void IsSyntaxTreeCorrect(char *input, std::vector<int> expected_output) {
+                    std::string expected_str;
 
-                    va_list args;
-                    va_start(args, n);
+                    for (auto &str : expected_output) 
+                        expected_str += std::to_string(str) + " ";
 
-                    for (int i = 0; i < n; i++) {
-                        int type = va_arg(args, int);
-                        string_append_string(expected_str, "%d", type);
-                        string_append_char(expected_str, ' ');
-                    }
-
-                    va_end(args);
-
-                    char *actual = (char *) malloc(1000);
-                    output_fd = fmemopen(actual, 1000, "w");
-                    setbuffer(output_fd, actual, 1000);
+                    char *actual = (char *) malloc(expected_str.length() + 1);
+                    output_fd = fmemopen(actual, expected_str.length() + 1, "w");
+                    setbuffer(output_fd, actual, 0);
 
                     syntax_abstract_tree_t *tree = load_syntax_tree(test_lex_input(input));
                     syntax_abstract_tree_print(output_fd, tree);
 
-                    EXPECT_STREQ(expected_str->value, actual);
+                    EXPECT_STREQ(expected_str.c_str(), actual);
                 }
             };
 
             TEST_F(SyntaxAnalyzerTest, Assignment) {
-                IsSyntaxTreeCorrect("$a = 12 + 32;", 6,
-                                    SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
-                                    SYN_NODE_ADD, SYN_NODE_INTEGER);
+                IsSyntaxTreeCorrect("$a = 12 + 32;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                    SYN_NODE_ADD, SYN_NODE_INTEGER});
             }
 
             TEST_F(SyntaxAnalyzerTest, ArithmeticExpressionBasic) {
