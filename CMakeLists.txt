@@ -21,7 +21,6 @@ add_executable(
         tests/main.cpp
         tests/string_test.cpp
         tests/lexical_fsm_test.cpp
-        tests/code_generator_test.cpp
 )
 
 target_link_libraries(
