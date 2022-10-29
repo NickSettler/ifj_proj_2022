@@ -1,6 +1,4 @@
 #include <gtest/gtest.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 extern "C" {
 #include "../src/syntax_analyzer.h"
