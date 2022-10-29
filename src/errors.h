@@ -1,3 +1,13 @@
+/**
+ * Implementace překladače imperativního jazyka IFJ22.
+ * @authors
+ *   xmoise01, Nikita Moiseev
+ *
+ * @file errors.h
+ * @brief Error handling
+ * @date 24.09.2022
+ */
+
 #ifndef IFJ_PROJ_ERRORS_H
 #define IFJ_PROJ_ERRORS_H
 
