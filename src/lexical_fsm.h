@@ -54,6 +54,9 @@ typedef enum LEXICAL_FSM_TOKENS {
     INCREMENT,
     DECREMENT,
 
+    // String concatenation operator
+    CONCATENATION,
+
     // Relational operators
     LESS,
     GREATER,
