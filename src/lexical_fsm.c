@@ -265,24 +265,37 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
             case INTEGER_STATE:
                 if (isdigit(current_char)) {
                     string_append_char(token, current_char);
-                } else if (current_char == '.') {
+                } else if (current_char == '.' || current_char == 'e' || current_char == 'E') {
                     state = FLOAT_STATE;
                     string_append_char(token, current_char);
                 } else {
-                    // TODO handle Lexical error (integer must not contain any other characters)
                     state = START;
                     ungetc(current_char, fd);
-                    return INTEGER;
+
+                    if (string_check_by(token, isdigit)) return INTEGER;
+                    else {
+                        LEXICAL_ERROR("Invalid integer number format");
+                    }
                 }
                 break;
             case FLOAT_STATE:
-                if (isdigit(current_char)) {
+                if (isdigit(current_char) || current_char == 'e' || current_char == 'E' || current_char == '+' || current_char == '-') {
                     string_append_char(token, current_char);
                 } else {
-                    // TODO handle Lexical error (float must not contain any other characters)
                     state = START;
                     ungetc(current_char, fd);
-                    return FLOAT;
+
+                    regex_t regex;
+                    int regex_comp = regcomp(&regex, "^[0-9]+\\.?[0-9]+([eE][+-]?[0-9]+)?$", REG_EXTENDED);
+                    if (regex_comp != 0) {
+                        LEXICAL_ERROR("Invalid float regexp");
+                    }
+                    int return_value = regexec(&regex, token->value, 0, NULL, 0);
+                    if (!return_value) {
+                        return FLOAT;
+                    } else {
+                        LEXICAL_ERROR("Invalid float number format");
+                    }
                 }
                 break;
             case STRING_STATE:
