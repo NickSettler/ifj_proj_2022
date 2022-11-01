@@ -488,6 +488,57 @@ namespace ifj {
                                (lexical_token_t) {INTEGER, "7"}
                 );
             }
+
+            TEST_F(LexicalAnalyzerTest, IntegerType) {
+                IsStackCorrect("$b = 62345;"
+                               " 42  ", 5,
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "62345"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {INTEGER, "42"}
+
+                );
+                // TODO: Find the problem with this test
+//                EXPECT_EXIT({
+//                                IsStackCorrect("$a = 5f3;"
+//                                               "1+4", 8,
+//                                               (lexical_token_t) {IDENTIFIER, "$a"},
+//                                               (lexical_token_t) {ASSIGN, "="},
+//                                               (lexical_token_t) {INTEGER, "5"},
+//                                               (lexical_token_t) {IDENTIFIER, "a34"},
+//                                               (lexical_token_t) {SEMICOLON, ";"},
+//                                               (lexical_token_t) {INTEGER, "1"},
+//                                               (lexical_token_t) {PLUS, "+"},
+//                                               (lexical_token_t) {INTEGER, "4"}
+//
+//                                );
+//                            }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+//                            "\\[LEXICAL ERROR\\] Invalid integer number format");
+            }
+
+            TEST_F(LexicalAnalyzerTest, FloatType) {
+                IsStackCorrect("23.56e1;"
+                               "12E+24;", 4,
+                               (lexical_token_t) {FLOAT, "23.56e1"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {FLOAT, "12E+24"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+                EXPECT_EXIT({
+                                IsStackCorrect("23.5612e;"
+                                               "12.2.2;"
+                                               "56.e2", 5,
+                                               (lexical_token_t) {FLOAT, "23.5612e"},
+                                               (lexical_token_t) {SEMICOLON, ";"},
+                                               (lexical_token_t) {FLOAT, "12.2.2"},
+                                               (lexical_token_t) {SEMICOLON, ";"},
+                                               (lexical_token_t) {FLOAT, "56.e2"}
+                                );
+                            }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid float number format");
+
+            }
         }
     }
 }
