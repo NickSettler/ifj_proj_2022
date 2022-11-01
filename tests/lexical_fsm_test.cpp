@@ -539,6 +539,24 @@ namespace ifj {
                             "\\[LEXICAL ERROR\\] Invalid float number format");
 
             }
+
+            TEST_F(LexicalAnalyzerTest, Concatenation) {
+                IsStackCorrect("$a = \"Hello \" . \"world\";", 6,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {STRING, "\"Hello \""},
+                               (lexical_token_t) {CONCATENATION, "."},
+                               (lexical_token_t) {STRING, "\"world\""},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+
+                IsStackCorrect("\"hello\".\"world\";", 4,
+                               (lexical_token_t) {STRING, "\"hello\""},
+                               (lexical_token_t) {CONCATENATION, "."},
+                               (lexical_token_t) {STRING, "\"world\""},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+            }
         }
     }
 }
