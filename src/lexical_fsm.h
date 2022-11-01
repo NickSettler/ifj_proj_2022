@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
+#include <regex.h>
 #include "str.h"
 #include "errors.h"
 
