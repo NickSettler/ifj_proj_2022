@@ -86,6 +86,9 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     case ']':
                         string_append_char(token, current_char);
                         return RIGHT_SQUARE_BRACKETS;
+                    case '.':
+                        string_append_char(token, current_char);
+                        return CONCATENATION;
                     case '<':
                     case '>':
                         state = SQUARE_PARENTHESIS_STATE;
