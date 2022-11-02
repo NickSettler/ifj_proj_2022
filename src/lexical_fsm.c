@@ -16,10 +16,10 @@ int state = START;
 LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
     char current_char = (char) getc(fd);
 
+    string_clear(token);
     while (true) {
         switch (state) {
             case START:
-                string_clear(token);
 
                 switch (current_char) {
                     case ' ':
