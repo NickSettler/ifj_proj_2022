@@ -2,6 +2,7 @@
  * Implementace překladače imperativního jazyka IFJ22.
  * @authors
  *   xmoise01, Nikita Moiseev
+ *   xmaroc00, Elena Marochkina
  *
  * @file errors.h
  * @brief Error handling
@@ -39,5 +40,7 @@
 #define SYNTAX_ERROR(...) ERROR(SYNTAX_ERROR_CODE, "[SYNTAX ERROR] " __VA_ARGS__)
 
 #define INTERNAL_ERROR(...) ERROR(INTERNAL_ERROR_CODE, "[INTERNAL ERROR] " __VA_ARGS__)
+
+#define SEMANTIC_UNDEF_VAR_ERROR(...) ERROR(SEMANTIC_UNDEF_VAR_ERROR_CODE, "[SEMANTIC UNDEF VAR ERROR] " __VA_ARGS__)
 
 #endif //IFJ_PROJ_ERRORS_H

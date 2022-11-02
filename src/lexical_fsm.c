@@ -3,13 +3,16 @@
  * @authors
  *   xmoise01, Nikita Moiseev
  *   xpasyn00, Nikita Pasynkov
+ *   xmaroc00, Elena Marochkina
  *
  * @file lexical_fsm.c
  * @brief Lexical Analyser FSM
  * @date 05.10.2022
  */
 
+
 #include "lexical_fsm.h"
+#include "symtable.h"
 
 int state = START;
 
@@ -294,7 +297,7 @@ lexical_token_t *get_token(FILE *fd) {
 
     token->type = token_type;
     token->value = token_string->value;
-
+    (token->type == IDENTIFIER) ? insert_token(token) : false;
     return token;
 }
 

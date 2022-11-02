@@ -2,6 +2,7 @@
  * Implementace překladače imperativního jazyka IFJ22.
  * @authors
  *   xmoise01, Nikita Moiseev
+ *   xmaroc00, Elena Marochkina
  *
  * @file syntax_analyzer.c
  * @brief 
@@ -9,6 +10,7 @@
  */
 
 #include "syntax_analyzer.h"
+#include "symtable.h"
 
 struct {
     char *text, *enum_text;
@@ -72,6 +74,22 @@ void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree) {
     syntax_abstract_tree_print(output, tree->right);
 }
 
+bool check_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *)) {
+    if (!tree) return true;
+    return check(tree) && check_tree_using(tree->left, check) && check_tree_using(tree->right, check);
+}
+
+bool is_leaf(syntax_abstract_tree_t *tree) {
+    return tree->left == NULL && tree->right == NULL;
+}
+
+bool is_defined(syntax_abstract_tree_t *tree) {
+    if (tree->type == SYN_NODE_IDENTIFIER) {
+        return find_element(symtable, tree->value->value)->defined;
+    }
+    return true;
+}
+
 void expect_token(const char *msg, syntax_tree_token_type type) {
     if (get_token_type(lexical_token->type) != type) {
         SYNTAX_ERROR("%s Expecting %s, found: %s\n", msg, attributes[type].text,
@@ -132,12 +150,16 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
     switch (lexical_token->type) {
         case IDENTIFIER:
             v = make_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
+            find_element(symtable, lexical_token->value)->defined = true;
             lexical_token = get_token(fd);
             expect_token("Expected assignment operator", SYN_TOKEN_ASSIGN);
             lexical_token = get_token(fd);
             e = expression(fd, 0);
             tree = make_node(SYN_NODE_ASSIGN, v, e);
             expect_token("Expected semicolon", SYN_TOKEN_SEMICOLON);
+            if (!check_tree_using(tree, is_defined)) {
+                SEMANTIC_UNDEF_VAR_ERROR("Variable used before definition")
+            }
             lexical_token = get_token(fd);
             break;
         case INTEGER:
@@ -165,6 +187,9 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
         default:
         SYNTAX_ERROR("Expected expression, got: %s\n", lexical_token->value);
     }
+
+    bool is_root_leaf = check_tree_using(tree, is_leaf);
+    bool is_left_leaf = check_tree_using(tree->left, is_leaf);
 
     return tree;
 }
@@ -231,3 +256,5 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return (syntax_tree_token_type) -1;
     }
 }
+
+
