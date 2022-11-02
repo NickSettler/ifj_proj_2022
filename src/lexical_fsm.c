@@ -161,7 +161,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     bool is_php_bracket = !strcmp(token->value, "<?") || !strcmp(token->value, "<?php");
 
                     if (!is_php_bracket) {
-                        LEXICAL_ERROR("Invalid PHP open bracket");
+                            LEXICAL_ERROR("Invalid PHP open bracket");
                     }
 
                     state = START;
@@ -172,10 +172,10 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
             case STRICT_TYPES_STATE:
                 if (current_char == 's' || current_char == 't' || current_char == 'r' ||
                     current_char == 'c' || current_char == 'e' ||
-                    current_char == 'y' || current_char == 'p') {
+                    current_char == 'y' || current_char == 'p' || current_char == 'i' || current_char == '_') {
                     string_append_char(token, current_char);
                 } else {
-                    if (!strcmp(token->value, "strict_types")) {
+                    if (strcmp(token->value, "strict_types")) {
                         LEXICAL_ERROR("Invalid strict_types declaration");
                     }
                     state = START;
