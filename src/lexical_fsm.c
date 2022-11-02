@@ -45,6 +45,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     case ';':
                         string_append_char(token, current_char);
                         return SEMICOLON;
+                    case '\'':
                     case '"':
                         state = STRING_STATE;
                         string_append_char(token, current_char);
@@ -302,7 +303,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 }
                 break;
             case STRING_STATE:
-                if (current_char == '"') {
+                if (token->value[0] == '"' && current_char == '"' || token->value[0] == '\'' && current_char == '\'') {
                     state = START;
                     string_append_char(token, current_char);
                     return STRING;
