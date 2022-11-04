@@ -81,7 +81,7 @@ namespace ifj {
                                 CheckSymTableEntries("$a = 1;"
                                                      "$b = $c + 2;", {});
                             }, ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
-                            "Variable $.* used before declaration");
+                            "Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
             }
         }
     }
