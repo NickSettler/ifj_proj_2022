@@ -30,6 +30,8 @@ namespace ifj {
                     if (fd != nullptr) {
                         fclose(fd);
                     }
+
+                    dispose_symtable();
                 }
 
                 void ProcessInput(const std::string &input) {
@@ -63,6 +65,14 @@ namespace ifj {
                                                      .key = "$b",
                                              },
                                      });
+
+                EXPECT_EXIT({
+                                fd = test_lex_input("$a = 1;"
+                                                    "$b = $c + 2;");
+                                tree = load_syntax_tree(fd);
+                            },
+                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
             }
         }
     }

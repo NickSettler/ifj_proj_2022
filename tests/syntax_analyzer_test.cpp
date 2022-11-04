@@ -23,6 +23,10 @@ namespace ifj {
                     }
                 }
 
+                void TearDown() override {
+                    dispose_symtable();
+                }
+
                 void IsSyntaxTreeCorrect(const std::string &input, const std::vector<int> &expected_output) {
                     std::string expected_str;
 
