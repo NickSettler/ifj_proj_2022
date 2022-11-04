@@ -79,10 +79,6 @@ bool check_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstrac
     return check(tree) && check_tree_using(tree->left, check) && check_tree_using(tree->right, check);
 }
 
-bool is_leaf(syntax_abstract_tree_t *tree) {
-    return tree->left == NULL && tree->right == NULL;
-}
-
 bool is_defined(syntax_abstract_tree_t *tree) {
     if (tree->type == SYN_NODE_IDENTIFIER) {
         return find_token(tree->value->value)->defined;
@@ -158,7 +154,7 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             tree = make_node(SYN_NODE_ASSIGN, v, e);
             expect_token("Expected semicolon", SYN_TOKEN_SEMICOLON);
             if (!check_tree_using(tree, is_defined)) {
-                SEMANTIC_UNDEF_VAR_ERROR("Variable used before definition")
+                SEMANTIC_UNDEF_VAR_ERROR("Variable used before declaration")
             }
             lexical_token = get_token(fd);
             break;
@@ -187,9 +183,6 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
         default:
         SYNTAX_ERROR("Expected expression, got: %s\n", lexical_token->value);
     }
-
-    bool is_root_leaf = check_tree_using(tree, is_leaf);
-    bool is_left_leaf = check_tree_using(tree->left, is_leaf);
 
     return tree;
 }

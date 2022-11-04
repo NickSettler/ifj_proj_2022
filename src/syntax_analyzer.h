@@ -96,7 +96,7 @@ struct syntax_abstract_tree {
     syntax_abstract_tree_t *left;
     syntax_abstract_tree_t *right;
     string_t *value;
-} syntax_ast_t;
+};
 
 static lexical_token_t *lexical_token;
 
