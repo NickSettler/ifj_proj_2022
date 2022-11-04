@@ -75,13 +75,6 @@ namespace ifj {
                                                      .key = "$b",
                                              },
                                      });
-
-                // TODO: not working locally for some reason, but works on CI
-                EXPECT_EXIT({
-                                CheckSymTableEntries("$a = 1;"
-                                                     "$b = $c + 2;", {});
-                            }, ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
-                            "Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
             }
         }
     }
