@@ -297,7 +297,9 @@ lexical_token_t *get_token(FILE *fd) {
 
     token->type = token_type;
     token->value = token_string->value;
-    (token->type == IDENTIFIER) ? insert_token(token) : false;
+    if (token->type == IDENTIFIER)
+        insert_token(token->value);
+
     return token;
 }
 

@@ -10,14 +10,14 @@
 
 #include "symtable.h"
 
-tree_node_t *create_node(lexical_token_t *token) {
+tree_node_t *create_node(char *key) {
     tree_node_t *result = (tree_node_t *) malloc(sizeof(tree_node_t));
     if (result == 0) {
         INTERNAL_ERROR("Malloc for BST failed");
     }
     result->left = NULL;
     result->right = NULL;
-    result->key = token->value;
+    result->key = key;
 
     return result;
 }
@@ -33,25 +33,25 @@ int comparator(tree_node_t *root, char *key) {
 
 }
 
-bool insert_element(tree_node_t **rootptr, lexical_token_t *token) {
+bool insert_element(tree_node_t **rootptr, char *key) {
     tree_node_t *root = *rootptr;
     if (root == NULL) {
         //tree empty
-        (*rootptr) = create_node(token);
+        (*rootptr) = create_node(key);
         return true;
     }
-    switch (comparator(root, token->value)) {
+    switch (comparator(root, key)) {
         case 0:
             return false;
         case -1:
-            return insert_element(&(root->left), token);
+            return insert_element(&(root->left), key);
         case 1:
-            return insert_element(&(root->right), token);
+            return insert_element(&(root->right), key);
     }
 }
 
-bool insert_token(lexical_token_t *token) {
-    insert_element(&symtable, token) ? true : false;
+bool insert_token(char *key) {
+    return insert_element(&symtable, key);
 }
 
 tree_node_t *find_element(tree_node_t *root, char *key) {
@@ -68,13 +68,17 @@ tree_node_t *find_element(tree_node_t *root, char *key) {
     }
 }
 
-bool delete_element(tree_node_t **rootptr, lexical_token_t *token) {
+tree_node_t *find_token(char *key) {
+    return find_element(symtable, key);
+}
+
+bool delete_element(tree_node_t **rootptr, char *key) {
     tree_node_t *root = *rootptr;
     if (root == NULL) {
         return false;
     }
-    switch (comparator(root, token->value)) {
-        case 0:
+    switch (comparator(root, key)) {
+        case 0: {
             if (root->left == NULL && root->right == NULL) {
                 free(root);
                 (*rootptr) = NULL;
@@ -95,15 +99,20 @@ bool delete_element(tree_node_t **rootptr, lexical_token_t *token) {
                 temp = temp->left;
             }
             root->key = temp->key;
-            token->value = temp->key;
-            return delete_element(&(root->right), token);
-        case -1:
-            return delete_element(&(root->left), token);
-        case 1:
-            return delete_element(&(root->right), token);
+            return delete_element(&(root->right), key);
+        }
+        case -1: {
+            return delete_element(&(root->left), key);
+        }
+        case 1: {
+            return delete_element(&(root->right), key);
+        }
     }
 }
 
+bool delete_token(char *key) {
+    return delete_element(&symtable, key);
+}
 
 void printtabs(int numtabs) {
     for (int i = 0; i < numtabs; i++) {

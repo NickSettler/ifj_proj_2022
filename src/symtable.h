@@ -16,7 +16,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include "lexical_fsm.h"
 
 /**
  * @struct tree_node_t
@@ -47,14 +46,14 @@ typedef struct tree_node {
     struct tree_node *right;
 } tree_node_t;
 
-tree_node_t *symtable;
+static tree_node_t *symtable;
 
 /**
  * Creates tree node with key
  * @param pointer to the token
  * @return pointer to the tree node
  */
-tree_node_t *create_node(lexical_token_t *token);
+tree_node_t *create_node(char *key);
 
 /**
  * Compare token value with key in the node
@@ -70,14 +69,14 @@ int comparator(tree_node_t *root, char *key);
  * @param pointer to the token, which value will be inserted
  * @return true if key was inserted, false if key already exists in the tree
  */
-bool insert_element(tree_node_t **rootptr, lexical_token_t *token);
+bool insert_element(tree_node_t **rootptr, char *key);
 
 /**
  * Initialise tree, insert tokens in the course of lexical analysis
  * @param token pointer to the token
  * @return true if token was inserted, false otherwise
  */
-bool insert_token(lexical_token_t *token);
+bool insert_token(char *key);
 
 /**
  * Finds value in the tree
@@ -87,13 +86,16 @@ bool insert_token(lexical_token_t *token);
  */
 tree_node_t *find_element(tree_node_t *root, char *key);
 
+tree_node_t *find_token(char *key);
+
+bool delete_element(tree_node_t **rootptr, char *key);
+
 /**
- * Deletes value from the tree
- * @param rootptr pointer to the pointer to the root of the tree
+ * Deletes token from the tree
  * @param pointer to the token, which value will be deleted
  * @return true if value was deleted, false if value was not found
  */
-bool delete_element(tree_node_t **rootptr, lexical_token_t *token);
+bool delete_token(char *key);
 
 //next 2 functions only for testing
 void printtabs(int numtabs);

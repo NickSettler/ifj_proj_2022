@@ -85,7 +85,7 @@ bool is_leaf(syntax_abstract_tree_t *tree) {
 
 bool is_defined(syntax_abstract_tree_t *tree) {
     if (tree->type == SYN_NODE_IDENTIFIER) {
-        return find_element(symtable, tree->value->value)->defined;
+        return find_token(tree->value->value)->defined;
     }
     return true;
 }
@@ -150,7 +150,7 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
     switch (lexical_token->type) {
         case IDENTIFIER:
             v = make_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
-            find_element(symtable, lexical_token->value)->defined = true;
+            find_token(lexical_token->value)->defined = true;
             lexical_token = get_token(fd);
             expect_token("Expected assignment operator", SYN_TOKEN_ASSIGN);
             lexical_token = get_token(fd);
