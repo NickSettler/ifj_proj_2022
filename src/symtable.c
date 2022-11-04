@@ -10,6 +10,8 @@
 
 #include "symtable.h"
 
+tree_node_t *symtable;
+
 tree_node_t *create_node(char *key) {
     tree_node_t *result = (tree_node_t *) malloc(sizeof(tree_node_t));
     if (result == 0) {
@@ -113,6 +115,21 @@ bool delete_element(tree_node_t **rootptr, char *key) {
 
 bool delete_token(char *key) {
     return delete_element(&symtable, key);
+}
+
+void dispose_tree(tree_node_t *root) {
+    if (root == NULL) return;
+
+    dispose_tree(root->left);
+    dispose_tree(root->right);
+    free(root);
+}
+
+void dispose_symtable() {
+    if (symtable == NULL) return;
+
+    dispose_tree(symtable);
+    symtable = NULL;
 }
 
 void printtabs(int numtabs) {

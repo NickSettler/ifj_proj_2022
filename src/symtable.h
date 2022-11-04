@@ -45,8 +45,6 @@ typedef struct tree_node {
     struct tree_node *right;
 } tree_node_t;
 
-static tree_node_t *symtable;
-
 /**
  * Creates tree node with key
  * @param pointer to the token
@@ -106,6 +104,10 @@ bool delete_element(tree_node_t **rootptr, char *key);
  * @return true if token was deleted, false if value was not found
  */
 bool delete_token(char *key);
+
+void dispose_tree(tree_node_t *root);
+
+void dispose_symtable();
 
 //next 2 functions only for testing
 void printtabs(int numtabs);
