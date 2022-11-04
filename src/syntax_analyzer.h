@@ -196,6 +196,6 @@ bool is_defined(syntax_abstract_tree_t *tree);
  * @param tree Syntax abstract tree
  * @return True if the node contains undefined variable, false otherwise
  */
-bool is_undefined(syntax_abstract_tree_t *tree)
+bool is_undefined(syntax_abstract_tree_t *tree);
 
 #endif //IFJ_PROJ_SYNTAX_ANALYZER_H
