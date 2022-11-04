@@ -18,6 +18,7 @@ tree_node_t *create_node(char *key) {
     result->left = NULL;
     result->right = NULL;
     result->key = key;
+    result->defined = false;
 
     return result;
 }

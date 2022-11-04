@@ -169,25 +169,33 @@ syntax_abstract_tree_t *stmt(FILE *fd);
 syntax_abstract_tree_t *load_syntax_tree(FILE *fd);
 
 /**
- * Going through the syntax tree and checking nodes
- * @param tree
- * @param check
- * @return
+ * Goes through the syntax tree and checks nodes
+ * @param tree Syntax abstract tree
+ * @param check Check function
+ * @return true is some node satisfies the check function, otherwise false
  */
 bool check_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *));
 
 /**
- * Checks if the node is a leaf
- * @param node Syntax abstract tree node
- * @return True if the node is a leaf, false otherwise
+ * Gets node using the check function
+ * @param tree Syntax abstract tree
+ * @param check Check function
+ * @return node if this node satisfies the check function, otherwise NULL
  */
-bool is_leaf(syntax_abstract_tree_t *tree);
+syntax_abstract_tree_t *get_from_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *));
 
 /**
- * Checks if the node contains defined variable
- * @param node Syntax abstract tree node
+ * Checks if AST contains defined variable
+ * @param node Syntax abstract tree
  * @return True if the node contains defined variable, false otherwise
  */
 bool is_defined(syntax_abstract_tree_t *tree);
+
+/**
+ * Checks if the AST contains undefined variable
+ * @param tree Syntax abstract tree
+ * @return True if the node contains undefined variable, false otherwise
+ */
+bool is_undefined(syntax_abstract_tree_t *tree)
 
 #endif //IFJ_PROJ_SYNTAX_ANALYZER_H

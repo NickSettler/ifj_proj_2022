@@ -79,11 +79,36 @@ bool check_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstrac
     return check(tree) && check_tree_using(tree->left, check) && check_tree_using(tree->right, check);
 }
 
+syntax_abstract_tree_t *get_from_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *)) {
+    if (!tree) return NULL;
+    if (check(tree)) return tree;
+    syntax_abstract_tree_t *node = get_from_tree_using(tree->left, check);
+    if (node) return node;
+    node = get_from_tree_using(tree->right, check);
+    if (node) return node;
+    return NULL;
+}
+
 bool is_defined(syntax_abstract_tree_t *tree) {
     if (tree->type == SYN_NODE_IDENTIFIER) {
-        return find_token(tree->value->value)->defined;
+        tree_node_t *node = find_token(tree->value->value);
+        if (!node) return false;
+
+        return node->defined == true;
+
     }
     return true;
+}
+
+bool is_undefined(syntax_abstract_tree_t *tree) {
+    if (tree->type == SYN_NODE_IDENTIFIER) {
+        tree_node_t *node = find_token(tree->value->value);
+        if (!node) return true;
+
+        return node->defined == false;
+
+    }
+    return false;
 }
 
 void expect_token(const char *msg, syntax_tree_token_type type) {
@@ -146,15 +171,16 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
     switch (lexical_token->type) {
         case IDENTIFIER:
             v = make_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
-            find_token(lexical_token->value)->defined = true;
             lexical_token = get_token(fd);
             expect_token("Expected assignment operator", SYN_TOKEN_ASSIGN);
             lexical_token = get_token(fd);
             e = expression(fd, 0);
             tree = make_node(SYN_NODE_ASSIGN, v, e);
             expect_token("Expected semicolon", SYN_TOKEN_SEMICOLON);
+            find_token(v->value->value)->defined = true;
             if (!check_tree_using(tree, is_defined)) {
-                SEMANTIC_UNDEF_VAR_ERROR("Variable used before declaration")
+                syntax_abstract_tree_t *undefined_node = get_from_tree_using(tree, is_undefined);
+                SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", undefined_node->value->value)
             }
             lexical_token = get_token(fd);
             break;
