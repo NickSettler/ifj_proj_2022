@@ -40,7 +40,7 @@ namespace ifj {
                     tree = load_syntax_tree(fd);
                 }
 
-                void CheckSymTableEntries(const std::string &input, const std::vector<tree_node_t> expected) {
+                void CheckSymTableEntries(const std::string &input, const std::vector<tree_node_t> &expected) {
                     ProcessInput(input);
 
                     for (auto node: expected) {
@@ -53,7 +53,7 @@ namespace ifj {
                 }
             };
 
-            TEST_F(SemanticAnalysisTest, VariableDefUndef) {
+            TEST_F(SemanticAnalysisTest, VariableDefinition_DefinedVariable) {
                 CheckSymTableEntries("$a = 1;"
                                      "$b = $a + 2;", {
                                              (tree_node_t) {
@@ -65,7 +65,9 @@ namespace ifj {
                                                      .key = "$b",
                                              },
                                      });
+            }
 
+            TEST_F(SemanticAnalysisTest, VariableDefinition_UndefinedVariable) {
                 EXPECT_EXIT({
                                 fd = test_lex_input("$a = 1;"
                                                     "$b = $c + 2;");
