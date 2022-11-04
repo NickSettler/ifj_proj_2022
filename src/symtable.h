@@ -17,6 +17,12 @@
 #include <stdbool.h>
 #include <string.h>
 
+typedef enum {
+    TYPE_STRING,    // Data type is string
+    TYPE_INT,        // Data type is integer
+    TYPE_FLOAT,    // Data type is float
+} Data_type;
+
 /**
  * @struct tree_node_t
  * Binary search tree node
@@ -30,13 +36,6 @@
  * @var tree_node_t::key
  * Key
  */
-
-typedef enum {
-    TYPE_STRING,    // Data type is string
-    TYPE_INT,        // Data type is integer
-    TYPE_FLOAT,    // Data type is float
-} Data_type;
-
 typedef struct tree_node {
     Data_type type; // Data type of symbol / return type of function
     bool defined; // Defined if current function was defined
@@ -72,8 +71,8 @@ int comparator(tree_node_t *root, char *key);
 bool insert_element(tree_node_t **rootptr, char *key);
 
 /**
- * Initialise tree, insert tokens in the course of lexical analysis
- * @param token pointer to the token
+ * Inserts token into the symtable
+ * @param token token value
  * @return true if token was inserted, false otherwise
  */
 bool insert_token(char *key);
@@ -86,14 +85,25 @@ bool insert_token(char *key);
  */
 tree_node_t *find_element(tree_node_t *root, char *key);
 
+/**
+ * Finds token in the symtable
+ * @param key token value
+ * @return pointer to the node if token was found, NULL otherwise
+ */
 tree_node_t *find_token(char *key);
 
+/**
+ * Deletes tree by the key
+ * @param rootptr pointer to the pointer to the root of the tree
+ * @param key key of the node to be deleted
+ * @return true if key was deleted, false otherwise
+ */
 bool delete_element(tree_node_t **rootptr, char *key);
 
 /**
- * Deletes token from the tree
- * @param pointer to the token, which value will be deleted
- * @return true if value was deleted, false if value was not found
+ * Deletes token from the symtable
+ * @param pointer token value to be deleted
+ * @return true if token was deleted, false if value was not found
  */
 bool delete_token(char *key);
 
