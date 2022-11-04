@@ -105,13 +105,15 @@ bool delete_element(tree_node_t **rootptr, char *key);
  */
 bool delete_token(char *key);
 
+/**
+ * Deletes tree
+ * @param root pointer to the root of the tree
+ */
 void dispose_tree(tree_node_t *root);
 
+/**
+ * Deletes symtable
+ */
 void dispose_symtable();
-
-//next 2 functions only for testing
-void printtabs(int numtabs);
-
-void print_tree(tree_node_t *root, int level);
 
 #endif //IFJ_PROJ_2022_SYMTABLE_H
