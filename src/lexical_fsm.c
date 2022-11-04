@@ -267,7 +267,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 }
                 break;
             case INTEGER_STATE:
-                if (isdigit(current_char)) {
+                if (isdigit(current_char) || (isalpha(current_char) && current_char != 'e' && current_char != 'E')) {
                     string_append_char(token, current_char);
                 } else if (current_char == '.' || current_char == 'e' || current_char == 'E') {
                     state = FLOAT_STATE;
