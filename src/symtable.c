@@ -117,17 +117,18 @@ bool delete_token(char *key) {
     return delete_element(&symtable, key);
 }
 
-void dispose_tree(tree_node_t *root) {
-    if (root == NULL) return;
+void dispose_tree(tree_node_t **root) {
+    if (*root == NULL) return;
 
-    dispose_tree(root->left);
-    dispose_tree(root->right);
-    free(root);
+    dispose_tree(&((*root)->left));
+    dispose_tree(&((*root)->right));
+    free(*root);
+    *root = NULL;
 }
 
 void dispose_symtable() {
     if (symtable == NULL) return;
 
-    dispose_tree(symtable);
+    dispose_tree(&symtable);
     symtable = NULL;
 }

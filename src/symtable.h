@@ -109,7 +109,7 @@ bool delete_token(char *key);
  * Deletes tree
  * @param root pointer to the root of the tree
  */
-void dispose_tree(tree_node_t *root);
+void dispose_tree(tree_node_t **root);
 
 /**
  * Deletes symtable
