@@ -44,7 +44,7 @@ namespace ifj {
                     tree = load_syntax_tree(fd);
                 }
 
-                void CheckSymTableEntries(const std::string &input, const std::vector<tree_node_t> &expected) {
+                void CheckSymTableEntries(const std::string &input, std::vector<tree_node_t> &expected) {
                     ProcessInput(input);
 
                     for (auto node: expected) {
@@ -64,17 +64,26 @@ namespace ifj {
             };
 
             TEST_F(SemanticAnalysisTest, VariableDefUndef) {
+                std::vector<tree_node_t> expected = {
+                        (tree_node_t) {
+                                .defined = true,
+                                .key = "$a",
+                        },
+                        (tree_node_t) {
+                                .defined = true,
+                                .key = "$b",
+                        },
+                };
+
                 CheckSymTableEntries("$a = 1;"
-                                     "$b = $a + 2;", {
-                                             (tree_node_t) {
-                                                     .defined = true,
-                                                     .key = "$a",
-                                             },
-                                             (tree_node_t) {
-                                                     .defined = true,
-                                                     .key = "$b",
-                                             },
-                                     });
+                                     "$b = $a + 2;", expected);
+
+                // TODO: not working locally for some reason, but works on CI
+                EXPECT_EXIT({
+                                CheckSymTableEntries("$a = 1;"
+                                                     "$b = $c + 2;", expected);
+                            }, ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
             }
         }
     }
