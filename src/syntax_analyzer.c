@@ -95,8 +95,8 @@ bool is_defined(syntax_abstract_tree_t *tree) {
         if (!node) return false;
 
         return node->defined == true;
-
     }
+    
     return true;
 }
 
@@ -106,8 +106,8 @@ bool is_undefined(syntax_abstract_tree_t *tree) {
         if (!node) return true;
 
         return node->defined == false;
-
     }
+
     return false;
 }
 
