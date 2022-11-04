@@ -44,10 +44,10 @@ namespace ifj {
                     tree = load_syntax_tree(fd);
                 }
 
-                void CheckSymTableEntries(const std::string &input, std::vector<tree_node_t> &expected) {
+                void CheckSymTableEntries(const std::string &input, const std::vector<tree_node_t> &expected) {
                     ProcessInput(input);
 
-                    for (auto &node: expected) {
+                    for (auto node: expected) {
                         tree_node_t *token = find_token(node.key);
                         EXPECT_NE(token, nullptr) << "Token " << node.key << " not found in symtable";
                         EXPECT_EQ(token->defined, node.defined)
@@ -63,27 +63,25 @@ namespace ifj {
                 }
             };
 
-            TEST_F(SemanticAnalysisTest, VariableDefined) {
-                std::string input = "$a = 1;"
-                                    "$b = $c + 2;";
+            TEST_F(SemanticAnalysisTest, VariableDefUndef) {
+                CheckSymTableEntries("$a = 1;"
+                                     "$b = $a + 2;", {
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "$a",
+                                             },
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "$b",
+                                             },
+                                     });
 
-                std::vector<tree_node_t> expected = {
-                        {
-                                .defined = true,
-                                .key = (char *) "$a",
-                        },
-                        {
-                                .defined = true,
-                                .key = (char *) "$b",
-                        },
-                        {
-                                // TODO: This should be false, but for some reason it's true
-                                .defined = true,
-                                .key = (char *) "$c",
-                        }
-                };
-
-                CheckSymTableEntries(input, expected);
+                // TODO: not working locally for some reason, but works on CI
+                EXPECT_EXIT({
+                                CheckSymTableEntries("$a = 1;"
+                                                     "$b = $c + 2;", {});
+                            }, ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "Variable $.* used before declaration");
             }
         }
     }
