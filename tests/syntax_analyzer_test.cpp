@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 extern "C" {
+#include "../src/symtable.h"
+#include "../src/symtable.c"
 #include "../src/syntax_analyzer.h"
 #include "../src/syntax_analyzer.c"
 }
