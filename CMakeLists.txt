@@ -21,7 +21,8 @@ add_executable(
         tests/main.cpp
         tests/string_test.cpp
         tests/lexical_fsm_test.cpp
-        tests/syntax_analyzer_test.cpp)
+        tests/syntax_analyzer_test.cpp
+        tests/semantic_analysis_test.cpp)
 
 target_link_libraries(
         AllTests
