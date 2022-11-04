@@ -54,15 +54,15 @@ namespace ifj {
             TEST_F(SemanticAnalysisTest, VariableDefUndef) {
                 CheckSymTableEntries("$a = 1;"
                                      "$b = $a + 2;", {
-                        (tree_node_t) {
-                                .defined = true,
-                                .key = "$a",
-                        },
-                        (tree_node_t) {
-                                .defined = true,
-                                .key = "$b",
-                        },
-                });
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "$a",
+                                             },
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "$b",
+                                             },
+                                     });
             }
         }
     }
