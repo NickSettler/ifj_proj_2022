@@ -46,7 +46,7 @@ struct {
 };
 
 syntax_abstract_tree_t *
-make_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, syntax_abstract_tree_t *right) {
+make_binary_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, syntax_abstract_tree_t *right) {
     syntax_abstract_tree_t *tree = (syntax_abstract_tree_t *) malloc(sizeof(syntax_abstract_tree_t));
     if (tree == NULL) {
         INTERNAL_ERROR("Failed to allocate memory for syntax tree node");
@@ -54,13 +54,38 @@ make_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, syntax_abstr
 
     tree->type = type;
     tree->left = left;
+    tree->middle = NULL;
     tree->right = right;
 
     return tree;
 }
 
-syntax_abstract_tree_t *make_leaf(syntax_tree_node_type type, string_t *value) {
-    syntax_abstract_tree_t *tree = make_node(type, NULL, NULL);
+syntax_abstract_tree_t *
+make_ternary_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, syntax_abstract_tree_t *middle,
+                  syntax_abstract_tree_t *right) {
+    syntax_abstract_tree_t *tree = (syntax_abstract_tree_t *) malloc(sizeof(syntax_abstract_tree_t));
+    if (tree == NULL) {
+        INTERNAL_ERROR("Failed to allocate memory for syntax tree node");
+    }
+
+    tree->type = type;
+    tree->left = left;
+    tree->middle = middle;
+    tree->right = right;
+
+    return tree;
+}
+
+syntax_abstract_tree_t *make_binary_leaf(syntax_tree_node_type type, string_t *value) {
+    syntax_abstract_tree_t *tree = make_binary_node(type, NULL, NULL);
+
+    tree->value = value;
+
+    return tree;
+}
+
+syntax_abstract_tree_t *make_ternary_leaf(syntax_tree_node_type type, string_t *value) {
+    syntax_abstract_tree_t *tree = make_ternary_node(type, NULL, NULL, NULL);
 
     tree->value = value;
 
@@ -72,18 +97,24 @@ void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree) {
 
     syntax_abstract_tree_print(output, tree->left);
     fprintf(output, "%d ", tree->type);
+    syntax_abstract_tree_print(output, tree->middle);
     syntax_abstract_tree_print(output, tree->right);
 }
 
 bool check_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *)) {
     if (!tree) return true;
-    return check(tree) && check_tree_using(tree->left, check) && check_tree_using(tree->right, check);
+    return check(tree) &&
+           check_tree_using(tree->left, check) &&
+           check_tree_using(tree->middle, check) &&
+           check_tree_using(tree->right, check);
 }
 
 syntax_abstract_tree_t *get_from_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *)) {
     if (!tree) return NULL;
     if (check(tree)) return tree;
     syntax_abstract_tree_t *node = get_from_tree_using(tree->left, check);
+    if (node) return node;
+    node = get_from_tree_using(tree->middle, check);
     if (node) return node;
     node = get_from_tree_using(tree->right, check);
     if (node) return node;
@@ -97,7 +128,7 @@ bool is_defined(syntax_abstract_tree_t *tree) {
 
         return node->defined == true;
     }
-    
+
     return true;
 }
 
@@ -141,14 +172,14 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
             op = get_token_type(lexical_token->type);
             lexical_token = get_token(fd);
             node = expression(fd, attributes[SYN_TOKEN_NEGATE].precedence);
-            x = (op == SYN_TOKEN_SUB) ? make_node(SYN_NODE_NEGATE, node, NULL) : node;
+            x = (op == SYN_TOKEN_SUB) ? make_binary_node(SYN_NODE_NEGATE, node, NULL) : node;
             break;
         case IDENTIFIER:
-            x = make_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
+            x = make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
             lexical_token = get_token(fd);
             break;
         case INTEGER:
-            x = make_leaf(SYN_NODE_INTEGER, string_init(lexical_token->value));
+            x = make_binary_leaf(SYN_NODE_INTEGER, string_init(lexical_token->value));
             lexical_token = get_token(fd);
             break;
         default:
@@ -168,7 +199,7 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
         }
 
         node = expression(fd, q);
-        x = make_node(attributes[op].node_type, x, node);
+        x = make_binary_node(attributes[op].node_type, x, node);
     }
 
     return x;
@@ -207,13 +238,13 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
                 lexical_token = get_token(fd);
                 s2 = stmt(fd);
             }
-            tree = make_node(SYN_NODE_KEYWORD_IF, e, make_node(SYN_NODE_KEYWORD_IF, s, s2));
+            tree = make_ternary_node(SYN_NODE_KEYWORD_IF, e, s, s2);
             break;
         case LEFT_CURLY_BRACKETS:
             expect_token("Right curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
             lexical_token = get_token(fd);
             while (lexical_token->type != RIGHT_CURLY_BRACKETS && lexical_token->type != END_OF_FILE) {
-                tree = make_node(SYN_NODE_SEQUENCE, tree, stmt(fd));
+                tree = make_binary_node(SYN_NODE_SEQUENCE, tree, stmt(fd));
             }
             expect_token("Right curly brackets", SYN_TOKEN_RIGHT_CURLY_BRACKETS);
             lexical_token = get_token(fd);
@@ -233,7 +264,7 @@ syntax_abstract_tree_t *load_syntax_tree(FILE *fd) {
     syntax_abstract_tree_t *tree = NULL;
 
     while (lexical_token->type != END_OF_FILE) {
-        tree = make_node(SYN_NODE_SEQUENCE, tree, stmt(fd));
+        tree = make_binary_node(SYN_NODE_SEQUENCE, tree, stmt(fd));
     }
 
     return tree;

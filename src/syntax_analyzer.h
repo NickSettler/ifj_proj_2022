@@ -95,6 +95,7 @@ typedef struct syntax_abstract_tree syntax_abstract_tree_t;
 struct syntax_abstract_tree {
     syntax_tree_node_type type;
     syntax_abstract_tree_t *left;
+    syntax_abstract_tree_t *middle;
     syntax_abstract_tree_t *right;
     string_t *value;
 };
@@ -109,7 +110,7 @@ static lexical_token_t *lexical_token;
  * @return New syntax abstract tree node
  */
 syntax_abstract_tree_t *
-make_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, syntax_abstract_tree_t *right);
+make_binary_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, syntax_abstract_tree_t *right);
 
 /**
  * Makes a new syntax abstract tree node without children
@@ -117,7 +118,7 @@ make_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, syntax_abstr
  * @param value Value of the node
  * @return New syntax abstract tree node
  */
-syntax_abstract_tree_t *make_leaf(syntax_tree_node_type type, string_t *value);
+syntax_abstract_tree_t *make_binary_leaf(syntax_tree_node_type type, string_t *value);
 
 /**
  * Prints the syntax abstract tree using the inorder traversal
