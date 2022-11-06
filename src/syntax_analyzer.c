@@ -38,6 +38,7 @@ struct {
         {"=",       "Op_Assign",         SYN_TOKEN_ASSIGN,               false, false, false, -1, SYN_NODE_ASSIGN},
         {";",       "Semicolon",         SYN_TOKEN_SEMICOLON,            false, false, false, -1, (syntax_tree_node_type) -1},
         {"if",      "Keyword_IF",        SYN_TOKEN_KEYWORD_IF,           false, false, false, -1, SYN_NODE_KEYWORD_IF},
+        {"else",    "Keyword_ELSE",      SYN_TOKEN_KEYWORD_ELSE,         false, false, false, -1, (syntax_tree_node_type) -1},
         {"(",       "LeftParenthesis",   SYN_TOKEN_LEFT_PARENTHESIS,     false, false, false, -1, (syntax_tree_node_type) -1},
         {")",       "RightParenthesis",  SYN_TOKEN_RIGHT_PARENTHESIS,    false, false, false, -1, (syntax_tree_node_type) -1},
         {"{",       "LeftCurlyBracket",  SYN_TOKEN_RIGHT_CURLY_BRACKETS, false, false, false, -1, (syntax_tree_node_type) -1},
@@ -201,7 +202,12 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             lexical_token = get_token(fd);
             e = parenthesis_expression(fd);
             s = stmt(fd);
-            tree = make_node(SYN_NODE_KEYWORD_IF, e, s);
+            s2 = NULL;
+            if (lexical_token->type == KEYWORD_ELSE) {
+                lexical_token = get_token(fd);
+                s2 = stmt(fd);
+            }
+            tree = make_node(SYN_NODE_KEYWORD_IF, e, make_node(SYN_NODE_KEYWORD_IF, s, s2));
             break;
         case LEFT_CURLY_BRACKETS:
             expect_token("Right curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
@@ -279,6 +285,8 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_RIGHT_CURLY_BRACKETS;
         case KEYWORD_IF:
             return SYN_TOKEN_KEYWORD_IF;
+        case KEYWORD_ELSE:
+            return SYN_TOKEN_KEYWORD_ELSE;
         default:
             return (syntax_tree_token_type) -1;
     }
