@@ -31,6 +31,10 @@ namespace ifj {
                 void SetUp() override {
                 }
 
+                void TearDown() override {
+                    dispose_symtable();
+                }
+
                 void IsStackCorrect(char *input, int n, ...) {
                     lexical_token_stack_t *correct_stack = lexical_token_stack_init();
                     va_list tokens;

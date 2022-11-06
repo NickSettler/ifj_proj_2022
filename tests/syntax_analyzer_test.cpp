@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 extern "C" {
+#include "../src/symtable.h"
+#include "../src/symtable.c"
 #include "../src/syntax_analyzer.h"
 #include "../src/syntax_analyzer.c"
 }
@@ -19,6 +21,10 @@ namespace ifj {
                     if (output_fd) {
                         fclose(output_fd);
                     }
+                }
+
+                void TearDown() override {
+                    dispose_symtable();
                 }
 
                 void IsSyntaxTreeCorrect(const std::string &input, const std::vector<int> &expected_output) {

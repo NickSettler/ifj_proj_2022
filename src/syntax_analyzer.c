@@ -2,6 +2,7 @@
  * Implementace překladače imperativního jazyka IFJ22.
  * @authors
  *   xmoise01, Nikita Moiseev
+ *   xmaroc00, Elena Marochkina
  *
  * @file syntax_analyzer.c
  * @brief 
@@ -9,6 +10,7 @@
  */
 
 #include "syntax_analyzer.h"
+#include "symtable.h"
 
 struct {
     char *text, *enum_text;
@@ -70,6 +72,43 @@ void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree) {
     syntax_abstract_tree_print(output, tree->left);
     fprintf(output, "%d ", tree->type);
     syntax_abstract_tree_print(output, tree->right);
+}
+
+bool check_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *)) {
+    if (!tree) return true;
+    return check(tree) && check_tree_using(tree->left, check) && check_tree_using(tree->right, check);
+}
+
+syntax_abstract_tree_t *get_from_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *)) {
+    if (!tree) return NULL;
+    if (check(tree)) return tree;
+    syntax_abstract_tree_t *node = get_from_tree_using(tree->left, check);
+    if (node) return node;
+    node = get_from_tree_using(tree->right, check);
+    if (node) return node;
+    return NULL;
+}
+
+bool is_defined(syntax_abstract_tree_t *tree) {
+    if (tree->type == SYN_NODE_IDENTIFIER) {
+        tree_node_t *node = find_token(tree->value->value);
+        if (!node) return false;
+
+        return node->defined == true;
+    }
+    
+    return true;
+}
+
+bool is_undefined(syntax_abstract_tree_t *tree) {
+    if (tree->type == SYN_NODE_IDENTIFIER) {
+        tree_node_t *node = find_token(tree->value->value);
+        if (!node) return true;
+
+        return node->defined == false;
+    }
+
+    return false;
 }
 
 void expect_token(const char *msg, syntax_tree_token_type type) {
@@ -138,6 +177,11 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             e = expression(fd, 0);
             tree = make_node(SYN_NODE_ASSIGN, v, e);
             expect_token("Expected semicolon", SYN_TOKEN_SEMICOLON);
+            find_token(v->value->value)->defined = true;
+            if (!check_tree_using(tree, is_defined)) {
+                syntax_abstract_tree_t *undefined_node = get_from_tree_using(tree, is_undefined);
+                SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", undefined_node->value->value)
+            }
             lexical_token = get_token(fd);
             break;
         case INTEGER:
@@ -231,3 +275,5 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return (syntax_tree_token_type) -1;
     }
 }
+
+

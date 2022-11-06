@@ -96,7 +96,7 @@ struct syntax_abstract_tree {
     syntax_abstract_tree_t *left;
     syntax_abstract_tree_t *right;
     string_t *value;
-} syntax_ast_t;
+};
 
 static lexical_token_t *lexical_token;
 
@@ -167,5 +167,35 @@ syntax_abstract_tree_t *stmt(FILE *fd);
  * @return Syntax abstract tree
  */
 syntax_abstract_tree_t *load_syntax_tree(FILE *fd);
+
+/**
+ * Goes through the syntax tree and checks nodes
+ * @param tree Syntax abstract tree
+ * @param check Check function
+ * @return true is some node satisfies the check function, otherwise false
+ */
+bool check_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *));
+
+/**
+ * Gets node using the check function
+ * @param tree Syntax abstract tree
+ * @param check Check function
+ * @return node if this node satisfies the check function, otherwise NULL
+ */
+syntax_abstract_tree_t *get_from_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *));
+
+/**
+ * Checks if AST contains defined variable
+ * @param node Syntax abstract tree
+ * @return True if the node contains defined variable, false otherwise
+ */
+bool is_defined(syntax_abstract_tree_t *tree);
+
+/**
+ * Checks if the AST contains undefined variable
+ * @param tree Syntax abstract tree
+ * @return True if the node contains undefined variable, false otherwise
+ */
+bool is_undefined(syntax_abstract_tree_t *tree);
 
 #endif //IFJ_PROJ_SYNTAX_ANALYZER_H
