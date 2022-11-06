@@ -33,8 +33,8 @@ namespace ifj {
                     for (auto &str: expected_output)
                         expected_str += std::to_string(str) + " ";
 
-                    char *actual = (char *) malloc(expected_str.length() + 1);
-                    output_fd = fmemopen(actual, expected_str.length() + 1, "w");
+                    char *actual = (char *) malloc(expected_str.length() + 1000);
+                    output_fd = fmemopen(actual, expected_str.length() + 1000, "w");
 
                     syntax_abstract_tree_t *tree = load_syntax_tree(test_lex_input((char *) input.c_str()));
                     syntax_abstract_tree_print(output_fd, tree);
@@ -42,7 +42,7 @@ namespace ifj {
                     fseek(output_fd, 0, SEEK_SET);
                     fread(actual, expected_str.length() + 1, 1, output_fd);
 
-                    EXPECT_STREQ(expected_str.c_str(), actual);
+                    EXPECT_STREQ(expected_str.c_str(), actual) << "Input: " << input;
                 }
             };
 
@@ -114,6 +114,50 @@ namespace ifj {
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER});
+            }
+
+            TEST_F(SyntaxAnalyzerTest, IfElseConditions) {
+                IsSyntaxTreeCorrect("if ($a == 2) $a = 3; else $a = 4;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("if ($a == 2) "
+                                    "{"
+                                    " $a = 3;"
+                                    " $b = 4;"
+                                    "} else {"
+                                    " $a = 4;"
+                                    " $b = $b - 1;"
+                                    "}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_SUB, SYN_NODE_INTEGER});
+            }
+
+            TEST_F(SyntaxAnalyzerTest, FunctionCall) {
+                IsSyntaxTreeCorrect("f();", {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL});
+
+                IsSyntaxTreeCorrect("f(1);", {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL, SYN_NODE_INTEGER,
+                                              SYN_NODE_ARGS});
+
+                IsSyntaxTreeCorrect("f(1 + 2);",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL, SYN_NODE_INTEGER,
+                                     SYN_NODE_ADD, SYN_NODE_INTEGER, SYN_NODE_ARGS});
+
+                IsSyntaxTreeCorrect("f(1, 2, 3, 4, 5, 6, 7);",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL, SYN_NODE_INTEGER,
+                                     SYN_NODE_ARGS, SYN_NODE_INTEGER, SYN_NODE_ARGS, SYN_NODE_INTEGER, SYN_NODE_ARGS,
+                                     SYN_NODE_INTEGER, SYN_NODE_ARGS, SYN_NODE_INTEGER, SYN_NODE_ARGS,
+                                     SYN_NODE_INTEGER, SYN_NODE_ARGS, SYN_NODE_INTEGER, SYN_NODE_ARGS});
+
+                IsSyntaxTreeCorrect("$a = 1; f(1 + 2, $a);",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                     SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_ARGS, SYN_NODE_INTEGER, SYN_NODE_ADD, SYN_NODE_INTEGER, SYN_NODE_ARGS});
             }
         }
     }
