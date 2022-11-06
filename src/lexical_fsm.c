@@ -321,6 +321,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 break;
             case COMMENT_STATE:
                 if (current_char == '\n' || current_char == '\0' || current_char == EOF) {
+                    string_clear(token);
                     state = START;
                 }
                 break;
@@ -328,6 +329,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 if (current_char == '*') {
                     current_char = (char) getc(fd);
                     if (current_char == '/') {
+                        string_clear(token);
                         state = START;
                     } else
                         ungetc(current_char, fd);
