@@ -129,10 +129,18 @@ syntax_abstract_tree_t *parenthesis_expression(FILE *fd) {
 
 syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
     syntax_abstract_tree_t *x = NULL, *node;
+    syntax_tree_token_type op;
 
     switch (lexical_token->type) {
         case LEFT_PARENTHESIS:
             x = parenthesis_expression(fd);
+            break;
+        case MINUS:
+        case PLUS:
+            op = get_token_type(lexical_token->type);
+            lexical_token = get_token(fd);
+            node = expression(fd, attributes[SYN_TOKEN_NEGATE].precedence);
+            x = (op == SYN_TOKEN_SUB) ? make_node(SYN_NODE_NEGATE, node, NULL) : node;
             break;
         case IDENTIFIER:
             x = make_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
