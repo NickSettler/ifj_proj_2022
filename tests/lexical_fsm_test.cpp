@@ -25,7 +25,9 @@ namespace ifj {
                 }
 
                 ~LexicalAnalyzerTest() override {
-                    fclose(fd);
+                    if (fd != nullptr) {
+                        fclose(fd);
+                    }
                 }
 
                 void SetUp() override {
@@ -499,22 +501,21 @@ namespace ifj {
                                (lexical_token_t) {INTEGER, "42"}
 
                 );
-                // TODO: Find the problem with this test
-//                EXPECT_EXIT({
-//                                IsStackCorrect("$a = 5f3;"
-//                                               "1+4", 8,
-//                                               (lexical_token_t) {IDENTIFIER, "$a"},
-//                                               (lexical_token_t) {ASSIGN, "="},
-//                                               (lexical_token_t) {INTEGER, "5"},
-//                                               (lexical_token_t) {IDENTIFIER, "a34"},
-//                                               (lexical_token_t) {SEMICOLON, ";"},
-//                                               (lexical_token_t) {INTEGER, "1"},
-//                                               (lexical_token_t) {PLUS, "+"},
-//                                               (lexical_token_t) {INTEGER, "4"}
-//
-//                                );
-//                            }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
-//                            "\\[LEXICAL ERROR\\] Invalid integer number format");
+
+                EXPECT_EXIT({
+                                IsStackCorrect("$a = 5f3;"
+                                               "1+4", 7,
+                                               (lexical_token_t) {IDENTIFIER, "$a"},
+                                               (lexical_token_t) {ASSIGN, "="},
+                                               (lexical_token_t) {INTEGER, "5f3"},
+                                               (lexical_token_t) {SEMICOLON, ";"},
+                                               (lexical_token_t) {INTEGER, "1"},
+                                               (lexical_token_t) {PLUS, "+"},
+                                               (lexical_token_t) {INTEGER, "4"}
+
+                                );
+                            }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid integer number format");
             }
 
             TEST_F(LexicalAnalyzerTest, FloatType) {
@@ -538,6 +539,22 @@ namespace ifj {
                             }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
                             "\\[LEXICAL ERROR\\] Invalid float number format");
 
+            }
+
+            TEST_F(LexicalAnalyzerTest, StringType) {
+                IsStackCorrect("$a = \"abc\";", 4,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {STRING, "\"abc\""},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+
+                IsStackCorrect("$a = \'testing\';", 4,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {STRING, "\'testing\'"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
             }
 
             TEST_F(LexicalAnalyzerTest, Concatenation) {
