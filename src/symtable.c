@@ -132,3 +132,30 @@ void dispose_symtable() {
     dispose_tree(&symtable);
     symtable = NULL;
 }
+
+void printtabs(int numtabs) {
+    for (int i = 0; i < numtabs; i++) {
+        printf("\t");
+    }
+}
+
+void print_tree(tree_node_t *root, int level) {
+    if (root == NULL) {
+        printtabs(level);
+        printf("-----\n");
+        return;
+    }
+    printtabs(level);
+    printf("key = %s\n", root->key);
+    printtabs(level);
+    printf("left\n");
+    print_tree(root->left, level + 1);
+    printtabs(level);
+    printf("right\n");
+    print_tree(root->right, level + 1);
+    printtabs(level);
+}
+
+void print_symtable() {
+    print_tree(symtable, 0);
+}

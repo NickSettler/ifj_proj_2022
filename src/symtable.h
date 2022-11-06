@@ -17,11 +17,18 @@
 #include <stdbool.h>
 #include <string.h>
 
+/**
+ * @enum Data_type_t
+ * Data type of variable
+ * @var DATA_TYPE_INT
+ * @var DATA_TYPE_FLOAT
+ * @var DATA_TYPE_STRING
+ */
 typedef enum {
-    TYPE_STRING,    // Data type is string
-    TYPE_INT,        // Data type is integer
-    TYPE_FLOAT,    // Data type is float
-} Data_type;
+    TYPE_STRING,
+    TYPE_INT,
+    TYPE_FLOAT,
+} data_type;
 
 /**
  * @struct tree_node_t
@@ -35,9 +42,13 @@ typedef enum {
  *
  * @var tree_node_t::key
  * Key
+ *
+ * @bool tree_node_t::defined
+ *
+ * @bool tree_node_t::global
  */
 typedef struct tree_node {
-    Data_type type; // Data type of symbol / return type of function
+    data_type type; // Data type of symbol / return type of function
     bool defined; // Defined if current function was defined
     bool global;  // Global if current symbol is global
     char *key;  // Key is identifier
@@ -115,5 +126,11 @@ void dispose_tree(tree_node_t **root);
  * Deletes symtable
  */
 void dispose_symtable();
+
+void printtabs(int numtabs);
+
+void print_tree(tree_node_t *root, int level);
+
+void print_symtable();
 
 #endif //IFJ_PROJ_2022_SYMTABLE_H
