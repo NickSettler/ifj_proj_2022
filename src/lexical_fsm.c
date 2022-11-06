@@ -171,6 +171,10 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 }
                 break;
             case STRICT_TYPES_STATE:
+                if (current_char == '(') {
+                    string_append_char(token, current_char);
+                    return LEFT_PARENTHESIS;
+                }
                 if (current_char == 's' || current_char == 't' || current_char == 'r' ||
                     current_char == 'c' || current_char == 'e' ||
                     current_char == 'y' || current_char == 'p' || current_char == 'i' || current_char == '_') {
@@ -283,7 +287,8 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 }
                 break;
             case FLOAT_STATE:
-                if (isdigit(current_char) || current_char == 'e' || current_char == 'E' || current_char == '+' || current_char == '-') {
+                if (isdigit(current_char) || current_char == 'e' || current_char == 'E' || current_char == '+' ||
+                    current_char == '-') {
                     string_append_char(token, current_char);
                 } else {
                     state = START;
