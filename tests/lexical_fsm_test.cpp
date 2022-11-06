@@ -574,6 +574,31 @@ namespace ifj {
                                (lexical_token_t) {SEMICOLON, ";"}
                 );
             }
+
+            TEST_F(LexicalAnalyzerTest, StrictTypes) {
+                IsStackCorrect("declare(strict_types=1);", 7,
+                               (lexical_token_t) {KEYWORD_DECLARE, "declare"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {KEYWORD_STRICT_TYPES, "strict_types"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "1"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+
+                EXPECT_EXIT({
+                                IsStackCorrect("declare(strict-types=1);", 7,
+                                               (lexical_token_t) {KEYWORD_DECLARE, "declare"},
+                                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                                               (lexical_token_t) {IDENTIFIER, "strict-types"},
+                                               (lexical_token_t) {ASSIGN, "="},
+                                               (lexical_token_t) {INTEGER, "1"},
+                                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                                               (lexical_token_t) {SEMICOLON, ";"}
+                                );
+                            }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid strict_types declaration");
+            }
         }
     }
 }
