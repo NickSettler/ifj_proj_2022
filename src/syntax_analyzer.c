@@ -37,6 +37,7 @@ struct {
         {"!=",      "Op_not_equal",      SYN_TOKEN_NOT_EQUAL,            false, true,  false, 9,  SYN_NODE_NOT_EQUAL},
         {"=",       "Op_Assign",         SYN_TOKEN_ASSIGN,               false, false, false, -1, SYN_NODE_ASSIGN},
         {";",       "Semicolon",         SYN_TOKEN_SEMICOLON,            false, false, false, -1, (syntax_tree_node_type) -1},
+        {",",       "Comma",             SYN_TOKEN_COMMA,                false, false, false, -1, (syntax_tree_node_type) -1},
         {"if",      "Keyword_IF",        SYN_TOKEN_KEYWORD_IF,           false, false, false, -1, SYN_NODE_KEYWORD_IF},
         {"else",    "Keyword_ELSE",      SYN_TOKEN_KEYWORD_ELSE,         false, false, false, -1, (syntax_tree_node_type) -1},
         {"(",       "LeftParenthesis",   SYN_TOKEN_LEFT_PARENTHESIS,     false, false, false, -1, (syntax_tree_node_type) -1},
@@ -205,17 +206,40 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
     return x;
 }
 
+syntax_abstract_tree_t *args(FILE *fd) {
+    syntax_abstract_tree_t *tree = NULL, *node;
+
+    if (get_token_type(lexical_token->type) == SYN_TOKEN_RIGHT_PARENTHESIS) {
+        lexical_token = get_token(fd);
+        return NULL;
+    }
+
+    tree = make_binary_node(SYN_NODE_ARGS, expression(fd, 0), NULL);
+
+    while (get_token_type(lexical_token->type) == SYN_TOKEN_COMMA) {
+        expect_token("Comma", SYN_TOKEN_COMMA);
+        lexical_token = get_token(fd);
+        node = expression(fd, 0);
+        tree = make_binary_node(SYN_NODE_ARGS, node, tree);
+    }
+
+    lexical_token = get_token(fd);
+
+    return tree;
+}
+
 syntax_abstract_tree_t *stmt(FILE *fd) {
     syntax_abstract_tree_t *tree = NULL, *v, *e, *s, *s2;
 
     switch (lexical_token->type) {
-        case IDENTIFIER:
-            v = make_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
+        case IDENTIFIER: {
+            v = make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
+            bool is_variable = lexical_token->value[0] == '$';
             lexical_token = get_token(fd);
-            expect_token("Expected assignment operator", SYN_TOKEN_ASSIGN);
+            expect_token("Expected assignment operator", is_variable ? SYN_TOKEN_ASSIGN : SYN_TOKEN_LEFT_PARENTHESIS);
             lexical_token = get_token(fd);
-            e = expression(fd, 0);
-            tree = make_node(SYN_NODE_ASSIGN, v, e);
+            e = is_variable ? expression(fd, 0) : args(fd);
+            tree = make_binary_node(is_variable ? SYN_NODE_ASSIGN : SYN_NODE_CALL, v, e);
             expect_token("Expected semicolon", SYN_TOKEN_SEMICOLON);
             find_token(v->value->value)->defined = true;
             if (!check_tree_using(tree, is_defined)) {
@@ -224,12 +248,14 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             }
             lexical_token = get_token(fd);
             break;
-        case INTEGER:
+        }
+        case INTEGER: {
             tree = expression(fd, 0);
             expect_token("Expected semicolon", SYN_TOKEN_SEMICOLON);
             lexical_token = get_token(fd);
             break;
-        case KEYWORD_IF:
+        }
+        case KEYWORD_IF: {
             lexical_token = get_token(fd);
             e = parenthesis_expression(fd);
             s = stmt(fd);
@@ -240,7 +266,8 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             }
             tree = make_ternary_node(SYN_NODE_KEYWORD_IF, e, s, s2);
             break;
-        case LEFT_CURLY_BRACKETS:
+        }
+        case LEFT_CURLY_BRACKETS: {
             expect_token("Right curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
             lexical_token = get_token(fd);
             while (lexical_token->type != RIGHT_CURLY_BRACKETS && lexical_token->type != END_OF_FILE) {
@@ -249,10 +276,13 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             expect_token("Right curly brackets", SYN_TOKEN_RIGHT_CURLY_BRACKETS);
             lexical_token = get_token(fd);
             break;
-        case END_OF_FILE:
+        }
+        case END_OF_FILE: {
             break;
-        default:
-        SYNTAX_ERROR("Expected expression, got: %s\n", lexical_token->value);
+        }
+        default: {
+            SYNTAX_ERROR("Expected expression, got: %s\n", lexical_token->value)
+        }
     }
 
     return tree;
@@ -306,6 +336,8 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_ASSIGN;
         case SEMICOLON:
             return SYN_TOKEN_SEMICOLON;
+        case COMMA:
+            return SYN_TOKEN_COMMA;
         case LEFT_PARENTHESIS:
             return SYN_TOKEN_LEFT_PARENTHESIS;
         case RIGHT_PARENTHESIS:
