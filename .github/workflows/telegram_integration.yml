@@ -6,9 +6,6 @@ on:
     types: [ assigned, review_requested ]
   issues:
     types: [ assigned ]
-  push:
-    branches:
-      - "*"
 
 jobs:
   get_telegram_username:
@@ -32,7 +29,7 @@ jobs:
 
   send_pr_assigned:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'pull_request' && github.event.action == 'assigned') || (github.event_name == 'push')
+    if: (github.event_name == 'pull_request' && github.event.action == 'assigned')
     needs: get_telegram_username
     steps:
       - name: Send Telegram Message
