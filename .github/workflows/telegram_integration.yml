@@ -1,0 +1,38 @@
+name: Telegram Integration
+on:
+  pull_request_target:
+    types: [ assigned, review_requested ]
+  issues:
+    types: [ assigned ]
+  push:
+    branches:
+      - "*"
+
+jobs:
+  send_pr_assigned:
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'pull_request_target' && github.event.action == 'assigned') || (github.event_name == 'push')
+    steps:
+      - name: Get user Telegram ID
+        env:
+          TELEGRAM_USERS: ${{ secrets.TELEGRAM_USERS }}
+        run: |
+          IFS=', ' read -r -a users <<< "$TELEGRAM_USERS"
+          target_username="${{ github.event.assignee.login }}"
+          for user in "${users[@]}"; do
+              IFS=':' read -r -a user <<< "$user"
+              if [ "${{ github.event.assignee.login }}" == "${user[0]}" ]; then
+                  target_username="${user[1]}"
+                  break
+              fi
+          done
+          echo ::set-env name=TARGET_USERNAME::$target_username
+      - name: Send Telegram Message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ env.TARGET_USERNAME }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            👋 Hi, @${{ env.TARGET_USERNAME }}! 
+
+            You have been assigned to [${{ github.event.pull_request.title }}](${{ github.event.pull_request.html_url }}) in [${{ github.repository }}](${{ github.event.pull_request.html_url }}).
