@@ -26,6 +26,8 @@ jobs:
               fi
           done
           echo "target_username=$target_username\n" >> $GITHUB_OUTPUT
+    outputs:
+      target_username: ${{ steps.get_telegram_username.outputs.target_username }}
 
   send_pr_assigned:
     runs-on: ubuntu-latest
@@ -39,7 +41,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: html
           message: |
-            👋 Hi, @${{ steps.get_telegram_username.outputs.target_username }}!
+            👋 Hi, @${{ needs.get_telegram_username.outputs.target_username }}!
 
             You have been assigned to <a href="${{ github.event.pull_request.html_url }}">${{ github.event.pull_request.title }}</a> 
             in <a href="${{ github.event.repository.html_url }}">${{ github.repository }}</a>.
