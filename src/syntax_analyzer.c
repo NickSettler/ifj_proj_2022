@@ -260,7 +260,11 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             find_token(v->value->value)->defined = true;
             if (!check_tree_using(tree, is_defined)) {
                 syntax_abstract_tree_t *undefined_node = get_from_tree_using(tree, is_undefined);
-                SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", undefined_node->value->value)
+                if (is_variable) {
+                    SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", undefined_node->value->value)
+                } else {
+                    SEMANTIC_UNDEF_FUNC_ERROR("Function %s used before declaration", undefined_node->value->value)
+                }
             }
             lexical_token = get_token(fd);
             break;
