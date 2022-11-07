@@ -8,11 +8,12 @@ on:
     types: [ assigned ]
 
 jobs:
-  get_telegram_username:
+  get_telegram_assignee_username:
     runs-on: ubuntu-latest
+    if: github.event.action == 'assigned'
     steps:
-      - name: Get Telegram Username
-        id: get_telegram_username
+      - name: Get Telegram Assignee Username
+        id: get_telegram_assignee_username
         env:
           TELEGRAM_USERS: ${{ secrets.TELEGRAM_USERS }}
         run: |
@@ -27,12 +28,34 @@ jobs:
           done
           echo "target_username=$target_username" >> $GITHUB_OUTPUT
     outputs:
-      target_username: ${{ steps.get_telegram_username.outputs.target_username }}
+      target_username: ${{ steps.get_telegram_assignee_username.outputs.target_username }}
+
+  get_telegram_reviewer_username:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'review_requested'
+    steps:
+      - name: Get Telegram Reviewer Username
+        id: get_telegram_reviewer_username
+        env:
+          TELEGRAM_USERS: ${{ secrets.TELEGRAM_USERS }}
+        run: |
+          IFS=', ' read -r -a users <<< "$TELEGRAM_USERS"
+          target_username="${{ github.event.requested_reviewer.login }}"
+          for user in "${users[@]}"; do
+              IFS=':' read -r -a user <<< "$user"
+              if [ "${{ github.event.requested_reviewer.login }}" == "${user[0]}" ]; then
+                  target_username="${user[1]}"
+                  break
+              fi
+          done
+          echo "target_username=$target_username" >> $GITHUB_OUTPUT
+    outputs:
+      target_username: ${{ steps.get_telegram_reviewer_username.outputs.target_username }}
 
   send_pr_assigned:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'pull_request' && github.event.action == 'assigned')
-    needs: get_telegram_username
+    if: github.event_name == 'pull_request' && github.event.action == 'assigned'
+    needs: get_telegram_assignee_username
     steps:
       - name: Send Telegram Message
         uses: appleboy/telegram-action@master
@@ -41,14 +64,14 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: html
           message: |
-            👋 Hi, @${{ needs.get_telegram_username.outputs.target_username }}!
+            👋 Hi, @${{ needs.get_telegram_assignee_username.outputs.target_username }}!
 
             You have been assigned to pull request <a href="${{ github.event.pull_request.html_url }}">${{ github.event.pull_request.title }}</a> in <a href="${{ github.event.repository.html_url }}">${{ github.repository }}</a>.
 
   send_pr_review_requested:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'pull_request' && github.event.action == 'review_requested')
-    needs: get_telegram_username
+    if: github.event_name == 'pull_request' && github.event.action == 'review_requested'
+    needs: get_telegram_reviewer_username
     steps:
       - name: Send Telegram Message
         uses: appleboy/telegram-action@master
@@ -57,14 +80,14 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: html
           message: |
-            👋 Hi, @${{ needs.get_telegram_username.outputs.target_username }}!
+            👋 Hi, @${{ needs.get_telegram_reviewer_username.outputs.target_username }}!
 
             You have been added as a reviewer to pull request <a href="${{ github.event.pull_request.html_url }}">${{ github.event.pull_request.title }}</a> in <a href="${{ github.event.repository.html_url }}">${{ github.repository }}</a>.
 
   send_issue_assigned:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'issues' && github.event.action == 'assigned')
-    needs: get_telegram_username
+    if: github.event_name == 'issues' && github.event.action == 'assigned'
+    needs: get_telegram_assignee_username
     steps:
       - name: Send Telegram Message
         uses: appleboy/telegram-action@master
@@ -73,6 +96,6 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: html
           message: |
-            👋 Hi, @${{ needs.get_telegram_username.outputs.target_username }}!
+            👋 Hi, @${{ needs.get_telegram_assignee_username.outputs.target_username }}!
 
             You have been assigned to issue <a href="${{ github.event.issue.html_url }}">${{ github.event.issue.title }}</a> in <a href="${{ github.event.repository.html_url }}">${{ github.repository }}</a>.
