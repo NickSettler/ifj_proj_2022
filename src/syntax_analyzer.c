@@ -144,6 +144,21 @@ bool is_undefined(syntax_abstract_tree_t *tree) {
     return false;
 }
 
+bool is_correct_if(syntax_abstract_tree_t *tree) {
+    if (tree->type == SYN_NODE_KEYWORD_IF) {
+        syntax_abstract_tree_t *condition = tree->left;
+        syntax_abstract_tree_t *body = tree->middle;
+        syntax_abstract_tree_t *else_body = tree->right;
+
+        if (!condition || !body) return false;
+        if (else_body && else_body->type == SYN_NODE_KEYWORD_IF) return is_correct_if(else_body);
+
+        return true;
+    }
+
+    return true;
+}
+
 void expect_token(const char *msg, syntax_tree_token_type type) {
     if (get_token_type(lexical_token->type) != type) {
         SYNTAX_ERROR("%s Expecting %s, found: %s\n", msg, attributes[type].text,
@@ -264,8 +279,15 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             if (lexical_token->type == KEYWORD_ELSE) {
                 lexical_token = get_token(fd);
                 s2 = stmt(fd);
+
+                if (s2 == NULL) {
+                    SYNTAX_ERROR("Expected statement after else\n")
+                }
             }
             tree = make_ternary_node(SYN_NODE_KEYWORD_IF, e, s, s2);
+            if (!check_tree_using(tree, is_correct_if)) {
+                SYNTAX_ERROR("Incorrect if statement\n")
+            }
             break;
         }
         case LEFT_CURLY_BRACKETS: {
