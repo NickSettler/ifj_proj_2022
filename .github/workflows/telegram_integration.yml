@@ -37,9 +37,9 @@ jobs:
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
-          format: markdown
+          format: html
           message: |
             👋 Hi, @${{ env.target_username }}!
 
-            You have been assigned to [${{ github.event.pull_request.title }}](${{ github.event.pull_request.html_url }}) 
-            in [${{ github.repository }}](${{ github.event.repository.html_url }}).
+            You have been assigned to <a href="${{ github.event.pull_request.html_url }}">${{ github.event.pull_request.title }}</a> 
+            in <a href="${{ github.event.repository.html_url }}">${{ github.repository }}</a>.
