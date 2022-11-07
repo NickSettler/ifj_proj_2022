@@ -34,14 +34,12 @@ jobs:
     steps:
       - name: Send Telegram Message
         uses: appleboy/telegram-action@master
-        env:
-          TARGET_USERNAME: ${{ needs.get_telegram_username.outputs.target_username }}
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: html
           message: |
-            👋 Hi, @${{ env.TARGET_USERNAME }}!
+            👋 Hi, @${{ steps.get_telegram_username.outputs.target_username }}!
 
             You have been assigned to <a href="${{ github.event.pull_request.html_url }}">${{ github.event.pull_request.title }}</a> 
             in <a href="${{ github.event.repository.html_url }}">${{ github.repository }}</a>.
