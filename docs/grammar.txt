@@ -4,7 +4,7 @@
 <f-dec-stats> -> <f-dec-stat>
 <f-dec-stats> -> <f-dec-stat> <f-dec-stats>
 
-<f-dec-stat> -> ID ( <f-args> ) : <f-type> { <stat-list> }
+<f-dec-stat> -> function ID ( <f-args> ) : <f-type> { <stat-list> }
 
 <f-type> -> int
 <f-type> -> float
