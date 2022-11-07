@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 extern "C" {
+#include "../src/errors.h"
+#include "../src/errors.c"
 #include "../src/symtable.h"
 #include "../src/symtable.c"
 #include "../src/syntax_analyzer.h"
@@ -44,12 +46,29 @@ namespace ifj {
 
                     EXPECT_STREQ(expected_str.c_str(), actual) << "Input: " << input;
                 }
+
+                void SyntaxTreeWithError(const std::string &input) {
+                    syntax_abstract_tree_t *tree = load_syntax_tree(test_lex_input((char *) input.c_str()));
+                    EXPECT_EQ(tree, nullptr);
+                }
             };
 
             TEST_F(SyntaxAnalyzerTest, Assignment) {
                 IsSyntaxTreeCorrect("$a = 12 + 32;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
                                      SYN_NODE_ADD, SYN_NODE_INTEGER});
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = "), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: EOF");
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = ;"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = );"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: )");
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = 2 3;"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Semicolon Expecting ;, found: INTEGER");
             }
 
             TEST_F(SyntaxAnalyzerTest, ArithmeticExpressionBasic) {
@@ -63,6 +82,21 @@ namespace ifj {
 
                 IsSyntaxTreeCorrect("33 / 11;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_DIV, SYN_NODE_INTEGER});
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = 2 +"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: EOF");
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = 2 +;"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = 2 -+;"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = 2 ++;"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Increment operator is not supported");
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = 2 --;"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Decrement operator is not supported");
             }
 
             TEST_F(SyntaxAnalyzerTest, ArithmeticExpressionAdvanced) {
@@ -74,6 +108,12 @@ namespace ifj {
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
                                      SYN_NODE_ADD, SYN_NODE_INTEGER, SYN_NODE_DIV, SYN_NODE_INTEGER, SYN_NODE_MUL,
                                      SYN_NODE_INTEGER});
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = (2 + 4) /;"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = $a + 1 -;"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
             }
 
             TEST_F(SyntaxAnalyzerTest, IfConditions) {
@@ -114,6 +154,27 @@ namespace ifj {
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER});
+
+                EXPECT_EXIT(SyntaxTreeWithError("if("), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: EOF");
+
+                EXPECT_EXIT(SyntaxTreeWithError("if($a"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Right parenthesis Expecting ), found: EOF");
+
+                EXPECT_EXIT(SyntaxTreeWithError("if($a)"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Incorrect if statement");
+
+                EXPECT_EXIT(SyntaxTreeWithError("if($a) {"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Right curly brackets Expecting }, found: EOF");
+
+                EXPECT_EXIT(SyntaxTreeWithError("if($a) }"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: }");
+
+                EXPECT_EXIT(SyntaxTreeWithError("if($a) {}"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Incorrect if statement");
+
+                EXPECT_EXIT(SyntaxTreeWithError("if($a) {$a}"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Assignment Expecting =, found: }");
             }
 
             TEST_F(SyntaxAnalyzerTest, IfElseConditions) {
@@ -121,6 +182,20 @@ namespace ifj {
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
                                      SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("if ($a == 2) {"
+                                    " $a = 3;"
+                                    "} else if ($a == 1) {"
+                                    " $a = 4;"
+                                    "} else {"
+                                    " $a = 5;"
+                                    "}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
 
                 IsSyntaxTreeCorrect("if ($a == 2) "
                                     "{"
@@ -136,6 +211,26 @@ namespace ifj {
                                      SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_IDENTIFIER, SYN_NODE_SUB, SYN_NODE_INTEGER});
+
+                EXPECT_EXIT(SyntaxTreeWithError("if($a) { $a = 1; } else"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected statement after else");
+
+                EXPECT_EXIT(SyntaxTreeWithError("if($a) { $a = 1; } else ;"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
+
+                EXPECT_EXIT(SyntaxTreeWithError("if($a) { $a = 1; } else $a = 1; else $a = 2;"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: else");
+
+                EXPECT_EXIT(SyntaxTreeWithError("if($a) { $a = 1; } else if ($a == 2 $a = 1; else $a = 2;"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Right parenthesis Expecting ), found: ID");
+
+                EXPECT_EXIT(SyntaxTreeWithError("if($a) { $a = 1; } else if ($a == 2) $a = 1; else"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected statement after else");
             }
 
             TEST_F(SyntaxAnalyzerTest, FunctionCall) {
@@ -158,6 +253,42 @@ namespace ifj {
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
                                      SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL, SYN_NODE_IDENTIFIER,
                                      SYN_NODE_ARGS, SYN_NODE_INTEGER, SYN_NODE_ADD, SYN_NODE_INTEGER, SYN_NODE_ARGS});
+
+                EXPECT_EXIT(SyntaxTreeWithError("f("),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: EOF");
+
+                EXPECT_EXIT(SyntaxTreeWithError("f()"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Semicolon Expecting ;, found: EOF");
+
+                EXPECT_EXIT(SyntaxTreeWithError("f(g();"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Semicolon Expecting ;, found: )");
+
+                EXPECT_EXIT(SyntaxTreeWithError("f(1 2);"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Semicolon Expecting ;, found: )");
+
+                EXPECT_EXIT(SyntaxTreeWithError("f(if($a)$b=2;);"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: if");
+
+                EXPECT_EXIT(SyntaxTreeWithError("f($a = 2);"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Semicolon Expecting ;, found: INTEGER");
+
+                EXPECT_EXIT(SyntaxTreeWithError("f((());"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: )");
+
+                EXPECT_EXIT(SyntaxTreeWithError("f(((1*)));"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: )");
+
+                EXPECT_EXIT(SyntaxTreeWithError("f(==);"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: ==");
             }
         }
     }
