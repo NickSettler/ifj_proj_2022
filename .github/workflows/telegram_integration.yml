@@ -43,5 +43,36 @@ jobs:
           message: |
             👋 Hi, @${{ needs.get_telegram_username.outputs.target_username }}!
 
-            You have been assigned to <a href="${{ github.event.pull_request.html_url }}">${{ github.event.pull_request.title }}</a> 
-            in <a href="${{ github.event.repository.html_url }}">${{ github.repository }}</a>.
+            You have been assigned to pull request <a href="${{ github.event.pull_request.html_url }}">${{ github.event.pull_request.title }}</a> in <a href="${{ github.event.repository.html_url }}">${{ github.repository }}</a>.
+
+  send_pr_review_requested:
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'pull_request' && github.event.action == 'review_requested')
+    needs: get_telegram_username
+    steps:
+      - name: Send Telegram Message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: html
+          message: |
+            👋 Hi, @${{ needs.get_telegram_username.outputs.target_username }}!
+
+            You have been added as a reviewer to pull request <a href="${{ github.event.pull_request.html_url }}">${{ github.event.pull_request.title }}</a> in <a href="${{ github.event.repository.html_url }}">${{ github.repository }}</a>.
+
+  send_issue_assigned:
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'issues' && github.event.action == 'assigned')
+    needs: get_telegram_username
+    steps:
+      - name: Send Telegram Message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: html
+          message: |
+            👋 Hi, @${{ needs.get_telegram_username.outputs.target_username }}!
+
+            You have been assigned to issue <a href="${{ github.event.issue.html_url }}">${{ github.event.issue.title }}</a> in <a href="${{ github.event.repository.html_url }}">${{ github.repository }}</a>.
