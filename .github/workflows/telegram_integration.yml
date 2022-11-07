@@ -26,7 +26,7 @@ jobs:
                   break
               fi
           done
-          echo ::set-env name=TARGET_USERNAME::$target_username
+          echo "target_username=$target_username" >> $GITHUB_ENV
       - name: Send Telegram Message
         uses: appleboy/telegram-action@master
         with:
