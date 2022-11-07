@@ -25,7 +25,7 @@ jobs:
                   break
               fi
           done
-          echo "target_username=$target_username" >> $GITHUB_OUTPUT
+          echo "target_username=$target_username\n" >> $GITHUB_OUTPUT
 
   send_pr_assigned:
     runs-on: ubuntu-latest
