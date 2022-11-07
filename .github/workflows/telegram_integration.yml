@@ -41,16 +41,20 @@ jobs:
         run: |
           IFS=', ' read -r -a users <<< "$TELEGRAM_USERS"
           target_username="${{ github.event.requested_reviewer.login }}"
+          found=0
           for user in "${users[@]}"; do
               IFS=':' read -r -a user <<< "$user"
               if [ "${{ github.event.requested_reviewer.login }}" == "${user[0]}" ]; then
                   target_username="${user[1]}"
+                  found=1
                   break
               fi
           done
           echo "target_username=$target_username" >> $GITHUB_OUTPUT
+          echo "found=$found" >> $GITHUB_OUTPUT
     outputs:
       target_username: ${{ steps.get_telegram_reviewer_username.outputs.target_username }}
+      found: ${{ steps.get_telegram_reviewer_username.outputs.found }}
 
   send_pr_assigned:
     runs-on: ubuntu-latest
@@ -80,7 +84,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: html
           message: |
-            👋 Hi, @${{ needs.get_telegram_reviewer_username.outputs.target_username }}!
+            👋 Hi, ${{ needs.get_telegram_reviewer_username.outputs.found == 1 && format('@{0}', needs.get_telegram_reviewer_username.outputs.target_username) || needs.get_telegram_reviewer_username.outputs.target_username }}!
 
             You have been added as a reviewer to pull request <a href="${{ github.event.pull_request.html_url }}">${{ github.event.pull_request.title }}</a> in <a href="${{ github.event.repository.html_url }}">${{ github.repository }}</a>.
 
