@@ -290,6 +290,16 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             }
             break;
         }
+        case KEYWORD_WHILE: {
+            lexical_token = get_token(fd);
+            e = parenthesis_expression(fd);
+            s = stmt(fd);
+            tree = make_binary_node(SYN_NODE_KEYWORD_WHILE, e, s);
+            if (s == NULL) {
+                SYNTAX_ERROR("Expected statement after while\n")
+            }
+            break;
+        }
         case LEFT_CURLY_BRACKETS: {
             expect_token("Left curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
             lexical_token = get_token(fd);

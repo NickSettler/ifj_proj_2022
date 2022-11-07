@@ -76,7 +76,8 @@ typedef enum {
     SYN_NODE_NOT_EQUAL,
     SYN_NODE_CALL,
     SYN_NODE_ASSIGN,
-    SYN_NODE_KEYWORD_IF
+    SYN_NODE_KEYWORD_IF,
+    SYN_NODE_KEYWORD_WHILE,
 } syntax_tree_node_type;
 
 typedef struct syntax_abstract_tree syntax_abstract_tree_t;
