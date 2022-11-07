@@ -12,6 +12,7 @@
 #define IFJ_PROJ_SYNTAX_ANALYZER_H
 
 #include <stdbool.h>
+#include "errors.h"
 #include "lexical_fsm.h"
 
 /**

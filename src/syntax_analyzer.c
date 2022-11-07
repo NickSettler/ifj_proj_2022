@@ -183,8 +183,9 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
             x = make_binary_leaf(SYN_NODE_INTEGER, string_init(lexical_token->value));
             lexical_token = get_token(fd);
             break;
-        default:
-        SYNTAX_ERROR("Expected expression, got: %s\n", lexical_token->value);
+        default: {
+            SYNTAX_ERROR("Expected expression, got: %s\n", get_readable_error_char(lexical_token->value))
+        }
     }
 
 
@@ -236,11 +237,11 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             v = make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
             bool is_variable = lexical_token->value[0] == '$';
             lexical_token = get_token(fd);
-            expect_token("Expected assignment operator", is_variable ? SYN_TOKEN_ASSIGN : SYN_TOKEN_LEFT_PARENTHESIS);
+            expect_token("Assignment", is_variable ? SYN_TOKEN_ASSIGN : SYN_TOKEN_LEFT_PARENTHESIS);
             lexical_token = get_token(fd);
             e = is_variable ? expression(fd, 0) : args(fd);
             tree = make_binary_node(is_variable ? SYN_NODE_ASSIGN : SYN_NODE_CALL, v, e);
-            expect_token("Expected semicolon", SYN_TOKEN_SEMICOLON);
+            expect_token("Semicolon", SYN_TOKEN_SEMICOLON);
             find_token(v->value->value)->defined = true;
             if (!check_tree_using(tree, is_defined)) {
                 syntax_abstract_tree_t *undefined_node = get_from_tree_using(tree, is_undefined);
@@ -251,7 +252,7 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
         }
         case INTEGER: {
             tree = expression(fd, 0);
-            expect_token("Expected semicolon", SYN_TOKEN_SEMICOLON);
+            expect_token("Semicolon", SYN_TOKEN_SEMICOLON);
             lexical_token = get_token(fd);
             break;
         }
@@ -268,7 +269,7 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             break;
         }
         case LEFT_CURLY_BRACKETS: {
-            expect_token("Right curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
+            expect_token("Left curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
             lexical_token = get_token(fd);
             while (lexical_token->type != RIGHT_CURLY_BRACKETS && lexical_token->type != END_OF_FILE) {
                 tree = make_binary_node(SYN_NODE_SEQUENCE, tree, stmt(fd));
@@ -320,6 +321,10 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_MUL;
         case DIVIDE:
             return SYN_TOKEN_DIV;
+        case INCREMENT:
+        SYNTAX_ERROR("Increment operator is not supported")
+        case DECREMENT:
+        SYNTAX_ERROR("Decrement operator is not supported")
         case LESS:
             return SYN_TOKEN_LESS;
         case LESS_EQUAL:
