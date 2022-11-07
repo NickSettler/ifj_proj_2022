@@ -11,11 +11,11 @@ on:
       - "*"
 
 jobs:
-  send_pr_assigned:
+  get_telegram_username:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'pull_request' && github.event.action == 'assigned') || (github.event_name == 'push')
     steps:
-      - name: Get user Telegram ID
+      - name: Get Telegram Username
+        id: get_telegram_username
         env:
           TELEGRAM_USERS: ${{ secrets.TELEGRAM_USERS }}
         run: |
@@ -29,6 +29,12 @@ jobs:
               fi
           done
           echo "target_username=$target_username" >> $GITHUB_ENV
+
+  send_pr_assigned:
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'pull_request' && github.event.action == 'assigned') || (github.event_name == 'push')
+    needs: get_telegram_username
+    steps:
       - name: Send Telegram Message
         uses: appleboy/telegram-action@master
         with:
