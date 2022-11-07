@@ -233,6 +233,48 @@ namespace ifj {
                             "\\[SYNTAX ERROR\\] Expected statement after else");
             }
 
+            TEST_F(SyntaxAnalyzerTest, WhileLoop) {
+                IsSyntaxTreeCorrect("while ($a > 0) $a = $a - 1;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_GREATER, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_WHILE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_SUB, SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("while ($a > 0) {$b = $b + 1; $a = $a - 1;}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_GREATER, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_ADD, SYN_NODE_INTEGER, SYN_NODE_SEQUENCE,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_IDENTIFIER, SYN_NODE_SUB,
+                                     SYN_NODE_INTEGER});
+
+                EXPECT_EXIT(SyntaxTreeWithError("while"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Left parenthesis Expecting \\(, found: EOF");
+
+                EXPECT_EXIT(SyntaxTreeWithError("while()"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: )");
+
+                EXPECT_EXIT(SyntaxTreeWithError("while($a) }"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: }");
+
+                EXPECT_EXIT(SyntaxTreeWithError("while($a);"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
+
+                EXPECT_EXIT(SyntaxTreeWithError("while($a) $b = "),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: EOF");
+
+                EXPECT_EXIT(SyntaxTreeWithError("while{$a = 1;}"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Left parenthesis Expecting \\(, found: {");
+
+                EXPECT_EXIT(SyntaxTreeWithError("while(if()"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: if");
+            }
+
             TEST_F(SyntaxAnalyzerTest, FunctionCall) {
                 IsSyntaxTreeCorrect("f();", {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL});
 
