@@ -599,6 +599,25 @@ namespace ifj {
                             }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
                             "\\[LEXICAL ERROR\\] Invalid strict_types declaration");
             }
+
+            TEST_F(LexicalAnalyzerTest, InvalidArithmeticOperators) {
+                EXPECT_EXIT({
+                                IsStackCorrect("$a */ $b"
+                                               "$c +* $d"
+                                               "$e -*- $f", 9,
+                                               (lexical_token_t) {IDENTIFIER, "$a"},
+                                               (lexical_token_t) {MULTIPLY, "*"},
+                                               (lexical_token_t) {IDENTIFIER, "$b"},
+                                               (lexical_token_t) {IDENTIFIER, "$c"},
+                                               (lexical_token_t) {PLUS, "+"},
+                                               (lexical_token_t) {IDENTIFIER, "$d"},
+                                               (lexical_token_t) {IDENTIFIER, "$e"},
+                                               (lexical_token_t) {MINUS, "-"},
+                                               (lexical_token_t) {IDENTIFIER, "$f"}
+                                );
+                            }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid arithmetic operator");
+            }
         }
     }
 }
