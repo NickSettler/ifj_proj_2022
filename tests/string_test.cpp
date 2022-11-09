@@ -36,6 +36,18 @@ namespace ifj {
                 string_clear(str);
                 EXPECT_STREQ(str->value, "");
             }
+
+            TEST(String, StringCheckBy) {
+                string_t *str = string_init("12345");
+                bool is_digit = string_check_by(str, isdigit);
+                EXPECT_EQ(is_digit, true);
+            }
+
+            TEST(String, StringConvertBy) {
+                string_t *str = string_init("Hello World");
+                string_convert_by(str, tolower);
+                EXPECT_STREQ(str->value, "hello world");
+            }
         }
     }
 }

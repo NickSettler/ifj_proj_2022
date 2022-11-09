@@ -25,7 +25,9 @@ namespace ifj {
                 }
 
                 ~LexicalAnalyzerTest() override {
-                    fclose(fd);
+                    if (fd != nullptr) {
+                        fclose(fd);
+                    }
                 }
 
                 void SetUp() override {
@@ -103,7 +105,7 @@ namespace ifj {
             }
 
             TEST_F(LexicalAnalyzerTest, PHPBrackets) {
-                IsStackCorrect("<?php ?>", 2,
+                IsStackCorrect("<?PHP ?>", 2,
                                (lexical_token_t) {OPEN_PHP_BRACKET, "<?php"},
                                (lexical_token_t) {CLOSE_PHP_BRACKET, "?>"}
                 );
@@ -387,6 +389,238 @@ namespace ifj {
                                (lexical_token_t) {SEMICOLON, ";"},
                                (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
                 );
+            }
+
+            TEST_F(LexicalAnalyzerTest, CaseSensitiveKeywords) {
+                IsStackCorrect("Function foo(int $a){"
+                               "    $a = NuLl;"
+                               "    IF ($a == NULL) {"
+                               "    $a = 5;}", 23,
+                               (lexical_token_t) {KEYWORD_FUNCTION, "function"},
+                               (lexical_token_t) {IDENTIFIER, "foo"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {KEYWORD_INTEGER, "int"},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {KEYWORD_NULL, "null"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {KEYWORD_IF, "if"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {EQUAL, "=="},
+                               (lexical_token_t) {KEYWORD_NULL, "null"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "5"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
+                );
+            }
+
+            TEST_F(LexicalAnalyzerTest, NegativeExpressions) {
+                IsStackCorrect("$a = -4 + $b", 6,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {INTEGER, "4"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {IDENTIFIER, "$b"}
+                );
+                IsStackCorrect("$a = -sum(1, $c) + $b", 11,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {IDENTIFIER, "sum"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {INTEGER, "1"},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {IDENTIFIER, "$c"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {IDENTIFIER, "$b"}
+                );
+                IsStackCorrect("$a = -(4 + $b) + (-(-func1()+(-2 * sum($c, 2))))", 30,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {INTEGER, "4"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {IDENTIFIER, "func1"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {PLUS, "+"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {MINUS, "-"},
+                               (lexical_token_t) {INTEGER, "2"},
+                               (lexical_token_t) {MULTIPLY, "*"},
+                               (lexical_token_t) {IDENTIFIER, "sum"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {IDENTIFIER, "$c"},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {INTEGER, "2"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"}
+
+                );
+            }
+
+            TEST_F(LexicalAnalyzerTest, Comments) {
+                IsStackCorrect("$a = 5 // double-slash comment\n"
+                               "$b = 6 /* comment\n new-line comment*/\n"
+                               "$c = 7 # sharp comment", 9,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "5"},
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "6"},
+                               (lexical_token_t) {IDENTIFIER, "$c"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "7"}
+                );
+            }
+
+            TEST_F(LexicalAnalyzerTest, IntegerType) {
+                IsStackCorrect("$b = 62345;"
+                               " 42  ", 5,
+                               (lexical_token_t) {IDENTIFIER, "$b"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "62345"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {INTEGER, "42"}
+
+                );
+
+                EXPECT_EXIT({
+                                IsStackCorrect("$a = 5f3;"
+                                               "1+4", 7,
+                                               (lexical_token_t) {IDENTIFIER, "$a"},
+                                               (lexical_token_t) {ASSIGN, "="},
+                                               (lexical_token_t) {INTEGER, "5f3"},
+                                               (lexical_token_t) {SEMICOLON, ";"},
+                                               (lexical_token_t) {INTEGER, "1"},
+                                               (lexical_token_t) {PLUS, "+"},
+                                               (lexical_token_t) {INTEGER, "4"}
+
+                                );
+                            }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid integer number format");
+            }
+
+            TEST_F(LexicalAnalyzerTest, FloatType) {
+                IsStackCorrect("23.56e1;"
+                               "12E+24;", 4,
+                               (lexical_token_t) {FLOAT, "23.56e1"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {FLOAT, "12E+24"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+                EXPECT_EXIT({
+                                IsStackCorrect("23.5612e;"
+                                               "12.2.2;"
+                                               "56.e2", 5,
+                                               (lexical_token_t) {FLOAT, "23.5612e"},
+                                               (lexical_token_t) {SEMICOLON, ";"},
+                                               (lexical_token_t) {FLOAT, "12.2.2"},
+                                               (lexical_token_t) {SEMICOLON, ";"},
+                                               (lexical_token_t) {FLOAT, "56.e2"}
+                                );
+                            }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid float number format");
+
+            }
+
+            TEST_F(LexicalAnalyzerTest, StringType) {
+                IsStackCorrect("$a = \"abc\";", 4,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {STRING, "\"abc\""},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+
+                IsStackCorrect("$a = \'testing\';", 4,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {STRING, "\'testing\'"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+            }
+
+            TEST_F(LexicalAnalyzerTest, Concatenation) {
+                IsStackCorrect("$a = \"Hello \" . \"world\";", 6,
+                               (lexical_token_t) {IDENTIFIER, "$a"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {STRING, "\"Hello \""},
+                               (lexical_token_t) {CONCATENATION, "."},
+                               (lexical_token_t) {STRING, "\"world\""},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+
+                IsStackCorrect("\"hello\".\"world\";", 4,
+                               (lexical_token_t) {STRING, "\"hello\""},
+                               (lexical_token_t) {CONCATENATION, "."},
+                               (lexical_token_t) {STRING, "\"world\""},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+            }
+
+            TEST_F(LexicalAnalyzerTest, StrictTypes) {
+                IsStackCorrect("declare(strict_types=1);", 7,
+                               (lexical_token_t) {KEYWORD_DECLARE, "declare"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {KEYWORD_STRICT_TYPES, "strict_types"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "1"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+
+                EXPECT_EXIT({
+                                IsStackCorrect("declare(strict-types=1);", 7,
+                                               (lexical_token_t) {KEYWORD_DECLARE, "declare"},
+                                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                                               (lexical_token_t) {IDENTIFIER, "strict-types"},
+                                               (lexical_token_t) {ASSIGN, "="},
+                                               (lexical_token_t) {INTEGER, "1"},
+                                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                                               (lexical_token_t) {SEMICOLON, ";"}
+                                );
+                            }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid strict_types declaration");
+            }
+
+            TEST_F(LexicalAnalyzerTest, InvalidArithmeticOperators) {
+                EXPECT_EXIT({
+                                IsStackCorrect("$a */ $b"
+                                               "$c +* $d"
+                                               "$e -*- $f", 9,
+                                               (lexical_token_t) {IDENTIFIER, "$a"},
+                                               (lexical_token_t) {MULTIPLY, "*"},
+                                               (lexical_token_t) {IDENTIFIER, "$b"},
+                                               (lexical_token_t) {IDENTIFIER, "$c"},
+                                               (lexical_token_t) {PLUS, "+"},
+                                               (lexical_token_t) {IDENTIFIER, "$d"},
+                                               (lexical_token_t) {IDENTIFIER, "$e"},
+                                               (lexical_token_t) {MINUS, "-"},
+                                               (lexical_token_t) {IDENTIFIER, "$f"}
+                                );
+                            }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid arithmetic operator");
             }
         }
     }

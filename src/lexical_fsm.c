@@ -19,10 +19,10 @@ int state = START;
 LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
     char current_char = (char) getc(fd);
 
+    string_clear(token);
     while (true) {
         switch (state) {
             case START:
-                string_clear(token);
 
                 switch (current_char) {
                     case ' ':
@@ -48,9 +48,13 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     case ';':
                         string_append_char(token, current_char);
                         return SEMICOLON;
+                    case '\'':
                     case '"':
                         state = STRING_STATE;
                         string_append_char(token, current_char);
+                        break;
+                    case '#' :
+                        state = COMMENT_STATE;
                         break;
                     case '+':
                     case '-':
@@ -86,6 +90,9 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     case ']':
                         string_append_char(token, current_char);
                         return RIGHT_SQUARE_BRACKETS;
+                    case '.':
+                        string_append_char(token, current_char);
+                        return CONCATENATION;
                     case '<':
                     case '>':
                         state = SQUARE_PARENTHESIS_STATE;
@@ -110,6 +117,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     string_append_char(token, current_char);
                 } else {
                     int keyword = -1;
+                    string_convert_by(token, tolower);  // all keywords are not case-sensitive
 
                     if (!strcmp(token->value, "int") || !strcmp(token->value, "?int")) keyword = KEYWORD_INTEGER;
                     else if (!strcmp(token->value, "float") || !strcmp(token->value, "?float")) keyword = KEYWORD_FLOAT;
@@ -122,9 +130,14 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, "return")) keyword = KEYWORD_RETURN;
                     else if (!strcmp(token->value, "null")) keyword = KEYWORD_NULL;
                     else if (!strcmp(token->value, "void")) keyword = KEYWORD_VOID;
+                    else if (!strcmp(token->value, "declare")) keyword = KEYWORD_DECLARE;
                     else if (!strcmp(token->value, "?>")) keyword = CLOSE_PHP_BRACKET;
 
-                    state = keyword != -1 ? START : IDENTIFIER_STATE;
+                    if (keyword != -1) {
+                        state = keyword == KEYWORD_DECLARE ? STRICT_TYPES_STATE : START;
+                    } else {
+                        state = IDENTIFIER_STATE;
+                    }
                     ungetc(current_char, fd);
                     if (keyword != -1) return (LEXICAL_FSM_TOKENS) keyword;
                 }
@@ -145,19 +158,37 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 }
                 break;
             case PHP_BRACKET_STATE:
-                if (current_char == 'p' || current_char == 'P' || current_char == 'h' || current_char == 'H') {
+                if (tolower(current_char) == 'p' || tolower(current_char) == 'h') {
                     string_append_char(token, current_char);
                 } else {
-                    bool is_php_bracket = !strcmp(token->value, "<?") || !strcmp(token->value, "<?php") ||
-                                          !strcmp(token->value, "<?PHP");
+                    string_convert_by(token, tolower);
+                    bool is_php_bracket = !strcmp(token->value, "<?") || !strcmp(token->value, "<?php");
 
                     if (!is_php_bracket) {
-                        LEXICAL_ERROR("Invalid PHP open bracket");
+                            LEXICAL_ERROR("Invalid PHP open bracket");
                     }
 
                     state = START;
                     ungetc(current_char, fd);
                     return OPEN_PHP_BRACKET;
+                }
+                break;
+            case STRICT_TYPES_STATE:
+                if (current_char == '(') {
+                    string_append_char(token, current_char);
+                    return LEFT_PARENTHESIS;
+                }
+                if (current_char == 's' || current_char == 't' || current_char == 'r' ||
+                    current_char == 'c' || current_char == 'e' ||
+                    current_char == 'y' || current_char == 'p' || current_char == 'i' || current_char == '_') {
+                    string_append_char(token, current_char);
+                } else {
+                    if (strcmp(token->value, "strict_types")) {
+                        LEXICAL_ERROR("Invalid strict_types declaration");
+                    }
+                    state = START;
+                    ungetc(current_char, fd);
+                    return KEYWORD_STRICT_TYPES;
                 }
                 break;
             case EQUAL_STATE:
@@ -179,13 +210,26 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     (!strcmp(token->value, "+") && current_char == '+') ||
                     (!strcmp(token->value, "-") && current_char == '-')) {
                     string_append_char(token, current_char);
+                } else if (!strcmp(token->value, "/")) {
+                    switch (current_char) {
+                        case '/':
+                        case '*':
+                            string_append_char(token, current_char);
+                            state = current_char == '/' ? COMMENT_STATE : MULTILINE_COMMENT_STATE;
+                            break;
+                        default:
+                            state = START;
+                            ungetc(current_char, fd);
+                            return DIVIDE;
+                    }
                 } else {
                     state = START;
 
                     if (current_char != '+' && current_char != '-' && current_char != '*' && current_char != '/') {
                         ungetc(current_char, fd);
+                    } else {
+                        string_append_char(token, current_char);
                     }
-
                     if (!strcmp(token->value, "+")) return PLUS;
                     else if (!strcmp(token->value, "-")) return MINUS;
                     else if (!strcmp(token->value, "*")) return MULTIPLY;
@@ -196,6 +240,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, "/=")) return DIVIDE_ASSIGN;
                     else if (!strcmp(token->value, "--")) return DECREMENT;
                     else if (!strcmp(token->value, "++")) return INCREMENT;
+                    else LEXICAL_ERROR("Invalid arithmetic operator");
                 }
                 break;
             case LOGICAL_STATE:
@@ -231,30 +276,44 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 }
                 break;
             case INTEGER_STATE:
-                if (isdigit(current_char)) {
+                if (isdigit(current_char) || (isalpha(current_char) && current_char != 'e' && current_char != 'E')) {
                     string_append_char(token, current_char);
-                } else if (current_char == '.') {
+                } else if (current_char == '.' || current_char == 'e' || current_char == 'E') {
                     state = FLOAT_STATE;
                     string_append_char(token, current_char);
                 } else {
-                    // TODO handle Lexical error (integer must not contain any other characters)
                     state = START;
                     ungetc(current_char, fd);
-                    return INTEGER;
+
+                    if (string_check_by(token, isdigit)) return INTEGER;
+                    else {
+                        LEXICAL_ERROR("Invalid integer number format");
+                    }
                 }
                 break;
             case FLOAT_STATE:
-                if (isdigit(current_char)) {
+                if (isdigit(current_char) || current_char == 'e' || current_char == 'E' || current_char == '+' ||
+                    current_char == '-') {
                     string_append_char(token, current_char);
                 } else {
-                    // TODO handle Lexical error (float must not contain any other characters)
                     state = START;
                     ungetc(current_char, fd);
-                    return FLOAT;
+
+                    regex_t regex;
+                    int regex_comp = regcomp(&regex, "^[0-9]+\\.?[0-9]+([eE][+-]?[0-9]+)?$", REG_EXTENDED);
+                    if (regex_comp != 0) {
+                        LEXICAL_ERROR("Invalid float regexp");
+                    }
+                    int return_value = regexec(&regex, token->value, 0, NULL, 0);
+                    if (!return_value) {
+                        return FLOAT;
+                    } else {
+                        LEXICAL_ERROR("Invalid float number format");
+                    }
                 }
                 break;
             case STRING_STATE:
-                if (current_char == '"') {
+                if (token->value[0] == '"' && current_char == '"' || token->value[0] == '\'' && current_char == '\'') {
                     state = START;
                     string_append_char(token, current_char);
                     return STRING;
@@ -269,6 +328,22 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
             case STRING_ESCAPE_STATE:
                 string_append_char(token, current_char);
                 state = STRING_STATE;
+                break;
+            case COMMENT_STATE:
+                if (current_char == '\n' || current_char == '\0' || current_char == EOF) {
+                    string_clear(token);
+                    state = START;
+                }
+                break;
+            case MULTILINE_COMMENT_STATE:
+                if (current_char == '*') {
+                    current_char = (char) getc(fd);
+                    if (current_char == '/') {
+                        string_clear(token);
+                        state = START;
+                    } else
+                        ungetc(current_char, fd);
+                }
                 break;
             default:
                 break;

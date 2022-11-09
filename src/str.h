@@ -13,6 +13,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define STRING_ALLOCATION_SIZE sizeof(char)
 
@@ -67,5 +68,20 @@ void string_append_string(string_t *str, const char *value, ...);
  * @param str pointer to string
  */
 void string_clear(string_t *str);
+
+/**
+ * Calls a function on all characters in string
+ * @param str pointer to a string
+ * @param func pointer to a function
+ * @return true if every function call returns true, false otherwise
+ */
+bool string_check_by(string_t *str, int (*func)(int));
+
+/**
+ * Calls a void function on all characters in string
+ * @param str pointer to a string
+ * @param func pointer to a function
+ */
+void string_convert_by(string_t *str, int (*func)(int));
 
 #endif //IFJ_PROJ_STRING_H

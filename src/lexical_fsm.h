@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
+#include <regex.h>
 #include "str.h"
 #include "errors.h"
 
@@ -53,6 +54,9 @@ typedef enum LEXICAL_FSM_TOKENS {
     INCREMENT,
     DECREMENT,
 
+    // String concatenation operator
+    CONCATENATION,
+
     // Relational operators
     LESS,
     GREATER,
@@ -82,6 +86,8 @@ typedef enum LEXICAL_FSM_TOKENS {
     KEYWORD_INTEGER,
     KEYWORD_FLOAT,
     KEYWORD_STRING,
+    KEYWORD_DECLARE,
+    KEYWORD_STRICT_TYPES,
 
     // Identifiers
     IDENTIFIER,
@@ -106,6 +112,9 @@ typedef enum LEXICAL_FSM_STATES {
     // PHP brackets state
     PHP_BRACKET_STATE,
 
+    // Start of file declare state
+    DECLARE_STATE,
+
     // Arithmetic states
     ARITHMETIC_STATE,
     EQUAL_STATE,
@@ -119,6 +128,13 @@ typedef enum LEXICAL_FSM_STATES {
     FLOAT_STATE,
     STRING_STATE,
     STRING_ESCAPE_STATE,
+
+    // Strict-types state
+    STRICT_TYPES_STATE,
+
+    // Comment states
+    COMMENT_STATE,
+    MULTILINE_COMMENT_STATE,
 } LEXICAL_FSM_STATES;
 
 /**
