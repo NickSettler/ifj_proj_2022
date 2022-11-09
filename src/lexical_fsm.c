@@ -224,8 +224,9 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
 
                     if (current_char != '+' && current_char != '-' && current_char != '*' && current_char != '/') {
                         ungetc(current_char, fd);
+                    } else {
+                        string_append_char(token, current_char);
                     }
-
                     if (!strcmp(token->value, "+")) return PLUS;
                     else if (!strcmp(token->value, "-")) return MINUS;
                     else if (!strcmp(token->value, "*")) return MULTIPLY;
@@ -236,6 +237,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, "/=")) return DIVIDE_ASSIGN;
                     else if (!strcmp(token->value, "--")) return DECREMENT;
                     else if (!strcmp(token->value, "++")) return INCREMENT;
+                    else LEXICAL_ERROR("Invalid arithmetic operator");
                 }
                 break;
             case LOGICAL_STATE:
