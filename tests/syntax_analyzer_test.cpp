@@ -77,8 +77,15 @@ namespace ifj {
                 IsSyntaxTreeCorrect("4 - $a;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_SUB, SYN_NODE_IDENTIFIER});
 
+                IsSyntaxTreeCorrect("4 - +$a;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_SUB, SYN_NODE_IDENTIFIER});
+
                 IsSyntaxTreeCorrect("12 * 3;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_MUL, SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("12 * -3;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_MUL, SYN_NODE_INTEGER,
+                                     SYN_NODE_NEGATE});
 
                 IsSyntaxTreeCorrect("33 / 11;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_DIV, SYN_NODE_INTEGER});
@@ -196,7 +203,7 @@ namespace ifj {
 
                 IsSyntaxTreeCorrect("if ($a == 2) "
                                     "{"
-                                    " $a = 3;"
+                                    " $a = 3.4;"
                                     " $b = 4;"
                                     "} else {"
                                     " $a = 4;"
@@ -204,7 +211,7 @@ namespace ifj {
                                     "}",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
-                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_FLOAT, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_IDENTIFIER, SYN_NODE_SUB, SYN_NODE_INTEGER});
@@ -356,7 +363,7 @@ namespace ifj {
                                      SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_ARG, SYN_NODE_IDENTIFIER,
                                      SYN_NODE_FUNCTION_ARG});
 
-                IsSyntaxTreeCorrect("function f(int $a, string $b): void {"
+                IsSyntaxTreeCorrect("function f(float $a, void $b): void {"
                                     " $a = $b;"
                                     "}",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION,
@@ -364,7 +371,7 @@ namespace ifj {
                                      SYN_NODE_FUNCTION_ARG, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_IDENTIFIER});
 
-                IsSyntaxTreeCorrect("function f(int $a, string $b): void {"
+                IsSyntaxTreeCorrect("function f(int $a, string $b): float {"
                                     " $a = $b;"
                                     " $b = $a;"
                                     "}",
@@ -381,10 +388,17 @@ namespace ifj {
                             "\\[SYNTAX ERROR\\] Expecting type or identifier, found: EOF");
 
                 EXPECT_EXIT(IsSyntaxTreeCorrect("function f($a", {}), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expecting type or identifier, found: EOF");
+                            "\\[SYNTAX ERROR\\] Expecting ',' or '\\)', found: EOF");
 
                 EXPECT_EXIT(IsSyntaxTreeCorrect("function f($a)", {}), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Left curly brackets Expecting \\{, found: EOF");
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("function f($a 2)", {}), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expecting ',' or '\\)', found: INTEGER");
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("function f($a $a){}", {}),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expecting ',' or '\\)', found: ID");
 
                 EXPECT_EXIT(IsSyntaxTreeCorrect("function f(12){}", {}), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expecting type or identifier, found: INTEGER");
