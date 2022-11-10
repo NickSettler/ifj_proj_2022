@@ -168,7 +168,7 @@ namespace ifj {
                             "\\[SYNTAX ERROR\\] Right curly brackets Expecting }, found: EOF");
 
                 EXPECT_EXIT(SyntaxTreeWithError("if($a) }"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expected expression, got: }");
+                            "\\[SYNTAX ERROR\\] Expected statement, got: }");
 
                 EXPECT_EXIT(SyntaxTreeWithError("if($a) {}"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Incorrect if statement");
@@ -218,11 +218,11 @@ namespace ifj {
 
                 EXPECT_EXIT(SyntaxTreeWithError("if($a) { $a = 1; } else ;"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
+                            "\\[SYNTAX ERROR\\] Expected statement, got: ;");
 
                 EXPECT_EXIT(SyntaxTreeWithError("if($a) { $a = 1; } else $a = 1; else $a = 2;"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expected expression, got: else");
+                            "\\[SYNTAX ERROR\\] Expected statement, got: else");
 
                 EXPECT_EXIT(SyntaxTreeWithError("if($a) { $a = 1; } else if ($a == 2 $a = 1; else $a = 2;"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
@@ -256,11 +256,11 @@ namespace ifj {
 
                 EXPECT_EXIT(SyntaxTreeWithError("while($a) }"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expected expression, got: }");
+                            "\\[SYNTAX ERROR\\] Expected statement, got: }");
 
                 EXPECT_EXIT(SyntaxTreeWithError("while($a);"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
+                            "\\[SYNTAX ERROR\\] Expected statement, got: ;");
 
                 EXPECT_EXIT(SyntaxTreeWithError("while($a) $b = "),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
@@ -327,6 +327,81 @@ namespace ifj {
                 EXPECT_EXIT(SyntaxTreeWithError("f(==);"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected expression, got: ==");
+            }
+
+            TEST_F(SyntaxAnalyzerTest, FunctionDeclaration) {
+                IsSyntaxTreeCorrect("function f() {}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION});
+
+                IsSyntaxTreeCorrect("function f($a) {}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_ARG});
+
+                IsSyntaxTreeCorrect("function f(int $a) {}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_ARG});
+
+                IsSyntaxTreeCorrect("function f(int $a, string $b) {}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_ARG, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_FUNCTION_ARG});
+
+                IsSyntaxTreeCorrect("function f(int $a, string $b): void {}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_ARG, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_FUNCTION_ARG});
+
+                IsSyntaxTreeCorrect("function f(int $a, string $b): void {"
+                                    " $a = $b;"
+                                    "}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_ARG, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_FUNCTION_ARG, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_IDENTIFIER});
+
+                IsSyntaxTreeCorrect("function f(int $a, string $b): void {"
+                                    " $a = $b;"
+                                    " $b = $a;"
+                                    "}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_ARG, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_FUNCTION_ARG, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_IDENTIFIER});
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("function f", {}), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Left parenthesis Expecting \\(, found: EOF");
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("function f(", {}), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expecting type or identifier, found: EOF");
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("function f($a", {}), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expecting type or identifier, found: EOF");
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("function f($a)", {}), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Left curly brackets Expecting {, found: EOF");
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("function f(12){}", {}), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expecting type or identifier, found: INTEGER");
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("function f(int){}", {}), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Function argument declaration Expecting ID, found: \\)");
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("function f(int $a):{}", {}),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expecting function return type, found: {");
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("function f(int $a):string}", {}),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Left curly brackets Expecting {, found: }");
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("function f(int $a):string", {}),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Left curly brackets Expecting {, found: EOF");
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("function f(int $a):string {", {}),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Right curly brackets Expecting }, found: EOF");
             }
         }
     }
