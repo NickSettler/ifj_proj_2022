@@ -133,6 +133,18 @@ void dispose_symtable() {
     symtable = NULL;
 }
 
+bool change_data_type(tree_node_t *tree, int type) {
+    if (type == 0) {
+        tree->type = TYPE_INT;
+    } else if (type == 1) {
+        tree->type = TYPE_FLOAT;
+    } else if (type == 2) {
+        tree->type = TYPE_STRING;
+    } else {
+        return false;
+    }
+}
+
 void printtabs(int numtabs) {
     for (int i = 0; i < numtabs; i++) {
         printf("\t");

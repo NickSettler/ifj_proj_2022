@@ -25,9 +25,9 @@
  * @var DATA_TYPE_STRING
  */
 typedef enum {
-    TYPE_STRING,
     TYPE_INT,
     TYPE_FLOAT,
+    TYPE_STRING
 } data_type;
 
 /**
@@ -44,8 +44,10 @@ typedef enum {
  * Key
  *
  * @bool tree_node_t::defined
+ * Is variable defined
  *
  * @bool tree_node_t::global
+ * Is variable global
  */
 typedef struct tree_node {
     data_type type; // Data type of symbol / return type of function
@@ -126,6 +128,16 @@ void dispose_tree(tree_node_t **root);
  * Deletes symtable
  */
 void dispose_symtable();
+
+/**
+ * changes data type of the variable
+ * @param root pointer to the root of the tree
+ *
+ * @key key of the node, which data type will be changed
+ *
+ * @type new data type
+ */
+bool change_data_type(tree_node_t *tree, int type);
 
 void printtabs(int numtabs);
 
