@@ -89,9 +89,6 @@ namespace ifj {
                 EXPECT_EXIT(SyntaxTreeWithError("$a = 2 +;"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected expression, got: ;");
 
-                EXPECT_EXIT(SyntaxTreeWithError("$a = 2 -+;"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
-
                 EXPECT_EXIT(SyntaxTreeWithError("$a = 2 ++;"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Increment operator is not supported");
 
@@ -379,7 +376,7 @@ namespace ifj {
                             "\\[SYNTAX ERROR\\] Expecting type or identifier, found: EOF");
 
                 EXPECT_EXIT(IsSyntaxTreeCorrect("function f($a)", {}), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Left curly brackets Expecting {, found: EOF");
+                            "\\[SYNTAX ERROR\\] Left curly brackets Expecting \\{, found: EOF");
 
                 EXPECT_EXIT(IsSyntaxTreeCorrect("function f(12){}", {}), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expecting type or identifier, found: INTEGER");
@@ -389,19 +386,19 @@ namespace ifj {
 
                 EXPECT_EXIT(IsSyntaxTreeCorrect("function f(int $a):{}", {}),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expecting function return type, found: {");
+                            "\\[SYNTAX ERROR\\] Expecting function return type, found: \\{");
 
                 EXPECT_EXIT(IsSyntaxTreeCorrect("function f(int $a):string}", {}),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Left curly brackets Expecting {, found: }");
+                            "\\[SYNTAX ERROR\\] Left curly brackets Expecting \\{, found: \\}");
 
                 EXPECT_EXIT(IsSyntaxTreeCorrect("function f(int $a):string", {}),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Left curly brackets Expecting {, found: EOF");
+                            "\\[SYNTAX ERROR\\] Left curly brackets Expecting \\{, found: EOF");
 
                 EXPECT_EXIT(IsSyntaxTreeCorrect("function f(int $a):string {", {}),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Right curly brackets Expecting }, found: EOF");
+                            "\\[SYNTAX ERROR\\] Right curly brackets Expecting \\}, found: EOF");
             }
         }
     }
