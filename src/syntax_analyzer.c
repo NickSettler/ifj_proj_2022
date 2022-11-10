@@ -19,31 +19,37 @@ struct {
     int precedence;
     syntax_tree_node_type node_type;
 } attributes[] = {
-        {"EOF",     "End_of_file",       SYN_TOKEN_EOF,                  false, false, false, -1, (syntax_tree_node_type) -1},
-        {"ID",      "Identifier",        SYN_TOKEN_IDENTIFIER,           false, false, false, -1, SYN_NODE_IDENTIFIER},
-        {"STRING",  "String",            SYN_TOKEN_STRING,               false, false, false, -1, SYN_NODE_STRING},
-        {"INTEGER", "Integer",           SYN_TOKEN_INTEGER,              false, false, false, -1, SYN_NODE_INTEGER},
-        {"FLOAT",   "Float",             SYN_TOKEN_FLOAT,                false, false, false, -1, SYN_NODE_FLOAT},
-        {"+",       "Op_add",            SYN_TOKEN_ADD,                  false, true,  false, 12, SYN_NODE_ADD},
-        {"-",       "Op_sub",            SYN_TOKEN_SUB,                  false, true,  false, 12, SYN_NODE_SUB},
-        {"*",       "Op_multiply",       SYN_TOKEN_MUL,                  false, true,  false, 13, SYN_NODE_MUL},
-        {"/",       "Op_divide",         SYN_TOKEN_DIV,                  false, true,  false, 13, SYN_NODE_DIV},
-        {"-",       "Op_negate",         SYN_TOKEN_NEGATE,               false, false, true,  14, SYN_NODE_NEGATE},
-        {"<",       "Op_less",           SYN_TOKEN_LESS,                 false, true,  false, 10, SYN_NODE_LESS},
-        {"<=",      "Op_lessequal",      SYN_TOKEN_LESS_EQUAL,           false, true,  false, 10, SYN_NODE_LESS_EQUAL},
-        {">",       "Op_greater",        SYN_TOKEN_GREATER,              false, true,  false, 10, SYN_NODE_GREATER},
-        {">=",      "Op_greaterequal",   SYN_TOKEN_GREATER_EQUAL,        false, true,  false, 10, SYN_NODE_GREATER_EQUAL},
-        {"==",      "Op_equal",          SYN_TOKEN_EQUAL,                false, true,  false, 9,  SYN_NODE_EQUAL},
-        {"!=",      "Op_not_equal",      SYN_TOKEN_NOT_EQUAL,            false, true,  false, 9,  SYN_NODE_NOT_EQUAL},
-        {"=",       "Op_Assign",         SYN_TOKEN_ASSIGN,               false, false, false, -1, SYN_NODE_ASSIGN},
-        {";",       "Semicolon",         SYN_TOKEN_SEMICOLON,            false, false, false, -1, (syntax_tree_node_type) -1},
-        {",",       "Comma",             SYN_TOKEN_COMMA,                false, false, false, -1, (syntax_tree_node_type) -1},
-        {"if",      "Keyword_IF",        SYN_TOKEN_KEYWORD_IF,           false, false, false, -1, SYN_NODE_KEYWORD_IF},
-        {"else",    "Keyword_ELSE",      SYN_TOKEN_KEYWORD_ELSE,         false, false, false, -1, (syntax_tree_node_type) -1},
-        {"(",       "LeftParenthesis",   SYN_TOKEN_LEFT_PARENTHESIS,     false, false, false, -1, (syntax_tree_node_type) -1},
-        {")",       "RightParenthesis",  SYN_TOKEN_RIGHT_PARENTHESIS,    false, false, false, -1, (syntax_tree_node_type) -1},
-        {"{",       "LeftCurlyBracket",  SYN_TOKEN_RIGHT_CURLY_BRACKETS, false, false, false, -1, (syntax_tree_node_type) -1},
-        {"}",       "RightCurlyBracket", SYN_TOKEN_RIGHT_CURLY_BRACKETS, false, false, false, -1, (syntax_tree_node_type) -1}
+        {"EOF",      "End_of_file",       SYN_TOKEN_EOF,                  false, false, false, -1, (syntax_tree_node_type) -1},
+        {"ID",       "Identifier",        SYN_TOKEN_IDENTIFIER,           false, false, false, -1, SYN_NODE_IDENTIFIER},
+        {"STRING",   "String",            SYN_TOKEN_STRING,               false, false, false, -1, SYN_NODE_STRING},
+        {"INTEGER",  "Integer",           SYN_TOKEN_INTEGER,              false, false, false, -1, SYN_NODE_INTEGER},
+        {"FLOAT",    "Float",             SYN_TOKEN_FLOAT,                false, false, false, -1, SYN_NODE_FLOAT},
+        {"+",        "Op_add",            SYN_TOKEN_ADD,                  false, true,  false, 12, SYN_NODE_ADD},
+        {"-",        "Op_sub",            SYN_TOKEN_SUB,                  false, true,  false, 12, SYN_NODE_SUB},
+        {"*",        "Op_multiply",       SYN_TOKEN_MUL,                  false, true,  false, 13, SYN_NODE_MUL},
+        {"/",        "Op_divide",         SYN_TOKEN_DIV,                  false, true,  false, 13, SYN_NODE_DIV},
+        {"-",        "Op_negate",         SYN_TOKEN_NEGATE,               false, false, true,  14, SYN_NODE_NEGATE},
+        {"<",        "Op_less",           SYN_TOKEN_LESS,                 false, true,  false, 10, SYN_NODE_LESS},
+        {"<=",       "Op_lessequal",      SYN_TOKEN_LESS_EQUAL,           false, true,  false, 10, SYN_NODE_LESS_EQUAL},
+        {">",        "Op_greater",        SYN_TOKEN_GREATER,              false, true,  false, 10, SYN_NODE_GREATER},
+        {">=",       "Op_greaterequal",   SYN_TOKEN_GREATER_EQUAL,        false, true,  false, 10, SYN_NODE_GREATER_EQUAL},
+        {"==",       "Op_equal",          SYN_TOKEN_EQUAL,                false, true,  false, 9,  SYN_NODE_EQUAL},
+        {"!=",       "Op_not_equal",      SYN_TOKEN_NOT_EQUAL,            false, true,  false, 9,  SYN_NODE_NOT_EQUAL},
+        {"=",        "Op_Assign",         SYN_TOKEN_ASSIGN,               false, false, false, -1, SYN_NODE_ASSIGN},
+        {";",        "Semicolon",         SYN_TOKEN_SEMICOLON,            false, false, false, -1, (syntax_tree_node_type) -1},
+        {":",        "Colon",             SYN_TOKEN_COLON,                false, false, false, -1, (syntax_tree_node_type) -1},
+        {",",        "Comma",             SYN_TOKEN_COMMA,                false, false, false, -1, (syntax_tree_node_type) -1},
+        {"if",       "Keyword_IF",        SYN_TOKEN_KEYWORD_IF,           false, false, false, -1, SYN_NODE_KEYWORD_IF},
+        {"else",     "Keyword_ELSE",      SYN_TOKEN_KEYWORD_ELSE,         false, false, false, -1, (syntax_tree_node_type) -1},
+        {"function", "Keyword_FUNCTION",  SYN_TOKEN_KEYWORD_FUNCTION,     false, false, false, -1, (syntax_tree_node_type) -1},
+        {"int",      "Keyword_INT",       SYN_TOKEN_KEYWORD_INT,          false, false, false, -1, (syntax_tree_node_type) -1},
+        {"float",    "Keyword_FLOAT",     SYN_TOKEN_KEYWORD_FLOAT,        false, false, false, -1, (syntax_tree_node_type) -1},
+        {"string",   "Keyword_STRING",    SYN_TOKEN_KEYWORD_STRING,       false, false, false, -1, (syntax_tree_node_type) -1},
+        {"void",     "Keyword_VOID",      SYN_TOKEN_KEYWORD_VOID,         false, false, false, -1, (syntax_tree_node_type) -1},
+        {"(",        "LeftParenthesis",   SYN_TOKEN_LEFT_PARENTHESIS,     false, false, false, -1, (syntax_tree_node_type) -1},
+        {")",        "RightParenthesis",  SYN_TOKEN_RIGHT_PARENTHESIS,    false, false, false, -1, (syntax_tree_node_type) -1},
+        {"{",        "LeftCurlyBracket",  SYN_TOKEN_RIGHT_CURLY_BRACKETS, false, false, false, -1, (syntax_tree_node_type) -1},
+        {"}",        "RightCurlyBracket", SYN_TOKEN_RIGHT_CURLY_BRACKETS, false, false, false, -1, (syntax_tree_node_type) -1}
 };
 
 syntax_abstract_tree_t *
@@ -176,6 +182,83 @@ void expect_token(const char *msg, syntax_tree_token_type type) {
         SYNTAX_ERROR("%s Expecting %s, found: %s\n", msg, attributes[type].text,
                      attributes[get_token_type(lexical_token->type)].text);
     }
+}
+
+syntax_abstract_tree_t *f_args(FILE *fd, syntax_abstract_tree_t *args) {
+    lexical_token = get_token(fd);
+    syntax_tree_token_type type = get_token_type(lexical_token->type);
+    if (type == SYN_TOKEN_RIGHT_PARENTHESIS || type == SYN_TOKEN_COMMA) {
+        lexical_token = get_token(fd);
+        if (type == SYN_TOKEN_RIGHT_PARENTHESIS) return args;
+    } else if (type != SYN_TOKEN_IDENTIFIER && type != SYN_TOKEN_KEYWORD_STRING && type != SYN_TOKEN_KEYWORD_INT &&
+               type != SYN_TOKEN_KEYWORD_FLOAT && type == SYN_TOKEN_KEYWORD_VOID) {
+        SYNTAX_ERROR("Expecting ',' or ')', found: %s\n", attributes[get_token_type(lexical_token->type)].text)
+    }
+
+    if (args == NULL)
+        args = make_binary_node(SYN_NODE_FUNCTION_ARG, NULL, NULL);
+
+    args->left = make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(""));
+
+    type = get_token_type(lexical_token->type);
+    switch (type) {
+        case SYN_TOKEN_KEYWORD_VOID:
+        case SYN_TOKEN_KEYWORD_INT:
+        case SYN_TOKEN_KEYWORD_FLOAT:
+        case SYN_TOKEN_KEYWORD_STRING: {
+            args->left->attrs->token_type = type;
+            lexical_token = get_token(fd);
+            expect_token("Function argument declaration", SYN_TOKEN_IDENTIFIER);
+            args->left->value = string_init(lexical_token->value);
+            // TODO: Move all semantic analysis to separate file
+            find_token(lexical_token->value)->defined = true;
+            break;
+        }
+        case SYN_TOKEN_IDENTIFIER: {
+            args->left->value = string_init(lexical_token->value);
+            args->left->attrs->token_type = SYN_TOKEN_KEYWORD_VOID;
+            // TODO: Move all semantic analysis to separate file
+            find_token(lexical_token->value)->defined = true;
+            break;
+        }
+        default: {
+            SYNTAX_ERROR("Expecting type or identifier, found: %s\n", attributes[type].text)
+        }
+    }
+
+    args->right = f_args(fd, args->right);
+    return args;
+}
+
+syntax_abstract_tree_t *f_dec_stats(FILE *fd) {
+    syntax_abstract_tree_t *func;
+
+    expect_token("Function", SYN_TOKEN_KEYWORD_FUNCTION);
+    lexical_token = get_token(fd);
+    expect_token("Identifier", SYN_TOKEN_IDENTIFIER);
+    func = make_binary_node(SYN_NODE_FUNCTION_DECLARATION,
+                            make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value)),
+                            NULL);
+    lexical_token = get_token(fd);
+    expect_token("Left parenthesis", SYN_TOKEN_LEFT_PARENTHESIS);
+    func->middle = f_args(fd, NULL);
+
+    if (get_token_type(lexical_token->type) == SYN_TOKEN_COLON) {
+        lexical_token = get_token(fd);
+        syntax_tree_token_type type = get_token_type(lexical_token->type);
+        if (type != SYN_TOKEN_KEYWORD_VOID && type != SYN_TOKEN_KEYWORD_INT &&
+            type != SYN_TOKEN_KEYWORD_FLOAT && type != SYN_TOKEN_KEYWORD_STRING) {
+            SYNTAX_ERROR("Expecting function return type, found: %s\n", attributes[type].text)
+        }
+        func->attrs->token_type = type;
+        lexical_token = get_token(fd);
+    }
+
+    expect_token("Left curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
+
+    func->right = stmt(fd);
+
+    return func;
 }
 
 syntax_abstract_tree_t *parenthesis_expression(FILE *fd) {
@@ -315,6 +398,10 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             }
             break;
         }
+        case KEYWORD_FUNCTION: {
+            tree = f_dec_stats(fd);
+            break;
+        }
         case LEFT_CURLY_BRACKETS: {
             expect_token("Left curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
             lexical_token = get_token(fd);
@@ -388,6 +475,8 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_ASSIGN;
         case SEMICOLON:
             return SYN_TOKEN_SEMICOLON;
+        case COLON:
+            return SYN_TOKEN_COLON;
         case COMMA:
             return SYN_TOKEN_COMMA;
         case LEFT_PARENTHESIS:
@@ -402,6 +491,16 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_KEYWORD_IF;
         case KEYWORD_ELSE:
             return SYN_TOKEN_KEYWORD_ELSE;
+        case KEYWORD_FUNCTION:
+            return SYN_TOKEN_KEYWORD_FUNCTION;
+        case KEYWORD_INTEGER:
+            return SYN_TOKEN_KEYWORD_INT;
+        case KEYWORD_FLOAT:
+            return SYN_TOKEN_KEYWORD_FLOAT;
+        case KEYWORD_STRING:
+            return SYN_TOKEN_KEYWORD_STRING;
+        case KEYWORD_VOID:
+            return SYN_TOKEN_KEYWORD_VOID;
         default:
             return (syntax_tree_token_type) -1;
     }
