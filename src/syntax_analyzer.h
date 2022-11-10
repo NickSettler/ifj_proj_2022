@@ -162,9 +162,24 @@ void expect_token(const char *msg, syntax_tree_token_type type);
 syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token);
 
 /**
+ * Parse function declaration arguments
+ * @param fd File descriptor
+ * @param args Syntax abstract tree with current/next argument
+ * @return Syntax abstract tree with all arguments
+ */
+syntax_abstract_tree_t *f_args(FILE *fd, syntax_abstract_tree_t *args);
+
+/**
+ * Parse function declaration
+ * @param fd File descriptor
+ * @return Syntax abstract tree with function declaration
+ */
+syntax_abstract_tree_t *f_dec_stats(FILE *fd);
+
+/**
  * Parses expression in brackets
  * @param fd File descriptor
- * @return Syntax abstract tree
+ * @return Syntax abstract tree with expression in brackets
  */
 syntax_abstract_tree_t *parenthesis_expression(FILE *fd);
 
@@ -172,21 +187,28 @@ syntax_abstract_tree_t *parenthesis_expression(FILE *fd);
  * Parses expression
  * @param fd File descriptor
  * @param precedence Precedence
- * @return Syntax abstract tree
+ * @return Syntax abstract tree with expression
  */
 syntax_abstract_tree_t *expression(FILE *fd, int precedence);
 
 /**
+ * Parses function call arguments
+ * @param fd File descriptor
+ * @return Syntax abstract tree with function call arguments
+ */
+syntax_abstract_tree_t *args(FILE *fd);
+
+/**
  * Parses statement non-terminal
  * @param fd File descriptor
- * @return Syntax abstract tree
+ * @return Syntax abstract tree with statement
  */
 syntax_abstract_tree_t *stmt(FILE *fd);
 
 /**
  * Parses all tree from file stream
  * @param fd File descriptor
- * @return Syntax abstract tree
+ * @return Syntax abstract tree with all tree
  */
 syntax_abstract_tree_t *load_syntax_tree(FILE *fd);
 
