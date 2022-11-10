@@ -185,14 +185,13 @@ void expect_token(const char *msg, syntax_tree_token_type type) {
 }
 
 syntax_abstract_tree_t *f_args(FILE *fd, syntax_abstract_tree_t *args) {
-    lexical_token = get_token(fd);
     syntax_tree_token_type type = get_token_type(lexical_token->type);
-    if (type == SYN_TOKEN_RIGHT_PARENTHESIS || type == SYN_TOKEN_COMMA) {
+    if (type == SYN_TOKEN_LEFT_PARENTHESIS) {
         lexical_token = get_token(fd);
-        if (type == SYN_TOKEN_RIGHT_PARENTHESIS) return args;
-    } else if (type != SYN_TOKEN_IDENTIFIER && type != SYN_TOKEN_KEYWORD_STRING && type != SYN_TOKEN_KEYWORD_INT &&
-               type != SYN_TOKEN_KEYWORD_FLOAT && type == SYN_TOKEN_KEYWORD_VOID) {
-        SYNTAX_ERROR("Expecting ',' or ')', found: %s\n", attributes[get_token_type(lexical_token->type)].text)
+        if (get_token_type(lexical_token->type) == SYN_TOKEN_RIGHT_PARENTHESIS) {
+            lexical_token = get_token(fd);
+            return args;
+        }
     }
 
     if (args == NULL)
@@ -226,6 +225,17 @@ syntax_abstract_tree_t *f_args(FILE *fd, syntax_abstract_tree_t *args) {
         }
     }
 
+    lexical_token = get_token(fd);
+    type = get_token_type(lexical_token->type);
+
+    if (type == SYN_TOKEN_RIGHT_PARENTHESIS || type == SYN_TOKEN_COMMA) {
+        lexical_token = get_token(fd);
+        if (type == SYN_TOKEN_RIGHT_PARENTHESIS)
+            return args;
+    } else {
+        SYNTAX_ERROR("Expecting ',' or ')', found: %s\n", attributes[type].text)
+    }
+
     args->right = f_args(fd, args->right);
     return args;
 }
@@ -241,6 +251,7 @@ syntax_abstract_tree_t *f_dec_stats(FILE *fd) {
                             NULL);
     lexical_token = get_token(fd);
     expect_token("Left parenthesis", SYN_TOKEN_LEFT_PARENTHESIS);
+    // TODO: Add checking arguments unique IDs
     func->middle = f_args(fd, NULL);
 
     if (get_token_type(lexical_token->type) == SYN_TOKEN_COLON) {
@@ -291,6 +302,10 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
             break;
         case INTEGER:
             x = make_binary_leaf(SYN_NODE_INTEGER, string_init(lexical_token->value));
+            lexical_token = get_token(fd);
+            break;
+        case FLOAT:
+            x = make_binary_leaf(SYN_NODE_FLOAT, string_init(lexical_token->value));
             lexical_token = get_token(fd);
             break;
         default: {
