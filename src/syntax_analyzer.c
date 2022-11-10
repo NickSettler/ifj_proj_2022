@@ -50,13 +50,19 @@ syntax_abstract_tree_t *
 make_binary_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, syntax_abstract_tree_t *right) {
     syntax_abstract_tree_t *tree = (syntax_abstract_tree_t *) malloc(sizeof(syntax_abstract_tree_t));
     if (tree == NULL) {
-        INTERNAL_ERROR("Failed to allocate memory for syntax tree node");
+        INTERNAL_ERROR("Failed to allocate memory for syntax tree node")
+    }
+
+    syntax_abstract_tree_attr_t *attrs = (syntax_abstract_tree_attr_t *) malloc(sizeof(syntax_abstract_tree_attr_t));
+    if (attrs == NULL) {
+        INTERNAL_ERROR("Failed to allocate memory for syntax tree node attributes")
     }
 
     tree->type = type;
     tree->left = left;
     tree->middle = NULL;
     tree->right = right;
+    tree->attrs = attrs;
 
     return tree;
 }
@@ -66,13 +72,19 @@ make_ternary_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, synt
                   syntax_abstract_tree_t *right) {
     syntax_abstract_tree_t *tree = (syntax_abstract_tree_t *) malloc(sizeof(syntax_abstract_tree_t));
     if (tree == NULL) {
-        INTERNAL_ERROR("Failed to allocate memory for syntax tree node");
+        INTERNAL_ERROR("Failed to allocate memory for syntax tree node")
+    }
+
+    syntax_abstract_tree_attr_t *attrs = (syntax_abstract_tree_attr_t *) malloc(sizeof(syntax_abstract_tree_attr_t));
+    if (attrs == NULL) {
+        INTERNAL_ERROR("Failed to allocate memory for syntax tree node attributes")
     }
 
     tree->type = type;
     tree->left = left;
     tree->middle = middle;
     tree->right = right;
+    tree->attrs = attrs;
 
     return tree;
 }
@@ -206,17 +218,15 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
 
     while (attributes[get_token_type(lexical_token->type)].is_binary &&
            attributes[get_token_type(lexical_token->type)].precedence >= precedence) {
-        syntax_tree_token_type op = get_token_type(lexical_token->type);
+        syntax_tree_token_type internal_op = get_token_type(lexical_token->type);
 
         lexical_token = get_token(fd);
 
-        int q = attributes[op].precedence;
-        if (!attributes[op].right_associative) {
-            q++;
-        }
+        int q = attributes[internal_op].precedence;
+        if (!attributes[internal_op].right_associative) q++;
 
         node = expression(fd, q);
-        x = make_binary_node(attributes[op].node_type, x, node);
+        x = make_binary_node(attributes[internal_op].node_type, x, node);
     }
 
     return x;
@@ -257,6 +267,7 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             e = is_variable ? expression(fd, 0) : args(fd);
             tree = make_binary_node(is_variable ? SYN_NODE_ASSIGN : SYN_NODE_CALL, v, e);
             expect_token("Semicolon", SYN_TOKEN_SEMICOLON);
+            // TODO: Move all semantic analysis to separate file
             find_token(v->value->value)->defined = true;
             if (!check_tree_using(tree, is_defined)) {
                 syntax_abstract_tree_t *undefined_node = get_from_tree_using(tree, is_undefined);
@@ -318,7 +329,7 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             break;
         }
         default: {
-            SYNTAX_ERROR("Expected expression, got: %s\n", lexical_token->value)
+            SYNTAX_ERROR("Expected statement, got: %s\n", lexical_token->value)
         }
     }
 

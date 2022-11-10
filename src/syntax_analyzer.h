@@ -80,7 +80,13 @@ typedef enum {
     SYN_NODE_KEYWORD_WHILE,
 } syntax_tree_node_type;
 
+typedef struct syntax_abstract_tree_attr syntax_abstract_tree_attr_t;
+
 typedef struct syntax_abstract_tree syntax_abstract_tree_t;
+
+struct syntax_abstract_tree_attr {
+    syntax_tree_token_type token_type;
+};
 /**
  * @struct syntax_ast_t
  * Syntax abstract tree structure
@@ -103,6 +109,7 @@ struct syntax_abstract_tree {
     syntax_abstract_tree_t *middle;
     syntax_abstract_tree_t *right;
     string_t *value;
+    syntax_abstract_tree_attr_t *attrs;
 };
 
 static lexical_token_t *lexical_token;
