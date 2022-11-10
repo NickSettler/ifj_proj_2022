@@ -330,9 +330,17 @@ namespace ifj {
                 IsSyntaxTreeCorrect("function f() {}",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION});
 
+                IsSyntaxTreeCorrect("function f(): string {}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION});
+
                 IsSyntaxTreeCorrect("function f($a) {}",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION,
                                      SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_ARG});
+
+                IsSyntaxTreeCorrect("function f($a, $b) {}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_ARG, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_FUNCTION_ARG});
 
                 IsSyntaxTreeCorrect("function f(int $a) {}",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION,
