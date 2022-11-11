@@ -60,7 +60,7 @@ void string_append_char(string_t *str, char c);
  * @param str pointer to string
  * @param value string value
  */
-void string_append_string(string_t *str, const char *value);
+void string_append_string(string_t *str, const char *value, ...);
 
 /**
  * Clears string
