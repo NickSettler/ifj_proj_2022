@@ -5,6 +5,7 @@
 <f-dec-stats> -> <f-dec-stat> <f-dec-stats>
 
 <f-dec-stat> -> function ID ( <f-args> ) : <f-type> { <stat-list> }
+<f-dec-stat> -> function ID ( <f-args> ) { <stat-list> }
 
 <f-type> -> int
 <f-type> -> float
@@ -19,11 +20,12 @@
 
 <stat> -> ID = <expr> ;
 <stat> -> ID = ID ( <args> ) ;
-<stat> -> function-ID ( <args> ) ;
+<stat> -> ID ( <args> ) ;
 <stat> -> return <expr> ;
-<stat> -> if ( <expr> ) { <stat-list> }
-<stat> -> if ( <expr> ) { <stat-list> } else { <stat-list> }
-<stat> -> while ( <expr> ) { <stat-list> }
+<stat> -> if ( <expr> )
+<stat> -> if ( <expr> ) <stat> else <stat>
+<stat> -> while ( <expr> ) <stat>
+<stat> -> { <stat-list> }
 
 <args> -> <arg>
 <args> -> <arg>, <args>
