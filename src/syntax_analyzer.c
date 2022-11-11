@@ -516,25 +516,3 @@ void *process_tree_using(syntax_abstract_tree_t *tree, void (*process)(syntax_ab
     process_tree_using(tree->right, process, traversal_type);
     if (traversal_type == POSTORDER)process(tree);
 }
-
-bool is_defined(syntax_abstract_tree_t *tree) {
-    if (tree->type == SYN_NODE_IDENTIFIER) {
-        tree_node_t *node = find_token(tree->value->value);
-        if (!node) return false;
-
-        return node->defined == true;
-    }
-
-    return true;
-}
-
-bool is_undefined(syntax_abstract_tree_t *tree) {
-    if (tree->type == SYN_NODE_IDENTIFIER) {
-        tree_node_t *node = find_token(tree->value->value);
-        if (!node) return true;
-
-        return node->defined == false;
-    }
-
-    return false;
-}
