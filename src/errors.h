@@ -41,6 +41,15 @@
 
 #define INTERNAL_ERROR(...) ERROR(INTERNAL_ERROR_CODE, "[INTERNAL ERROR] " __VA_ARGS__)
 
+#define SEMANTIC_UNDEF_FUNC_ERROR(...) ERROR(SEMANTIC_FUNC_UNDEF_ERROR_CODE, "[SEMANTIC UNDEF FUNC ERROR] " __VA_ARGS__)
+
 #define SEMANTIC_UNDEF_VAR_ERROR(...) ERROR(SEMANTIC_UNDEF_VAR_ERROR_CODE, "[SEMANTIC UNDEF VAR ERROR] " __VA_ARGS__)
+
+/**
+ * Get readable error symbol
+ * @param string Error symbol
+ * @return Readable error symbol
+ */
+char *get_readable_error_char(char *string);
 
 #endif //IFJ_PROJ_ERRORS_H
