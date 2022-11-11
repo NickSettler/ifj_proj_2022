@@ -275,6 +275,10 @@ namespace ifj {
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected expression, got: )");
 
+                EXPECT_EXIT(SyntaxTreeWithError("while(1 == 1)"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected statement after while");
+
                 EXPECT_EXIT(SyntaxTreeWithError("while($a) }"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected statement, got: }");
