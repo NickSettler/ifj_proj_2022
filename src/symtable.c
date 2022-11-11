@@ -151,7 +151,7 @@ void print_tree(tree_node_t *root, int level) {
         return;
     }
     printtabs(level);
-    printf("key = %s\n", root->key);
+    printf("key = %s, defined = %d, global = %d, type = %d\n", root->key, root->defined, root->global, root->type);
     printtabs(level);
     printf("left\n");
     print_tree(root->left, level + 1);

@@ -165,7 +165,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     bool is_php_bracket = !strcmp(token->value, "<?") || !strcmp(token->value, "<?php");
 
                     if (!is_php_bracket) {
-                            LEXICAL_ERROR("Invalid PHP open bracket");
+                        LEXICAL_ERROR("Invalid PHP open bracket");
                     }
 
                     state = START;
@@ -240,7 +240,8 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, "/=")) return DIVIDE_ASSIGN;
                     else if (!strcmp(token->value, "--")) return DECREMENT;
                     else if (!strcmp(token->value, "++")) return INCREMENT;
-                    else LEXICAL_ERROR("Invalid arithmetic operator");
+                    else
+                    LEXICAL_ERROR("Invalid arithmetic operator");
                 }
                 break;
             case LOGICAL_STATE:
@@ -372,9 +373,6 @@ lexical_token_t *get_token(FILE *fd) {
 
     token->type = token_type;
     token->value = token_string->value;
-    if (token->type == IDENTIFIER)
-        insert_token(token->value);
-
     return token;
 }
 

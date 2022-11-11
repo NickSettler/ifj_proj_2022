@@ -69,6 +69,14 @@ void check_tree_for_float(syntax_abstract_tree_t *tree) {
     if (!check_tree_using(tree, is_node_an_int)) {
         process_tree_using(tree, replace_node_int_to_float, POSTORDER);
     }
+    get_data_type(tree->left);
+    get_data_type(tree->right);
+}
+
+void create_global_BST(syntax_abstract_tree_t *tree) {
+    insert_token(tree->left->value->value);
+    find_token(tree->left->value->value)->defined = true;
+    find_token(tree->left->value->value)->global = true;
 }
 
 void replace_node_int_to_float(syntax_abstract_tree_t *tree) {

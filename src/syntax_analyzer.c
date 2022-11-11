@@ -172,14 +172,14 @@ syntax_abstract_tree_t *f_args(FILE *fd, syntax_abstract_tree_t *args) {
             expect_token("Function argument declaration", SYN_TOKEN_IDENTIFIER);
             args->left->value = string_init(lexical_token->value);
             // TODO: Move all semantic analysis to separate file
-            find_token(lexical_token->value)->defined = true;
+//            find_token(lexical_token->value)->defined = true;
             break;
         }
         case SYN_TOKEN_IDENTIFIER: {
             args->left->value = string_init(lexical_token->value);
             args->left->attrs->token_type = SYN_TOKEN_KEYWORD_VOID;
             // TODO: Move all semantic analysis to separate file
-            find_token(lexical_token->value)->defined = true;
+//            find_token(lexical_token->value)->defined = true;
             break;
         }
         default: {
@@ -331,16 +331,6 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             e = is_variable ? expression(fd, 0) : args(fd);
             tree = make_binary_node(is_variable ? SYN_NODE_ASSIGN : SYN_NODE_CALL, v, e);
             expect_token("Semicolon", SYN_TOKEN_SEMICOLON);
-            // TODO: Move all semantic analysis to separate file
-            find_token(v->value->value)->defined = true;
-            if (!check_tree_using(tree, is_defined)) {
-                syntax_abstract_tree_t *undefined_node = get_from_tree_using(tree, is_undefined);
-                if (is_variable) {
-                    SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", undefined_node->value->value)
-                } else {
-                    SEMANTIC_UNDEF_FUNC_ERROR("Function %s used before declaration", undefined_node->value->value)
-                }
-            }
             lexical_token = get_token(fd);
             break;
         }

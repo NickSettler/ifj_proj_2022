@@ -32,10 +32,20 @@ typedef enum {
     TYPE_STRING
 } data_type;
 
+typedef struct function_tree_node {
+    char *key;
+    data_type return_type;
+    data_type argument_type;
+    bool argument;
+    bool defined;
+    bool local;
+    struct function_tree_node *left;
+    struct function_tree_node *right;
+} function_tree_node_t;
 /**
  * @struct tree_node_t
  * Binary search tree node
- *
+
  * @var tree_node_t::left
  * Left child
  *
@@ -43,19 +53,21 @@ typedef enum {
  * Right child
  *
  * @var tree_node_t::key
- * Key
+ * Key is identifier
  *
  * @bool tree_node_t::defined
  * Is variable defined
  *
  * @bool tree_node_t::global
  * Is variable global
+ *
  */
 typedef struct tree_node {
-    data_type type; // Data type of symbol / return type of function
-    bool defined; // Defined if current function was defined
-    bool global;  // Global if current symbol is global
-    char *key;  // Key is identifier
+    function_tree_node_t function_tree;
+    data_type type;
+    bool defined;
+    bool global;
+    char *key;
     struct tree_node *left;
     struct tree_node *right;
 } tree_node_t;
