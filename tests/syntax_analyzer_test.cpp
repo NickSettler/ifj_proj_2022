@@ -103,6 +103,23 @@ namespace ifj {
                             "\\[SYNTAX ERROR\\] Decrement operator is not supported");
             }
 
+            TEST_F(SyntaxAnalyzerTest, StringTest) {
+                IsSyntaxTreeCorrect("$a = \"Hello world\";",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_STRING});
+
+                IsSyntaxTreeCorrect("$a = \"Hello world\" . \"Hello world\";",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_STRING,
+                                     SYN_NODE_CONCAT, SYN_NODE_STRING});
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = \"Hello world\" . ;"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
+
+                EXPECT_EXIT(SyntaxTreeWithError("$a = . ;"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: .");
+            }
+
             TEST_F(SyntaxAnalyzerTest, ArithmeticExpressionAdvanced) {
                 IsSyntaxTreeCorrect("1 + 2 * 3 / 12;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_ADD, SYN_NODE_INTEGER, SYN_NODE_MUL,
