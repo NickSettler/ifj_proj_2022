@@ -29,6 +29,7 @@ struct {
         {"*",        "Op_multiply",       SYN_TOKEN_MUL,                  false, true,  false, 13, SYN_NODE_MUL},
         {"/",        "Op_divide",         SYN_TOKEN_DIV,                  false, true,  false, 13, SYN_NODE_DIV},
         {"-",        "Op_negate",         SYN_TOKEN_NEGATE,               false, false, true,  14, SYN_NODE_NEGATE},
+        {".",        "Op_concat",         SYN_TOKEN_CONCAT,               false, true,  false, 12, SYN_NODE_CONCAT},
         {"<",        "Op_less",           SYN_TOKEN_LESS,                 false, true,  false, 10, SYN_NODE_LESS},
         {"<=",       "Op_lessequal",      SYN_TOKEN_LESS_EQUAL,           false, true,  false, 10, SYN_NODE_LESS_EQUAL},
         {">",        "Op_greater",        SYN_TOKEN_GREATER,              false, true,  false, 10, SYN_NODE_GREATER},
@@ -308,6 +309,10 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
             x = make_binary_leaf(SYN_NODE_FLOAT, string_init(lexical_token->value));
             lexical_token = get_token(fd);
             break;
+        case STRING:
+            x = make_binary_leaf(SYN_NODE_STRING, string_init(lexical_token->value));
+            lexical_token = get_token(fd);
+            break;
         default: {
             SYNTAX_ERROR("Expected expression, got: %s\n", get_readable_error_char(lexical_token->value))
         }
@@ -470,6 +475,8 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_MUL;
         case DIVIDE:
             return SYN_TOKEN_DIV;
+        case CONCATENATION:
+            return SYN_TOKEN_CONCAT;
         case INCREMENT:
         SYNTAX_ERROR("Increment operator is not supported")
         case DECREMENT:
