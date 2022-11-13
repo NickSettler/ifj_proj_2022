@@ -1,0 +1,267 @@
+% Author: Nikita Moiseev <xmoise01@stud.fit.vutbr.cz>
+% Author: Maksim Kalutski <xkalut00@stud.fit.vutbr.cz>
+% Author: Elena Marochkina <xmaroc00@stud.fit.vutbr.cz>
+% Author: Nikita Pasynkov <xpasyn0034@stud.fit.vutbr.cz>
+
+
+\documentclass[a4paper, 11pt]{article}
+
+
+\usepackage[czech]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry} \geometry{verbose,a4paper,tmargin=2cm,bmargin=2cm,lmargin=2.5cm,rmargin=1.5cm}
+\usepackage{times}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage{graphicx} % insert picture
+\usepackage[unicode]{hyperref}
+\hypersetup{
+	colorlinks = true,
+	hypertexnames = false,
+	citecolor = blue
+}
+
+
+\begin{document}
+	%% Title page %%
+	\begin{titlepage}
+		\begin{center}
+			\includegraphics[width=0.77\linewidth]{fit_logo.png} \\
+
+			\vspace{\stretch{0.382}}
+
+			\Huge{Projektová dokumentace} \\
+			\LARGE{\textbf{Implementace překladače imperativního jazyka IFJ22}} \\
+			\Large{Tým \textbf{xmoise01}, varianta \textbf{BVS}}
+			\vspace{\stretch{0.7}}
+		\end{center}
+
+		\begin{minipage}{0.4 \textwidth}
+			{\Large \today}
+		\end{minipage}
+		\hfill
+		\begin{minipage}[r]{0.6 \textwidth}
+			\Large
+			\begin{tabular}{l l l}
+				\textbf{Nikita Moiseev} & \textbf{(xmoise01)} & \quad 25\,\% \\
+				Maksim Kalutski & (xkalut00) & \quad 25\,\% \\
+				Elena Marochkina & (xmaroc00) & \quad 25\,\% \\
+				Nikita Pasynkov & (xpasyn00) & \quad 25\,\% \\
+			\end{tabular}
+		\end{minipage}
+	\end{titlepage}
+
+
+
+	% Obsah %
+	\pagenumbering{roman}
+	\setcounter{page}{1}
+	\tableofcontents
+	\clearpage
+
+
+
+	% Úvod %
+	\pagenumbering{arabic}
+	\setcounter{page}{1}
+
+	\section{Úvod}
+	Cílem projektu bylo vytvořit program v~jazyce~C, který načte zdrojový kód zapsaný ve zdrojovém jazyce IFJ22,
+	jenž je zjednodušenou podmnožinou jazyka PHP a~přeloží jej do cílového jazyka IFJcode22 (mezikód).
+
+	Program funguje jako konzolová aplikace, které načítá zdrojový program ze standardního vstupu a~generuje
+	výsledný mezikód na standardní výstup nebo v~případě chyby vrací odpovídající chybový kód.
+
+
+
+	% Návrh a implementace %
+	\section{Návrh a~implementace}
+
+	Projekt jsme sestavili z~několika námi implementovaných dílčích částí, které jsou představeny v~této kapitole.
+	Je zde také uvedeno, jakým způsobem spolu jednotlivé dílčí části spolupracují.
+
+
+	\subsection{Lexikální analýza}
+
+	Při tvorbě překladače jsme začali implementací lexikální analýzy. Hlavní funkce této analýzy je \texttt{get\_next\_token},
+	pomocí níž se čte znak po znaku ze zdrojového souboru a~převádí na strukturu \texttt{token}, která se skládá z~typu a~hodnoty.
+	Typy tokenu jsou \texttt{EOF}, speciální znaky, speciální závorky PHP, identifikátory, klíčová slova, datové typy a~také aritmetické, relační a logické operátory a operátor přiřazení a~ostatní znaky, které mohou být použity v~jazyce IFJ2022.
+	Hodnota atributu je
+	\texttt{value}. Pokud je typ tokenu identifikátor, pak bude atribut daný identifikátor,
+	když by byl typ tokenu klíčové slovo, přiřadí atributu dané klíčové slovo, pokud číslo, atribut bude ono číslo. S~takto vytvořeným tokenem poté pracují další analýzy.
+
+	Celý lexikální analyzátor je implementován jako deterministický konečný automat podle předem vytvořeného diagramu
+	\ref{figure:fa_graph}. Konečný automat je v~jazyce C~jako jeden nekonečně opakující se \texttt{switch}, kde každý případ
+	\texttt{case} je ekvivalentní k~jednomu stavu automatu. Pokud načtený znak nesouhlasí s~žádným znakem, který jazyk povoluje,
+	program je ukončen a~vrací chybu 1 \texttt{LEXICAL ERROR CODE 1}. Jinak se přechází do dalších stavů a~načítají se další znaky, dokud nemáme hotový jeden
+	token, který potom vracíme a~ukončíme tuto funkci.
+
+
+	\subsection{Syntaktická analýza}
+
+	Nejdůležitější částí celého programu je syntaktická analýza.
+
+	Až na výrazy se syntaktická analýza řídí LL -- gramatikou a~metodou rekurzivního sestupu podle pravidel v~LL - tabulce
+	\ref{table:ll_gramatika}.
+
+
+	\subsection{Sémantická analýza}
+
+
+
+
+	\subsection{Generování cílového kódu}
+
+
+    % Práce v týmu %
+	\section{Práce v~týmu}
+
+	\subsection{Způsob práce v~týmu}
+
+	Na projektu jsme začali pracovat na začátku října. Práci jsme si dělili postupně, tj. neměli jsme od začátku
+	stanovený kompletní plán rozdělení práce. Na dílčích částech projektu pracovali většinou
+	dvojice členů týmu.
+
+	\subsubsection{Verzovací systém}
+
+	Pro správu souborů projektu jsme používali verzovací systém Git. Jako vzdálený repositář jsme používali \mbox{GitHub}.
+
+	Git nám umožnil pracovat na více úkolech na projektu současně v~tzv. větvích. Většinu úkolů jsme nejdříve připravili
+	do větve a~až po otestování a~schválení úprav ostatními členy týmu jsme tyto úpravy začlenili do hlavní
+	vývojové větve.
+
+	\subsubsection{Komunikace}
+
+	Komunikace mezi členy týmů probíhala převážně osobně nebo prostřednictvím aplikace Telegram.
+
+	V~průběhu řešení projektu jsme měli i~osobní setkání každý týden, kde jsme probírali a~řešili problémy týkající se různých částí projektu. Pro plánování úkolů jsme použili webovou aplikaci Notion.
+
+	\subsection{Rozdělení práce mezi členy týmu}
+
+	Práci na projektu jsme si rozdělili rovnoměrně s~ohledem na její složitost a~časovou náročnost.
+	Každý tedy dostal procentuální hodnocení 25\,\%.
+	Tabulka \ref{table:rozdeleni_prace} shrnuje rozdělení práce v~týmu mezi jednotlivými členy.
+	\bigskip
+	\begin{table}[ht]
+		\centering
+		\begin{tabular}{| l | l |}
+			\hline
+			Člen týmu & Přidělená práce \\ \hline
+			\textbf{Nikita Moiseev} & \begin{tabular}{l} vedení týmu, organizace práce, dohlížení na provádění práce,
+				konzultace, \\ kontrola, lexikální analýza, syntaktická analýza \end{tabular} \\
+			Maksim Kalutski & \begin{tabular}{l} generování cílového kódu, testování \end{tabular} \\
+			Elena Marochkina & \begin{tabular}{l} implementace tabulky symbolů, syntaktická analýza, testování, dokumentace \end{tabular} \\
+			Nikita Pasynkov & \begin{tabular}{l} lexikální analýza, syntaktická analýza, testování, dokumentace \end{tabular} \\ \hline
+		\end{tabular}
+		\caption{Rozdělení práce v~týmu mezi jednotlivými členy}
+		\label{table:rozdeleni_prace}
+	\end{table}
+
+
+
+	%Závěr %
+	\section{Závěr}
+
+
+
+
+	%Citace %
+	\clearpage
+	\bibliographystyle{czechiso}
+	\renewcommand{\refname}{Literatura}
+	\bibliography{dokumentace}
+
+
+
+	%Přílohy%
+	\clearpage
+	\appendix
+
+
+	\section{Diagram konečného automatu specifikující lexikální analyzátor}
+	\begin{figure}[!ht]
+		\centering
+		\includegraphics[width=0.95\linewidth]{fsm.png}
+		\caption{Diagram konečného automatu specifikující lexikální analyzátor}
+		\label{figure:fa_graph}
+	\end{figure}
+
+    \newpage
+	\section{LL -- gramatika}
+	    \begin{table}[!ht]
+		\centering
+		\begin{enumerate}[noitemsep]
+			\item \verb|<prog> -> <?php <declare> <f-dec-stats> <stat-list> ?>|
+			\item \verb|<prog> -> <? <declare> <f-dec-stats> <stat-list> ?>|
+
+			\item \verb|<f-dec-stats> -> <f-dec-stat>|
+			\item \verb|<f-dec-stats> -> <f-dec-stat> <f-dec-stats>|
+			\item \verb|<f-dec-stat> -> function ID ( <f-args> ) : <f-type> { <stat-list> }|
+			\item \verb|<f-dec-stat> -> function ID ( <f-args> ) { <stat-list> }|
+
+			\item \verb|<f-type> -> int|
+			\item \verb|<f-type> -> float|
+			\item \verb|<f-type> -> string|
+			\item \verb|<f-type> -> void|
+
+			\item \verb|<f-args> -> <f-arg>|
+			\item \verb|<f-args> -> <f-arg>, <f-args>|
+			\item \verb|<f-args> -> |$\varepsilon$
+			\item \verb|<f-arg> -> <f-type> ID|
+
+			\item \verb|<stat> -> ID = <expr> ;|
+			\item \verb|<stat> -> ID = ID ( <args> ) ;|
+			\item \verb|<stat> -> ID ( <args> ) ;|
+			\item \verb|<stat> -> return <expr> ;|
+			\item \verb|<stat> -> if ( <expr> )|
+			\item \verb|<stat> -> if ( <expr> ) <stat> else <stat>|
+			\item \verb|<stat> -> while ( <expr> ) <stat>|
+			\item \verb|<stat> -> { <stat-list> }|
+
+			\item \verb|<args> -> <arg>|
+			\item \verb|<args> -> <arg>, <args>|
+			\item \verb|<arg> -> <term>|
+			\item \verb|<arg> -> |$\varepsilon$
+
+			\item \verb|<term> -> int|
+			\item \verb|<term> -> float|
+			\item \verb|<term> -> string|
+			\item \verb|<term> -> NULL|
+			\item \verb|<term> -> ID|
+
+			\item \verb|<stat-list> -> <stat> <stat-list>|
+			\item \verb|<stat-list> -> |$\varepsilon$
+
+			\item \verb|<expr> -> EXPR <expr>|
+			\item \verb|<expr> -> ID ( <args> )|
+			\item \verb|<expr> -> |$\varepsilon$
+
+			\item \verb|<declare> -> declare(strict-types = 0) ;|
+			\item \verb|<declare> -> declare(strict-types = 1) ;|
+
+		\end{enumerate}
+
+		\caption{LL -- gramatika řídící syntaktickou analýzu}
+		\label{table:ll_gramatika}
+	\end{table}
+
+    \newpage
+	\section{LL -- tabulka}
+	\begin{table}[!ht]
+		\centering
+		\includegraphics[width=1\linewidth]{}
+		\caption{LL -- tabulka použitá při syntaktické analýze}
+		\label{table:ll_table}
+	\end{table}
+
+    \newpage
+	\section{Precedenční tabulka}
+	\begin{table}[!ht]
+		\centering
+		\includegraphics[width=0.7\linewidth]{precedence_table.png}
+		\caption{Precedenční tabulka použitá při precedenční syntaktické analýze výrazů}
+		\label{table:prec_table}
+	\end{table}
+
+
+\end{document}
