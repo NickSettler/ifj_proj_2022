@@ -73,10 +73,10 @@ void check_tree_for_float(syntax_abstract_tree_t *tree) {
     get_data_type(tree->right);
 }
 
-void create_global_BST(syntax_abstract_tree_t *tree) {
-    insert_token(tree->left->value->value);
-    find_token(tree->left->value->value)->defined = true;
-    find_token(tree->left->value->value)->global = true;
+void create_global_id_node(syntax_abstract_tree_t *tree) {
+    insert_token(tree->value->value);
+    find_token(tree->value->value)->defined = true;
+    find_token(tree->value->value)->global = true;
 }
 
 void replace_node_int_to_float(syntax_abstract_tree_t *tree) {
