@@ -64,4 +64,10 @@ bool is_node_an_int(syntax_abstract_tree_t *tree);
  */
 bool is_only_numbers(syntax_abstract_tree_t *tree);
 
+bool is_str_an_int(string_t *str);
+
+bool is_str_a_float(string_t *str);
+
+int string_conversion(syntax_abstract_tree_t *tree);
+
 #endif //IFJ_PROJ_SEMANTIC_ANALYZER_H
