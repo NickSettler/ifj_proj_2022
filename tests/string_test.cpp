@@ -48,6 +48,19 @@ namespace ifj {
                 string_convert_by(str, tolower);
                 EXPECT_STREQ(str->value, "hello world");
             }
+
+            TEST(String, StringReplace) {
+                string_t *str = string_init("Hello World");
+                string_replace(str, "Hello");
+                EXPECT_STREQ(str->value, "Hello");
+            }
+
+            TEST(String, StringSubstring) {
+                string_t *str = string_init("Hello World");
+                string_t *substr = string_substr(str, 0, 5);
+                EXPECT_STREQ(str->value, "Hello World");
+                EXPECT_STREQ(substr->value, "Hello");
+            }
         }
     }
 }
