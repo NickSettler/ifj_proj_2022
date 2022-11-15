@@ -94,6 +94,41 @@ void string_clear(string_t *str) {
     str->value[str->length] = '\0';
 }
 
+void string_replace(string_t *str, const char *value) {
+    if (str == NULL || value == NULL)
+        return;
+
+    size_t new_length = strlen(value);
+
+    if (new_length >= str->capacity) {
+        size_t new_capacity = new_length;
+        char *new_value = (char *) realloc(str->value, new_capacity);
+        if (new_value == NULL)
+            return;
+
+        str->value = new_value;
+        str->capacity = new_capacity;
+    }
+
+    strcpy(str->value, value);
+    str->length = new_length;
+}
+
+string_t *string_substr(string_t *str, int start, int end) {
+    if (str == NULL)
+        return NULL;
+
+    if (start < 0 || end < 0 || start > end || end > str->length)
+        return NULL;
+
+    string_t *substr = string_base_init();
+
+    for (int i = start; i < end; i++)
+        string_append_char(substr, str->value[i]);
+
+    return substr;
+}
+
 bool string_check_by(string_t *str, int (*func)(int)) {
     if (str == NULL) return false;
 
