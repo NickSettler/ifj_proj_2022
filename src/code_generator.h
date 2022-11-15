@@ -2,6 +2,7 @@
  * Implementace překladače imperativního jazyka IFJ22.
  * @authors
  *  xkalut00, Maksim Kalutski
+ *  xmoise01, Nikita Moiseev
  *
  * @file   code_generator.h
  * @brief  Code generator header file
@@ -13,16 +14,22 @@
 
 #include <stdio.h>
 #include "str.h"
+#include "syntax_analyzer.h"
 
 /**
  * @brief file for writing the code
  */
 FILE *fd;
 
+int tmp_var_counter;
+
 /**
  * @brief structure with frames
  */
 typedef enum {
+    CODE_GENERATOR_INT_CONSTANT,
+    CODE_GENERATOR_FLOAT_CONSTANT,
+    CODE_GENERATOR_STRING_CONSTANT,
     CODE_GENERATOR_GLOBAL_FRAME,
     CODE_GENERATOR_LOCAL_FRAME,
     CODE_GENERATOR_TEMPORARY_FRAME,
@@ -32,7 +39,7 @@ typedef enum {
  * @brief array of frames
  */
 static const char *frames[] = {
-        "GF", "LF", "TF",
+        "int", "float", "string", "GF", "LF", "TF",
 };
 
 /**
@@ -93,6 +100,12 @@ static const char *instructions[] = {
 void generate_move(frames_t frame, char *variable, char *symbol);
 
 /**
+ * Generates label
+ * @param label
+ */
+void generate_label(char *label);
+
+/**
  * @brief generating a new temporary frame
  */
 void generate_create_frame();
@@ -141,6 +154,15 @@ void generate_pop_from_top(frames_t frame, char *variable);
 void generate_clear_stack(frames_t frame);
 
 /**
+ * Generates getting type instruction
+ * @param variable_frame variable frame
+ * @param variable variable name
+ * @param symbol_frame symbol frame
+ * @param symbol symbol name
+ */
+void generate_type(frames_t variable_frame, char *variable, frames_t symbol_frame, char *symbol);
+
+/**
  * @brief function for choosing a float operation using a switch case
  *        ADD                        —  sums symbol1 and symbol2 and stores the result in result
  *        SUB                        —  subtracts symbol2 from symbol1 and stores the result in result
@@ -170,7 +192,8 @@ void generate_clear_stack(frames_t frame);
  * @param *symbol1 first symbol
  * @param *symbol2 second symbol
  */
-void generate_operation(instructions_t instruction, frames_t frame, char *result, char *symbol1, char *symbol2);
+void generate_operation(instructions_t instruction, frames_t result_frame, char *result, frames_t symbol1_frame,
+                        char *symbol1, frames_t symbol2_frame, char *symbol2);
 
 /**
  * @brief generate an integer to decimal conversion
@@ -183,6 +206,16 @@ void generate_int_to_float(frames_t frame);
  * @param frame symbol frame
  */
 void generate_float_to_int(frames_t frame);
+
+/**
+ * Generates function to convert to float
+ */
+void generate_floatval();
+
+/**
+ * Generates function to convert to int
+ */
+void generate_intval();
 
 /**
  * @brief generate a decimal to string conversion
@@ -229,5 +262,42 @@ void generate_substr();
  * @brief generate end of code
  */
 void generate_end();
+
+/**
+ * Processes tree value to required target language format
+ * @param tree tree node to process
+ */
+void process_node_value(syntax_abstract_tree_t *tree);
+
+/**
+ * Returns frame of the node
+ * @param tree tree node
+ * @return frame of the node
+ */
+frames_t get_node_frame(syntax_abstract_tree_t *tree);
+
+/**
+ * Parses math expression
+ * @param tree tree node
+ */
+void parse_expression(syntax_abstract_tree_t *tree);
+
+/**
+ * Parses relational expression
+ * @param tree tree node
+ */
+void parse_relational_expression(syntax_abstract_tree_t *tree);
+
+/**
+ * Parses syntax tree assign node
+ * @param tree syntax tree assign node
+ */
+void parse_assign(syntax_abstract_tree_t *tree);
+
+/**
+ * Parses syntax tree
+ * @param tree syntax tree node
+ */
+void parse_tree(syntax_abstract_tree_t *tree);
 
 #endif //IFJ_PROJ_2022_CODE_GENERATOR_H

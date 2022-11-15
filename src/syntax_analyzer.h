@@ -37,6 +37,9 @@ typedef enum {
     SYN_TOKEN_DIV,
     SYN_TOKEN_NEGATE,
     SYN_TOKEN_CONCAT,
+    SYN_TOKEN_NOT,
+    SYN_TOKEN_OR,
+    SYN_TOKEN_AND,
     SYN_TOKEN_LESS,
     SYN_TOKEN_LESS_EQUAL,
     SYN_TOKEN_GREATER,
@@ -76,6 +79,9 @@ typedef enum {
     SYN_NODE_DIV,
     SYN_NODE_NEGATE,
     SYN_NODE_CONCAT,
+    SYN_NODE_NOT,
+    SYN_NODE_OR,
+    SYN_NODE_AND,
     SYN_NODE_LESS,
     SYN_NODE_LESS_EQUAL,
     SYN_NODE_GREATER,
@@ -89,6 +95,12 @@ typedef enum {
     SYN_NODE_FUNCTION_DECLARATION,
     SYN_NODE_FUNCTION_ARG,
 } syntax_tree_node_type;
+
+typedef enum {
+    PREORDER,
+    INORDER,
+    POSTORDER,
+} syntax_tree_traversal_type;
 
 typedef struct syntax_abstract_tree_attr syntax_abstract_tree_attr_t;
 
@@ -141,13 +153,6 @@ make_binary_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, synta
  * @return New syntax abstract tree node
  */
 syntax_abstract_tree_t *make_binary_leaf(syntax_tree_node_type type, string_t *value);
-
-/**
- * Prints the syntax abstract tree using the inorder traversal
- * @param output Output file stream
- * @param tree Syntax abstract tree
- */
-void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree);
 
 /**
  * Checks if the token matches the expected token, otherwise throws an error
@@ -214,6 +219,14 @@ syntax_abstract_tree_t *stmt(FILE *fd);
  */
 syntax_abstract_tree_t *load_syntax_tree(FILE *fd);
 
+
+/**
+ * Prints the syntax abstract tree using the inorder traversal
+ * @param output Output file stream
+ * @param tree Syntax abstract tree
+ */
+void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree);
+
 /**
  * Goes through the syntax tree and checks nodes
  * @param tree Syntax abstract tree
@@ -229,6 +242,9 @@ bool check_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstrac
  * @return node if this node satisfies the check function, otherwise NULL
  */
 syntax_abstract_tree_t *get_from_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *));
+
+void *process_tree_using(syntax_abstract_tree_t *tree, void (*process)(syntax_abstract_tree_t *),
+                         syntax_tree_traversal_type traversal_type);
 
 /**
  * Checks if AST contains defined variable

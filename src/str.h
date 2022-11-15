@@ -70,6 +70,22 @@ void string_append_string(string_t *str, const char *value, ...);
 void string_clear(string_t *str);
 
 /**
+ * Replaces string value
+ * @param str pointer to string
+ * @param value string value
+ */
+void string_replace(string_t *str, const char *value);
+
+/**
+ * Gets substring value of a string from start to end
+ * @param str pointer to string
+ * @param start start index
+ * @param end end index
+ * @return substring value
+ */
+string_t *string_substr(string_t *str, int start, int end);
+
+/**
  * Calls a function on all characters in string
  * @param str pointer to a string
  * @param func pointer to a function
