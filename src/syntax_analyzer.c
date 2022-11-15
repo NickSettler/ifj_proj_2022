@@ -30,6 +30,9 @@ struct {
         {"/",        "Op_divide",         SYN_TOKEN_DIV,                  false, true,  false, 13, SYN_NODE_DIV},
         {"-",        "Op_negate",         SYN_TOKEN_NEGATE,               false, false, true,  14, SYN_NODE_NEGATE},
         {".",        "Op_concat",         SYN_TOKEN_CONCAT,               false, true,  false, 12, SYN_NODE_CONCAT},
+        {"!",        "Op_not",            SYN_TOKEN_NOT,                  false, false, true,  14, SYN_NODE_NOT},
+        {"||",       "Op_or",             SYN_TOKEN_OR,                   false, true,  false, 4,  SYN_NODE_OR},
+        {"&&",       "Op_and",            SYN_TOKEN_AND,                  false, true,  false, 5,  SYN_NODE_AND},
         {"<",        "Op_less",           SYN_TOKEN_LESS,                 false, true,  false, 10, SYN_NODE_LESS},
         {"<=",       "Op_lessequal",      SYN_TOKEN_LESS_EQUAL,           false, true,  false, 10, SYN_NODE_LESS_EQUAL},
         {">",        "Op_greater",        SYN_TOKEN_GREATER,              false, true,  false, 10, SYN_NODE_GREATER},
@@ -439,6 +442,12 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
         SYNTAX_ERROR("Increment operator is not supported")
         case DECREMENT:
         SYNTAX_ERROR("Decrement operator is not supported")
+        case LOGICAL_NOT:
+            return SYN_TOKEN_NOT;
+        case LOGICAL_OR:
+            return SYN_TOKEN_OR;
+        case LOGICAL_AND:
+            return SYN_TOKEN_AND;
         case LESS:
             return SYN_TOKEN_LESS;
         case LESS_EQUAL:
