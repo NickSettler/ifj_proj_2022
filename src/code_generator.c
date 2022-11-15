@@ -15,6 +15,10 @@ void generate_move(frames_t frame, char *variable, char *symbol) {
     fprintf(fd, "MOVE %s@%s %s@%s\n", frames[frame], variable, frames[frame], symbol);
 }
 
+void generate_label(char *label) {
+    fprintf(fd, "LABEL %s\n", label);
+}
+
 void generate_create_frame() {
     fprintf(fd, "CREATEFRAME\n");
 }
@@ -46,6 +50,10 @@ void generate_clear_stack(frames_t frame) {
     fprintf(fd, "POPS %s@_clear_stack\n", frames[frame]);
     fprintf(fd, "JUMP clear_stack\n");
     fprintf(fd, "RETURN\n");
+}
+
+void generate_type(frames_t variable_frame, char *variable, frames_t symbol_frame, char *symbol) {
+    fprintf(fd, "TYPE %s@%s %s@%s\n", frames[variable_frame], variable, frames[symbol_frame], symbol);
 }
 
 void generate_operation(instructions_t instruction, frames_t result_frame, char *result, frames_t symbol1_frame,
@@ -98,6 +106,64 @@ void generate_float_to_int(frames_t frame) {
     fprintf(fd, "FLOAT2INT %s@retval1 %s@int2float\n", frames[frame], frames[frame]);
     fprintf(fd, "POPFRAME\n");
     fprintf(fd, "RETURN\n");
+}
+
+void generate_floatval() {
+    char *stack_variable = "$process_var";
+    char *type_variable = "$type_var";
+
+    generate_label("floatval");
+    generate_create_frame();
+    generate_push_frame();
+
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
+    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
+
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, type_variable);
+    generate_type(CODE_GENERATOR_LOCAL_FRAME, type_variable, CODE_GENERATOR_LOCAL_FRAME, stack_variable);
+
+    // TODO: create separate function for all jumps
+    fprintf(fd, "JUMPIFEQ floatval_end %s@%s string@float\n", frames[CODE_GENERATOR_LOCAL_FRAME], type_variable);
+    fprintf(fd, "JUMPIFEQ floatval_int %s@%s string@int\n", frames[CODE_GENERATOR_LOCAL_FRAME], type_variable);
+    fprintf(fd, "JUMP floatval_end\n");
+
+    generate_label("floatval_int");
+    fprintf(fd, "INT2FLOAT %s@%s %s@%s\n", frames[CODE_GENERATOR_LOCAL_FRAME], stack_variable,
+            frames[CODE_GENERATOR_LOCAL_FRAME], stack_variable);
+    fprintf(fd, "JUMP floatval_end\n");
+
+    generate_label("floatval_end");
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
+    generate_end();
+}
+
+void generate_intval() {
+    char *stack_variable = "$process_var";
+    char *type_variable = "$type_var";
+
+    generate_label("intval");
+    generate_create_frame();
+    generate_push_frame();
+
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
+    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
+
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, type_variable);
+    generate_type(CODE_GENERATOR_LOCAL_FRAME, type_variable, CODE_GENERATOR_LOCAL_FRAME, stack_variable);
+
+    // TODO: create separate function for all jumps
+    fprintf(fd, "JUMPIFEQ intval_end %s@%s string@int\n", frames[CODE_GENERATOR_LOCAL_FRAME], type_variable);
+    fprintf(fd, "JUMPIFEQ intval_float %s@%s string@float\n", frames[CODE_GENERATOR_LOCAL_FRAME], type_variable);
+    fprintf(fd, "JUMP intval_end\n");
+
+    generate_label("intval_float");
+    fprintf(fd, "FLOAT2INT %s@%s %s@%s\n", frames[CODE_GENERATOR_LOCAL_FRAME], stack_variable,
+            frames[CODE_GENERATOR_LOCAL_FRAME], stack_variable);
+    fprintf(fd, "JUMP intval_end\n");
+
+    generate_label("intval_end");
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
+    generate_end();
 }
 
 void generate_int_to_char(frames_t frame) {

@@ -100,6 +100,12 @@ static const char *instructions[] = {
 void generate_move(frames_t frame, char *variable, char *symbol);
 
 /**
+ * Generates label
+ * @param label
+ */
+void generate_label(char *label);
+
+/**
  * @brief generating a new temporary frame
  */
 void generate_create_frame();
@@ -148,6 +154,15 @@ void generate_pop_from_top(frames_t frame, char *variable);
 void generate_clear_stack(frames_t frame);
 
 /**
+ * Generates getting type instruction
+ * @param variable_frame variable frame
+ * @param variable variable name
+ * @param symbol_frame symbol frame
+ * @param symbol symbol name
+ */
+void generate_type(frames_t variable_frame, char *variable, frames_t symbol_frame, char *symbol);
+
+/**
  * @brief function for choosing a float operation using a switch case
  *        ADD                        —  sums symbol1 and symbol2 and stores the result in result
  *        SUB                        —  subtracts symbol2 from symbol1 and stores the result in result
@@ -191,6 +206,16 @@ void generate_int_to_float(frames_t frame);
  * @param frame symbol frame
  */
 void generate_float_to_int(frames_t frame);
+
+/**
+ * Generates function to convert to float
+ */
+void generate_floatval();
+
+/**
+ * Generates function to convert to int
+ */
+void generate_intval();
 
 /**
  * @brief generate a decimal to string conversion
