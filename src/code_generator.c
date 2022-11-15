@@ -47,23 +47,29 @@ void generate_clear_stack(frames_t frame) {
     fprintf(fd, "RETURN\n");
 }
 
-void generate_operation(instructions_t instruction, frames_t frame, char *result, char *symbol1, char *symbol2) {
+void generate_operation(instructions_t instruction, frames_t result_frame, char *result, frames_t symbol1_frame,
+                        char *symbol1, frames_t symbol2_frame, char *symbol2) {
     if (instruction == CODE_GEN_NOTLT_INSTRUCTION) {
-        fprintf(fd, "LT %s@%s %s@%s %s@%s\n", frames[frame], result, frames[frame], symbol1, frames[frame], symbol2);
-        fprintf(fd, "NOT %s@%s %s@%s\n", frames[frame], result, frames[frame], result);
+        fprintf(fd, "LT %s@%s %s@%s %s@%s\n", frames[result_frame], result, frames[symbol1_frame], symbol1,
+                frames[symbol2_frame], symbol2);
+        fprintf(fd, "NOT %s@%s %s@%s\n", frames[result_frame], result, frames[result_frame], result);
     } else if (instruction == CODE_GEN_NOTGT_INSTRUCTION) {
-        fprintf(fd, "GT %s@%s %s@%s %s@%s\n", frames[frame], result, frames[frame], symbol1, frames[frame], symbol2);
-        fprintf(fd, "NOT %s@%s %s@%s\n", frames[frame], result, frames[frame], result);
+        fprintf(fd, "GT %s@%s %s@%s %s@%s\n", frames[result_frame], result, frames[symbol1_frame], symbol1,
+                frames[symbol2_frame], symbol2);
+        fprintf(fd, "NOT %s@%s %s@%s\n", frames[result_frame], result, frames[result_frame], result);
     } else if (instruction == CODE_GEN_NOTEQ_INSTRUCTION) {
-        fprintf(fd, "EQ %s@%s %s@%s %s@%s\n", frames[frame], result, frames[frame], symbol1, frames[frame], symbol2);
-        fprintf(fd, "NOT %s@%s %s@%s\n", frames[frame], result, frames[frame], result);
+        fprintf(fd, "EQ %s@%s %s@%s %s@%s\n", frames[result_frame], result, frames[symbol1_frame], symbol1,
+                frames[symbol2_frame], symbol2);
+        fprintf(fd, "NOT %s@%s %s@%s\n", frames[result_frame], result, frames[result_frame], result);
     } else if (instruction == CODE_GEN_NOT_INSTRUCTION || instruction == CODE_GEN_NOTS_INSTRUCTION ||
                instruction == CODE_GEN_STRLEN_INSTRUCTION || instruction == CODE_GEN_INT2FLOATS_INSTRUCTION ||
                instruction == CODE_GEN_FLOAT2INTS_INSTRUCTION || instruction == CODE_GEN_INT2CHARS_INSTRUCTION) {
-        fprintf(fd, "%s %s@%s %s@%s\n", instructions[instruction], frames[frame], result, frames[frame], symbol1);
+        fprintf(fd, "%s %s@%s %s@%s\n", instructions[instruction], frames[result_frame], result, frames[symbol1_frame],
+                symbol1);
     } else {
-        fprintf(fd, "%s %s@%s %s@%s %s@%s\n", instructions[instruction], frames[frame], result, frames[frame], symbol1,
-                frames[frame], symbol2);
+        fprintf(fd, "%s %s@%s %s@%s %s@%s\n", instructions[instruction], frames[result_frame], result,
+                frames[symbol1_frame], symbol1,
+                frames[symbol2_frame], symbol2);
     }
 }
 

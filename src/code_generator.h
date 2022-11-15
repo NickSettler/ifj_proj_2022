@@ -23,6 +23,9 @@ FILE *fd;
  * @brief structure with frames
  */
 typedef enum {
+    CODE_GENERATOR_INT_CONSTANT,
+    CODE_GENERATOR_FLOAT_CONSTANT,
+    CODE_GENERATOR_STRING_CONSTANT,
     CODE_GENERATOR_GLOBAL_FRAME,
     CODE_GENERATOR_LOCAL_FRAME,
     CODE_GENERATOR_TEMPORARY_FRAME,
@@ -32,7 +35,7 @@ typedef enum {
  * @brief array of frames
  */
 static const char *frames[] = {
-        "GF", "LF", "TF",
+        "int", "float", "string", "GF", "LF", "TF",
 };
 
 /**
@@ -170,7 +173,8 @@ void generate_clear_stack(frames_t frame);
  * @param *symbol1 first symbol
  * @param *symbol2 second symbol
  */
-void generate_operation(instructions_t instruction, frames_t frame, char *result, char *symbol1, char *symbol2);
+void generate_operation(instructions_t instruction, frames_t result_frame, char *result, frames_t symbol1_frame,
+                        char *symbol1, frames_t symbol2_frame, char *symbol2);
 
 /**
  * @brief generate an integer to decimal conversion
