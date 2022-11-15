@@ -13,6 +13,40 @@
 
 tree_node_t *symtable;
 
+void init_symtable() {
+    init_tree();
+}
+
+void init_tree() {
+    insert_function("readi", TYPE_INT, true, true);
+    insert_args("readi", TYPE_INT);
+    insert_function("reads", TYPE_STRING, true, true);
+    insert_args("reads", TYPE_STRING);
+    insert_function("readf", TYPE_FLOAT, true, true);
+    insert_args("readf", TYPE_FLOAT);
+    insert_function("write", TYPE_STRING, true, true);
+    insert_args("write", TYPE_FLOAT);
+    insert_args("write", TYPE_INT);
+    insert_args("write", TYPE_STRING);
+}
+
+void insert_function(char *key, data_type return_type, bool global, bool defined) {
+    insert_token(key);
+    tree_node_t *function_ptr = find_element(symtable, key);
+    function_ptr->defined = defined;
+    function_ptr->global = global;
+    function_ptr->function_tree.return_type = return_type;
+}
+
+void insert_args(char *key, data_type type) {
+    tree_node_t *function_ptr = find_element(symtable, key);
+    if (function_ptr->function_tree.argument_type == 0) {
+        function_ptr->function_tree.argument_type = type;
+    } else {
+        function_ptr->function_tree.argument_type |= type;
+    }
+}
+
 tree_node_t *create_node(char *key) {
     tree_node_t *result = (tree_node_t *) malloc(sizeof(tree_node_t));
     if (result == 0) {

@@ -27,16 +27,15 @@ typedef struct syntax_abstract_tree syntax_abstract_tree_t;
  * @var DATA_TYPE_STRING
  */
 typedef enum {
-    TYPE_INT,
-    TYPE_FLOAT,
-    TYPE_STRING
+    TYPE_INT = 1 << 0,
+    TYPE_FLOAT = 1 << 1,
+    TYPE_STRING = 1 << 2,
 } data_type;
 
 typedef struct function_tree_node {
     char *key;
     data_type return_type;
     data_type argument_type;
-    bool argument;
     bool defined;
     bool local;
     struct function_tree_node *left;
@@ -71,6 +70,32 @@ typedef struct tree_node {
     struct tree_node *left;
     struct tree_node *right;
 } tree_node_t;
+
+/**
+ * @brief Initialize symbol table with built-in functions
+ */
+void init_symtable();
+
+/**
+ * @brief Initialize function tree
+ */
+void init_tree();
+
+/**
+ * @brief insert function into symtable
+ * @param key
+ * @param return_type
+ * @param global
+ * @param defined
+ */
+void insert_function(char *key, data_type return_type, bool global, bool defined);
+
+/**
+ * @brief insert function args into symtable
+ * @param key
+ * @param type
+ */
+void insert_args(char *key, data_type type);
 
 /**
  * Creates tree node with key
