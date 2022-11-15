@@ -263,4 +263,10 @@ void parse_expression(syntax_abstract_tree_t *tree);
  */
 void parse_assign(syntax_abstract_tree_t *tree);
 
+/**
+ * Parses syntax tree
+ * @param tree syntax tree node
+ */
+void parse_tree(syntax_abstract_tree_t *tree);
+
 #endif //IFJ_PROJ_2022_CODE_GENERATOR_H

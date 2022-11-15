@@ -343,3 +343,11 @@ void parse_assign(syntax_abstract_tree_t *tree) {
     generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
     generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, tree->right->value->value);
 }
+
+void parse_tree(syntax_abstract_tree_t *tree) {
+    if (tree->type != SYN_NODE_SEQUENCE) return;
+
+    if (tree->right && tree->right->type == SYN_NODE_ASSIGN) {
+        parse_assign(tree->right);
+    }
+}
