@@ -121,48 +121,6 @@ void syntax_abstract_tree_print(FILE *output, syntax_abstract_tree_t *tree) {
     syntax_abstract_tree_print(output, tree->right);
 }
 
-bool check_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *)) {
-    if (!tree) return true;
-    return check(tree) &&
-           check_tree_using(tree->left, check) &&
-           check_tree_using(tree->middle, check) &&
-           check_tree_using(tree->right, check);
-}
-
-syntax_abstract_tree_t *get_from_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *)) {
-    if (!tree) return NULL;
-    if (check(tree)) return tree;
-    syntax_abstract_tree_t *node = get_from_tree_using(tree->left, check);
-    if (node) return node;
-    node = get_from_tree_using(tree->middle, check);
-    if (node) return node;
-    node = get_from_tree_using(tree->right, check);
-    if (node) return node;
-    return NULL;
-}
-
-bool is_defined(syntax_abstract_tree_t *tree) {
-    if (tree->type == SYN_NODE_IDENTIFIER) {
-        tree_node_t *node = find_token(tree->value->value);
-        if (!node) return false;
-
-        return node->defined == true;
-    }
-
-    return true;
-}
-
-bool is_undefined(syntax_abstract_tree_t *tree) {
-    if (tree->type == SYN_NODE_IDENTIFIER) {
-        tree_node_t *node = find_token(tree->value->value);
-        if (!node) return true;
-
-        return node->defined == false;
-    }
-
-    return false;
-}
-
 bool is_correct_if(syntax_abstract_tree_t *tree) {
     if (tree->type == SYN_NODE_KEYWORD_IF) {
         syntax_abstract_tree_t *condition = tree->left;
@@ -528,4 +486,56 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
     }
 }
 
+bool check_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *)) {
+    if (!tree) return true;
+    return check(tree) &&
+           check_tree_using(tree->left, check) &&
+           check_tree_using(tree->middle, check) &&
+           check_tree_using(tree->right, check);
+}
 
+syntax_abstract_tree_t *get_from_tree_using(syntax_abstract_tree_t *tree, bool (*check)(syntax_abstract_tree_t *)) {
+    if (!tree) return NULL;
+    if (check(tree)) return tree;
+    syntax_abstract_tree_t *node = get_from_tree_using(tree->left, check);
+    if (node) return node;
+    node = get_from_tree_using(tree->middle, check);
+    if (node) return node;
+    node = get_from_tree_using(tree->right, check);
+    if (node) return node;
+    return NULL;
+}
+
+void *process_tree_using(syntax_abstract_tree_t *tree, void (*process)(syntax_abstract_tree_t *),
+                         syntax_tree_traversal_type traversal_type) {
+    if (!tree) return NULL;
+
+    if (traversal_type == PREORDER)process(tree);
+    process_tree_using(tree->left, process, traversal_type);
+    if (traversal_type == INORDER)process(tree);
+    process_tree_using(tree->middle, process, traversal_type);
+    process_tree_using(tree->right, process, traversal_type);
+    if (traversal_type == POSTORDER)process(tree);
+}
+
+bool is_defined(syntax_abstract_tree_t *tree) {
+    if (tree->type == SYN_NODE_IDENTIFIER) {
+        tree_node_t *node = find_token(tree->value->value);
+        if (!node) return false;
+
+        return node->defined == true;
+    }
+
+    return true;
+}
+
+bool is_undefined(syntax_abstract_tree_t *tree) {
+    if (tree->type == SYN_NODE_IDENTIFIER) {
+        tree_node_t *node = find_token(tree->value->value);
+        if (!node) return true;
+
+        return node->defined == false;
+    }
+
+    return false;
+}
