@@ -2,6 +2,7 @@
  * Implementace překladače imperativního jazyka IFJ22.
  * @authors
  *  xkalut00, Maksim Kalutski
+ *  xmoise01, Nikita Moiseev
  *
  * @file   code_generator.h
  * @brief  Code generator header file
@@ -13,11 +14,14 @@
 
 #include <stdio.h>
 #include "str.h"
+#include "syntax_analyzer.h"
 
 /**
  * @brief file for writing the code
  */
 FILE *fd;
+
+int tmp_var_counter;
 
 /**
  * @brief structure with frames
@@ -233,5 +237,30 @@ void generate_substr();
  * @brief generate end of code
  */
 void generate_end();
+
+/**
+ * Processes tree value to required target language format
+ * @param tree tree node to process
+ */
+void process_node_value(syntax_abstract_tree_t *tree);
+
+/**
+ * Returns frame of the node
+ * @param tree tree node
+ * @return frame of the node
+ */
+frames_t get_node_frame(syntax_abstract_tree_t *tree);
+
+/**
+ * Parses math expression
+ * @param tree tree node
+ */
+void parse_expression(syntax_abstract_tree_t *tree);
+
+/**
+ * Parses syntax tree assign node
+ * @param tree syntax tree assign node
+ */
+void parse_assign(syntax_abstract_tree_t *tree);
 
 #endif //IFJ_PROJ_2022_CODE_GENERATOR_H

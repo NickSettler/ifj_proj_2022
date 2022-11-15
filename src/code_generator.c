@@ -2,6 +2,7 @@
  * Implementace překladače imperativního jazyka IFJ22.
  * @authors
  *  xkalut00, Maksim Kalutski
+ *  xmoise01, Nikita Moiseev
  *
  * @file   code_generator.c
  * @brief  Code generator source file
@@ -259,4 +260,86 @@ void generate_substr() {
 void generate_end() {
     fprintf(fd, "POPFRAME\n");
     fprintf(fd, "RETURN\n");
+}
+
+void process_node_value(syntax_abstract_tree_t *tree) {
+    if (tree == NULL) return;
+
+    if (tree->type == SYN_NODE_FLOAT) {
+        char *tmp = malloc(sizeof(char) * 100);
+        double d = strtod(tree->value->value, &tmp);
+        char *var_tmp = malloc(sizeof(char) * 100);
+        sprintf(var_tmp, "%a", d);
+        string_replace(tree->value, var_tmp);
+    } else if (tree->type == SYN_NODE_STRING) {
+        string_replace(tree->value, string_substr(tree->value, 1, tree->value->length - 1)->value);
+    }
+}
+
+frames_t get_node_frame(syntax_abstract_tree_t *tree) {
+    if (tree == NULL) return -1;
+
+    switch (tree->type) {
+        case SYN_NODE_INTEGER:
+            return CODE_GENERATOR_INT_CONSTANT;
+        case SYN_NODE_FLOAT:
+            return CODE_GENERATOR_FLOAT_CONSTANT;
+        case SYN_NODE_STRING:
+            return CODE_GENERATOR_STRING_CONSTANT;
+        case SYN_NODE_IDENTIFIER: {
+            // TODO: get frame from symbol table
+            return CODE_GENERATOR_GLOBAL_FRAME;
+        }
+        default:
+            return -1;
+    }
+}
+
+void parse_expression(syntax_abstract_tree_t *tree) {
+    if (tree->type != SYN_NODE_ADD && tree->type != SYN_NODE_SUB && tree->type != SYN_NODE_MUL &&
+        tree->type != SYN_NODE_DIV)
+        return;
+
+    instructions_t instruction =
+            tree->type == SYN_NODE_ADD ? CODE_GEN_ADD_INSTRUCTION :
+            tree->type == SYN_NODE_SUB ? CODE_GEN_SUB_INSTRUCTION :
+            tree->type == SYN_NODE_MUL ? CODE_GEN_MUL_INSTRUCTION :
+            CODE_GEN_DIV_INSTRUCTION;
+
+    bool is_left_const = tree->left->type == SYN_NODE_INTEGER || tree->left->type == SYN_NODE_FLOAT ||
+                         tree->left->type == SYN_NODE_STRING || tree->left->type == SYN_NODE_IDENTIFIER;
+    bool is_right_const = tree->right->type == SYN_NODE_INTEGER || tree->right->type == SYN_NODE_FLOAT ||
+                          tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER;
+
+    if (is_left_const && is_right_const) {
+        string_t *operation_var_name = string_init("tmp_");
+        string_append_string(operation_var_name, "%d", ++tmp_var_counter);
+
+        tree->value = operation_var_name;
+        tree->type = SYN_NODE_IDENTIFIER;
+
+        frames_t left_frame = get_node_frame(tree->left);
+        frames_t right_frame = get_node_frame(tree->right);
+
+        process_node_value(tree->left);
+        process_node_value(tree->right);
+
+        generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, operation_var_name->value);
+        generate_operation(instruction,
+                           CODE_GENERATOR_GLOBAL_FRAME,
+                           operation_var_name->value,
+                           left_frame,
+                           tree->left->value->value,
+                           right_frame,
+                           tree->right->value->value);
+    }
+}
+
+void parse_assign(syntax_abstract_tree_t *tree) {
+    if (tree->type != SYN_NODE_ASSIGN) return;
+
+    process_tree_using(tree->right, parse_expression, POSTORDER);
+    // TODO: remove redundant variable declaration and move
+    generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
+    generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, tree->right->value->value);
 }
