@@ -378,6 +378,57 @@ void parse_expression(syntax_abstract_tree_t *tree) {
                           tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER;
 
     if (is_left_const && is_right_const) {
+        /* TODO: some operations might not need to be stored in separate variables
+         * $a = 1 + 2 * 3 can be stored just in $a - there is no need to store 2 * 3 in $tmp_1
+         * and then add it to $a
+         */
+        string_t *operation_var_name = string_init("tmp_");
+        string_append_string(operation_var_name, "%d", ++tmp_var_counter);
+
+        tree->value = operation_var_name;
+        tree->type = SYN_NODE_IDENTIFIER;
+
+        frames_t left_frame = get_node_frame(tree->left);
+        frames_t right_frame = get_node_frame(tree->right);
+
+        process_node_value(tree->left);
+        process_node_value(tree->right);
+
+        generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, operation_var_name->value);
+        generate_operation(instruction,
+                           CODE_GENERATOR_GLOBAL_FRAME,
+                           operation_var_name->value,
+                           left_frame,
+                           tree->left->value->value,
+                           right_frame,
+                           tree->right->value->value);
+    }
+}
+
+void parse_relational_expression(syntax_abstract_tree_t *tree) {
+    if (tree->type == SYN_NODE_ADD || tree->type == SYN_NODE_SUB || tree->type == SYN_NODE_MUL ||
+        tree->type == SYN_NODE_DIV)
+        process_tree_using(tree, parse_expression, POSTORDER);
+
+    if (tree->type != SYN_NODE_LESS && tree->type != SYN_NODE_LESS_EQUAL && tree->type != SYN_NODE_GREATER &&
+        tree->type != SYN_NODE_GREATER_EQUAL && tree->type != SYN_NODE_EQUAL && tree->type != SYN_NODE_NOT_EQUAL &&
+        tree->type != SYN_NODE_NOT && tree->type != SYN_NODE_AND && tree->type != SYN_NODE_OR)
+        return;
+
+    instructions_t instruction = tree->type == SYN_NODE_LESS ? CODE_GEN_LTS_INSTRUCTION :
+                                 tree->type == SYN_NODE_GREATER ? CODE_GEN_GT_INSTRUCTION :
+                                 tree->type == SYN_NODE_EQUAL ? CODE_GEN_EQ_INSTRUCTION :
+                                 tree->type == SYN_NODE_OR ? CODE_GEN_OR_INSTRUCTION :
+                                 tree->type == SYN_NODE_AND ? CODE_GEN_AND_INSTRUCTION :
+                                 tree->type == SYN_NODE_NOT ? CODE_GEN_NOT_INSTRUCTION :
+                                 CODE_GEN_NOTEQ_INSTRUCTION;
+
+    bool is_left_const = tree->left->type == SYN_NODE_INTEGER || tree->left->type == SYN_NODE_FLOAT ||
+                         tree->left->type == SYN_NODE_STRING || tree->left->type == SYN_NODE_IDENTIFIER;
+    bool is_right_const = tree->right->type == SYN_NODE_INTEGER || tree->right->type == SYN_NODE_FLOAT ||
+                          tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER;
+
+    if (is_left_const && is_right_const) {
         string_t *operation_var_name = string_init("tmp_");
         string_append_string(operation_var_name, "%d", ++tmp_var_counter);
 
@@ -404,9 +455,15 @@ void parse_expression(syntax_abstract_tree_t *tree) {
 void parse_assign(syntax_abstract_tree_t *tree) {
     if (tree->type != SYN_NODE_ASSIGN) return;
 
-    process_tree_using(tree->right, parse_expression, POSTORDER);
+    bool is_relational = tree->right->type == SYN_NODE_LESS || tree->right->type == SYN_NODE_LESS_EQUAL ||
+                         tree->right->type == SYN_NODE_GREATER || tree->right->type == SYN_NODE_GREATER_EQUAL ||
+                         tree->right->type == SYN_NODE_EQUAL || tree->right->type == SYN_NODE_NOT_EQUAL ||
+                         tree->right->type == SYN_NODE_NOT || tree->right->type == SYN_NODE_AND ||
+                         tree->right->type == SYN_NODE_OR;
+
     // TODO: remove redundant variable declaration and move
     generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
+    process_tree_using(tree->right, is_relational ? parse_relational_expression : parse_expression, POSTORDER);
     generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, tree->right->value->value);
 }
 

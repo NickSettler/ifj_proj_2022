@@ -283,6 +283,12 @@ frames_t get_node_frame(syntax_abstract_tree_t *tree);
 void parse_expression(syntax_abstract_tree_t *tree);
 
 /**
+ * Parses relational expression
+ * @param tree tree node
+ */
+void parse_relational_expression(syntax_abstract_tree_t *tree);
+
+/**
  * Parses syntax tree assign node
  * @param tree syntax tree assign node
  */
