@@ -54,7 +54,6 @@ void tree_traversal(syntax_abstract_tree_t *tree) {
     }
 }
 
-//TODO: Add type casting for strings
 int type_check(int type_1, int type_2) {
     return type_1 > type_2 ? type_1 : type_2;
 }
@@ -68,20 +67,26 @@ int get_data_type(syntax_abstract_tree_t *tree) {
             defined(tree);
             return find_token(tree->value->value)->type;
         case SYN_NODE_INTEGER:
-            return 0; //int
+            return 1 << 0; //int
         case SYN_NODE_FLOAT:
-            return 1; //float
+            return 1 << 1; //float
         case SYN_NODE_CONCAT:
         case SYN_NODE_STRING:
-            return 2; //string
+            return 1 << 2; //string
         case SYN_NODE_ADD:
         case SYN_NODE_SUB:
         case SYN_NODE_MUL:
         case SYN_NODE_NEGATE:
-            string_conversion(tree);
+            // throws an error if there is an expression with string
+            if (tree->left->type == SYN_NODE_STRING ||
+                (tree->left->type == SYN_NODE_IDENTIFIER && find_token(tree->left->value->value)->type == 2) ||
+                tree->right->type == SYN_NODE_STRING ||
+                (tree->right->type == SYN_NODE_IDENTIFIER && find_token(tree->right->value->value)->type == 2)) {
+                SEMANTIC_TYPE_COMPAT_ERROR("Wrong type of operand in expression")
+            }
             return type_check(get_data_type(tree->left), get_data_type(tree->right));
         case SYN_NODE_DIV:
-            return 1;
+            return 1 << 1;
     }
     get_data_type(tree->left);
     get_data_type(tree->right);
@@ -100,54 +105,10 @@ void defined(syntax_abstract_tree_t *tree) {
     switch (tree->type) {
         case SYN_NODE_IDENTIFIER:
             if (find_token(tree->value->value) == false) {
-                SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", tree->value->value);
+                SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", tree->value->value)
             }
             break;
     }
     defined(tree->left);
     defined(tree->right);
-}
-
-bool is_str_an_int(string_t *str) {
-    regex_t regex;
-    int regex_comp = regcomp(&regex, "^[\"\'][0-9]+[\"\']$", REG_EXTENDED);
-    int return_value = regexec(&regex, str->value, 0, NULL, 0);
-    if (!return_value) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool is_str_a_float(string_t *str) {
-    regex_t regex;
-    int regex_comp = regcomp(&regex, "^[\"\'][0-9]+\\.?[0-9]+([eE][+-]?[0-9]+)?[\"\']$", REG_EXTENDED);
-    int return_value = regexec(&regex, str->value, 0, NULL, 0);
-    if (!return_value) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-int string_conversion(syntax_abstract_tree_t *tree) {
-    if (tree->left->type == SYN_NODE_STRING ||
-        (tree->left->type == SYN_NODE_IDENTIFIER && find_token(tree->left->value->value)->type == 2)) {
-        if (is_str_an_int(tree->left->value)) {
-            return 0;
-        }
-        if (is_str_a_float(tree->left->value)) {
-            return 1;
-        }
-
-    } if (tree->right->type == SYN_NODE_STRING ||
-               (tree->right->type == SYN_NODE_IDENTIFIER && find_token(tree->right->value->value)->type == 2)) {
-        if (is_str_an_int(tree->right->value)) {
-            return 0;
-        }
-        if (is_str_a_float(tree->right->value)) {
-            return 1;
-        }
-    }
-    SEMANTIC_TYPE_COMPAT_ERROR("Wrong type of operand in expression")
 }
