@@ -38,6 +38,7 @@ void tree_traversal(syntax_abstract_tree_t *tree) {
             syntax_abstract_tree_t *id_node = tree->right->left;
             create_global_id_node(id_node);
             find_token(id_node->value->value)->type = get_data_type(tree->right->right);
+            check_tree_for_float(tree->right);
             break;
         }
         case SYN_NODE_KEYWORD_IF:
@@ -111,4 +112,44 @@ void defined(syntax_abstract_tree_t *tree) {
     }
     defined(tree->left);
     defined(tree->right);
+}
+
+bool check_tree_for_float(syntax_abstract_tree_t *tree) {
+    if (!check_tree_using(tree, is_node_an_int)) {
+        process_tree_using(tree, replace_node_int_to_float, INORDER);
+    }
+}
+
+void replace_node_int_to_float(syntax_abstract_tree_t *tree) {
+    if (tree == NULL) {
+        return;
+    }
+    switch (tree->type) {
+        case SYN_NODE_INTEGER:
+            tree->type = SYN_NODE_FLOAT;
+            string_append_string(tree->value, ".0");
+            break;
+        case SYN_NODE_IDENTIFIER:
+            if (find_token(tree->value->value)->type == 1) {
+                change_data_type(find_token(tree->value->value), 1 << 2);
+            }
+            break;
+        default:
+            return;
+    }
+}
+bool is_node_an_int(syntax_abstract_tree_t *tree) {
+    switch (tree->type) {
+        case SYN_NODE_FLOAT:
+        case SYN_NODE_DIV:
+            return false;
+        case SYN_NODE_IDENTIFIER:
+            if (find_token(tree->value->value)->type == 1 << 0) {
+                return false;
+            } else {
+                return true;
+            }
+        default:
+            return true;
+    }
 }

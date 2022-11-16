@@ -30,4 +30,10 @@ void create_global_id_node(syntax_abstract_tree_t *tree);
 
 void tree_traversal(syntax_abstract_tree_t *tree);
 
+bool check_tree_for_float(syntax_abstract_tree_t *tree);
+
+bool is_node_an_int(syntax_abstract_tree_t *tree);
+
+void replace_node_int_to_float(syntax_abstract_tree_t *tree);
+
 #endif //IFJ_PROJ_SEMANTIC_ANALYZER_H
