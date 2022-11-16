@@ -38,7 +38,7 @@ void tree_traversal(syntax_abstract_tree_t *tree) {
             syntax_abstract_tree_t *id_node = tree->right->left;
             create_global_id_node(id_node);
             find_token(id_node->value->value)->type = get_data_type(tree->right->right);
-            check_tree_for_float(tree->right);
+            check_tree_for_float(tree);
             break;
         }
         case SYN_NODE_KEYWORD_IF:
@@ -80,9 +80,9 @@ int get_data_type(syntax_abstract_tree_t *tree) {
         case SYN_NODE_NEGATE:
             // throws an error if there is an expression with string
             if (tree->left->type == SYN_NODE_STRING ||
-                (tree->left->type == SYN_NODE_IDENTIFIER && find_token(tree->left->value->value)->type == 2) ||
+                (tree->left->type == SYN_NODE_IDENTIFIER && find_token(tree->left->value->value)->type == 1 << 2) ||
                 tree->right->type == SYN_NODE_STRING ||
-                (tree->right->type == SYN_NODE_IDENTIFIER && find_token(tree->right->value->value)->type == 2)) {
+                (tree->right->type == SYN_NODE_IDENTIFIER && find_token(tree->right->value->value)->type == 1 << 2)) {
                 SEMANTIC_TYPE_COMPAT_ERROR("Wrong type of operand in expression")
             }
             return type_check(get_data_type(tree->left), get_data_type(tree->right));
@@ -116,7 +116,7 @@ void defined(syntax_abstract_tree_t *tree) {
 
 bool check_tree_for_float(syntax_abstract_tree_t *tree) {
     if (!check_tree_using(tree, is_node_an_int)) {
-        process_tree_using(tree, replace_node_int_to_float, INORDER);
+        process_tree_using(tree, replace_node_int_to_float, POSTORDER);
     }
 }
 
