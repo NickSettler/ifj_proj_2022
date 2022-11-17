@@ -139,7 +139,7 @@ void dispose_symtable();
  *
  * @type new data type
  */
-bool change_data_type(tree_node_t *tree, int type);
+void change_data_type(tree_node_t *tree, data_type type);
 
 void printtabs(int numtabs);
 
