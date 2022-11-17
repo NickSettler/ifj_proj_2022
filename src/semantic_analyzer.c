@@ -93,28 +93,7 @@ int get_data_type(syntax_abstract_tree_t *tree) {
     get_data_type(tree->right);
 }
 
-void create_global_id_node(syntax_abstract_tree_t *tree) {
-    insert_token(tree->value->value);
-    find_token(tree->value->value)->defined = true;
-    find_token(tree->value->value)->global = true;
-}
-
-void defined(syntax_abstract_tree_t *tree) {
-    if (tree == NULL) {
-        return;
-    }
-    switch (tree->type) {
-        case SYN_NODE_IDENTIFIER:
-            if (find_token(tree->value->value) == false) {
-                SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", tree->value->value)
-            }
-            break;
-    }
-    defined(tree->left);
-    defined(tree->right);
-}
-
-bool check_tree_for_float(syntax_abstract_tree_t *tree) {
+void check_tree_for_float(syntax_abstract_tree_t *tree) {
     if (!check_tree_using(tree, is_node_an_int)) {
         process_tree_using(tree, replace_node_int_to_float, POSTORDER);
     }
