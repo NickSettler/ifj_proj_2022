@@ -584,6 +584,17 @@ bool is_undefined(syntax_abstract_tree_t *tree) {
     return false;
 }
 
+bool is_simple_expression(syntax_abstract_tree_t *tree) {
+    if (tree->type & (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV)) {
+        bool is_left_operation = tree->left->type & (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV);
+        bool is_right_operation = tree->right->type & (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV);
+
+        return !(is_left_operation & is_right_operation);
+    }
+
+    return true;
+}
+
 void free_syntax_tree(syntax_abstract_tree_t *tree) {
     if (!tree) return;
 

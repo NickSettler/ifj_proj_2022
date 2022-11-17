@@ -265,6 +265,13 @@ bool is_defined(syntax_abstract_tree_t *tree);
  */
 bool is_undefined(syntax_abstract_tree_t *tree);
 
+/**
+ * Checks if the AST contains simple expression. Such expression can be compiled using one variable
+ * @param tree Syntax abstract tree
+ * @return True if the node contains simple expression, false otherwise
+ */
+bool is_simple_expression(syntax_abstract_tree_t *tree);
+
 void free_syntax_tree(syntax_abstract_tree_t *tree);
 
 #endif //IFJ_PROJ_SYNTAX_ANALYZER_H
