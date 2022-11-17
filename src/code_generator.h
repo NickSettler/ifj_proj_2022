@@ -222,15 +222,25 @@ void generate_int_to_float(frames_t frame);
  */
 void generate_float_to_int(frames_t frame);
 
-/**
- * Generates function to convert to float
- */
 void generate_floatval();
 
 /**
  * Generates function to convert to int
  */
 void generate_intval();
+
+/**
+ * Generates conversion function header
+ * @param label function label
+ * @param process_variable variable to work with
+ * @param type_variable variable with type
+ */
+void generate_conversion_base(char *label, char *process_variable, char *type_variable);
+
+/**
+ * Generates function to convert to number data types
+ */
+void generate_number_conversion_functions();
 
 /**
  * @brief generate a decimal to string conversion

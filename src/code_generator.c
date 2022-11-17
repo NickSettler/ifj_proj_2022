@@ -134,68 +134,60 @@ void generate_float_to_int(frames_t frame) {
     fprintf(fd, "RETURN\n");
 }
 
-void generate_floatval() {
-    char *stack_variable = "$process_var";
-    char *type_variable = "$type_var";
-
-    generate_label("floatval");
+void generate_conversion_base(char *label, char *process_variable, char *type_variable) {
+    generate_label(label);
     generate_create_frame();
     generate_push_frame();
 
-    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
-    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, process_variable);
+    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, process_variable);
 
     generate_declaration(CODE_GENERATOR_LOCAL_FRAME, type_variable);
-    generate_type(CODE_GENERATOR_LOCAL_FRAME, type_variable, CODE_GENERATOR_LOCAL_FRAME, stack_variable);
-
-    generate_conditional_jump(true, "floatval_end", CODE_GENERATOR_LOCAL_FRAME, type_variable,
-                              CODE_GENERATOR_STRING_CONSTANT,
-                              "float");
-    generate_conditional_jump(true, "floatval_int", CODE_GENERATOR_LOCAL_FRAME, type_variable,
-                              CODE_GENERATOR_STRING_CONSTANT,
-                              "int");
-    generate_jump("floatval_end");
-
-    generate_label("floatval_int");
-    generate_operation(CODE_GEN_INT2FLOAT_INSTRUCTION, CODE_GENERATOR_LOCAL_FRAME, stack_variable,
-                       CODE_GENERATOR_LOCAL_FRAME, stack_variable, 0, NULL);
-    generate_jump("floatval_end");
-
-    generate_label("floatval_end");
-    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
-    generate_end();
+    generate_type(CODE_GENERATOR_LOCAL_FRAME, type_variable, CODE_GENERATOR_LOCAL_FRAME, process_variable);
 }
 
-void generate_intval() {
-    char *stack_variable = "$process_var";
+void generate_number_conversion_functions() {
+    int functions_count = 2;
+    string_t *functions[functions_count];
+    functions[0] = string_init("floatval");
+    functions[1] = string_init("intval");
+
+    char *types[functions_count];
+    types[0] = "float";
+    types[1] = "int";
+
+    char *process_variable = "$process_var";
     char *type_variable = "$type_var";
 
-    generate_label("intval");
-    generate_create_frame();
-    generate_push_frame();
+    for (int i = 0; i < functions_count; i++) {
+        string_t *current_function = functions[i];
+        char *current_type = types[i];
+        char *conversion_type = i == 0 ? "int" : "float";
+        instructions_t conversion_instruction =
+                i == 0 ? CODE_GEN_INT2FLOAT_INSTRUCTION : CODE_GEN_FLOAT2INT_INSTRUCTION;
 
-    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
-    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
+        string_t *end_label = string_init(current_function->value);
+        string_append_string(end_label, "_end");
 
-    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, type_variable);
-    generate_type(CODE_GENERATOR_LOCAL_FRAME, type_variable, CODE_GENERATOR_LOCAL_FRAME, stack_variable);
+        string_t *conversion_label = string_init(current_function->value);
+        string_append_string(conversion_label, "_%s", conversion_type);
 
-    generate_conditional_jump(true, "intval_end", CODE_GENERATOR_LOCAL_FRAME, type_variable,
-                              CODE_GENERATOR_STRING_CONSTANT,
-                              "int");
-    generate_conditional_jump(true, "intval_float", CODE_GENERATOR_LOCAL_FRAME, type_variable,
-                              CODE_GENERATOR_STRING_CONSTANT,
-                              "float");
-    generate_jump("intval_end");
+        generate_conversion_base(current_function->value, process_variable, type_variable);
 
-    generate_label("intval_float");
-    generate_operation(CODE_GEN_FLOAT2INT_INSTRUCTION, CODE_GENERATOR_LOCAL_FRAME, stack_variable,
-                       CODE_GENERATOR_LOCAL_FRAME, stack_variable, 0, NULL);
-    generate_jump("intval_end");
+        generate_conditional_jump(true, end_label->value, CODE_GENERATOR_LOCAL_FRAME, type_variable,
+                                  CODE_GENERATOR_STRING_CONSTANT, current_type);
+        generate_conditional_jump(true, conversion_label->value, CODE_GENERATOR_LOCAL_FRAME, type_variable,
+                                  CODE_GENERATOR_STRING_CONSTANT, conversion_type);
+        generate_jump(end_label->value);
 
-    generate_label("intval_end");
-    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
-    generate_end();
+        generate_label(conversion_label->value);
+        generate_operation(conversion_instruction, CODE_GENERATOR_LOCAL_FRAME, process_variable,
+                           CODE_GENERATOR_LOCAL_FRAME, process_variable, 0, NULL);
+
+        generate_label(end_label->value);
+        generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, process_variable);
+        generate_end();
+    }
 }
 
 void generate_int_to_char(frames_t frame) {
