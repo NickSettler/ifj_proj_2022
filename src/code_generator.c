@@ -39,6 +39,10 @@ void generate_declaration(frames_t frame, char *variable) {
     fprintf(fd, "DEFVAR %s@%s\n", frames[frame], variable);
 }
 
+void generate_call(char *label) {
+    fprintf(fd, "CALL %s\n", label);
+}
+
 void generate_add_on_top(frames_t frame, char *variable) {
     fprintf(fd, "PUSHS %s@%s\n", frames[frame], variable);
 }
@@ -379,7 +383,7 @@ void generate_variable_inline_cast(syntax_abstract_tree_t *tree, data_type cast_
     generate_move(CODE_GENERATOR_GLOBAL_FRAME, casted_string_name->value, CODE_GENERATOR_GLOBAL_FRAME,
                   tree->value->value);
     generate_add_on_top(CODE_GENERATOR_GLOBAL_FRAME, casted_string_name->value);
-    fprintf(fd, "CALL %s\n", cast_to == TYPE_INT ? "intval" : cast_to == TYPE_FLOAT ? "floatval" : "strval");
+    generate_call(cast_to == TYPE_INT ? "intval" : cast_to == TYPE_FLOAT ? "floatval" : "strval");
     generate_pop_from_top(CODE_GENERATOR_GLOBAL_FRAME, casted_string_name->value);
 
     tree->value = casted_string_name;
