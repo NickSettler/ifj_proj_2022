@@ -400,7 +400,7 @@ void parse_expression(syntax_abstract_tree_t *tree) {
             tree->type == SYN_NODE_ADD ? CODE_GEN_ADD_INSTRUCTION :
             tree->type == SYN_NODE_SUB ? CODE_GEN_SUB_INSTRUCTION :
             tree->type == SYN_NODE_MUL ? CODE_GEN_MUL_INSTRUCTION :
-            CODE_GEN_DIV_INSTRUCTION;
+            tree->type == SYN_NODE_DIV ? CODE_GEN_DIV_INSTRUCTION : -1;
 
     bool is_left_const = tree->left->type == SYN_NODE_INTEGER || tree->left->type == SYN_NODE_FLOAT ||
                          tree->left->type == SYN_NODE_STRING || tree->left->type == SYN_NODE_IDENTIFIER;
@@ -412,7 +412,7 @@ void parse_expression(syntax_abstract_tree_t *tree) {
          * $a = 1 + 2 * 3 can be stored just in $a - there is no need to store 2 * 3 in $tmp_1
          * and then add it to $a
          */
-        string_t *operation_var_name = string_init("tmp_");
+        string_t *operation_var_name = string_init(tmp_var_name);
         string_append_string(operation_var_name, "%d", ++tmp_var_counter);
 
         tree->value = operation_var_name;
@@ -459,7 +459,7 @@ void parse_relational_expression(syntax_abstract_tree_t *tree) {
                           tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER;
 
     if (is_left_const && is_right_const) {
-        string_t *operation_var_name = string_init("tmp_");
+        string_t *operation_var_name = string_init(tmp_var_name);
         string_append_string(operation_var_name, "%d", ++tmp_var_counter);
 
         tree->value = operation_var_name;
@@ -491,10 +491,20 @@ void parse_assign(syntax_abstract_tree_t *tree) {
                          tree->right->type == SYN_NODE_NOT || tree->right->type == SYN_NODE_AND ||
                          tree->right->type == SYN_NODE_OR;
 
+    bool is_constant = tree->right->type == SYN_NODE_INTEGER || tree->right->type == SYN_NODE_FLOAT ||
+                       tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER;
+
     // TODO: remove redundant variable declaration and move
     generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
-    process_tree_using(tree->right, is_relational ? parse_relational_expression : parse_expression, POSTORDER);
-    generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, tree->right->value->value);
+    if (!is_constant) {
+        process_tree_using(tree->right, is_relational ? parse_relational_expression : parse_expression, POSTORDER);
+        generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, CODE_GENERATOR_GLOBAL_FRAME,
+                      tree->right->value->value);
+    } else {
+        process_node_value(tree->right);
+        generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, get_node_frame(tree->right),
+                      tree->right->value->value);
+    }
 }
 
 void parse_tree(syntax_abstract_tree_t *tree) {

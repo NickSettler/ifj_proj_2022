@@ -23,6 +23,8 @@ FILE *fd;
 
 int tmp_var_counter;
 
+static char *tmp_var_name = "$__tmp_";
+
 /**
  * @brief structure with frames
  */
