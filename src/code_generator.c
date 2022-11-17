@@ -71,8 +71,8 @@ void generate_operation(instructions_t instruction, frames_t result_frame, char 
                 frames[symbol2_frame], symbol2);
         fprintf(fd, "NOT %s@%s %s@%s\n", frames[result_frame], result, frames[result_frame], result);
     } else if (instruction == CODE_GEN_NOT_INSTRUCTION || instruction == CODE_GEN_NOTS_INSTRUCTION ||
-               instruction == CODE_GEN_STRLEN_INSTRUCTION || instruction == CODE_GEN_INT2FLOATS_INSTRUCTION ||
-               instruction == CODE_GEN_FLOAT2INTS_INSTRUCTION || instruction == CODE_GEN_INT2CHARS_INSTRUCTION) {
+               instruction == CODE_GEN_STRLEN_INSTRUCTION || instruction == CODE_GEN_INT2FLOAT_INSTRUCTION ||
+               instruction == CODE_GEN_FLOAT2INT_INSTRUCTION || instruction == CODE_GEN_INT2CHAR_INSTRUCTION) {
         fprintf(fd, "%s %s@%s %s@%s\n", instructions[instruction], frames[result_frame], result, frames[symbol1_frame],
                 symbol1);
     } else {
