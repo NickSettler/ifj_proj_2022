@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include "str.h"
 #include "syntax_analyzer.h"
+#include "symtable.h"
 
 /**
  * @brief file for writing the code
@@ -276,6 +277,8 @@ void generate_substr();
  * @brief generate end of code
  */
 void generate_end();
+
+void generate_variable_inline_cast(syntax_abstract_tree_t *tree, data_type cast_to);
 
 /**
  * Processes tree value to required target language format

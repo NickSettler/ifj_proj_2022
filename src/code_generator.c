@@ -366,6 +366,25 @@ void generate_end() {
     fprintf(fd, "RETURN\n");
 }
 
+void generate_variable_inline_cast(syntax_abstract_tree_t *tree, data_type cast_to) {
+    string_t *casted_string_name = string_init("");
+    string_append_string(casted_string_name, "__%s_f", tree->value->value);
+
+    insert_token(casted_string_name->value);
+    tree_node_t *casted_variable = find_token(casted_string_name->value);
+    casted_variable->defined = true;
+    casted_variable->type = cast_to;
+
+    generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, casted_string_name->value);
+    generate_move(CODE_GENERATOR_GLOBAL_FRAME, casted_string_name->value, CODE_GENERATOR_GLOBAL_FRAME,
+                  tree->value->value);
+    generate_add_on_top(CODE_GENERATOR_GLOBAL_FRAME, casted_string_name->value);
+    fprintf(fd, "CALL %s\n", cast_to == TYPE_INT ? "intval" : cast_to == TYPE_FLOAT ? "floatval" : "strval");
+    generate_pop_from_top(CODE_GENERATOR_GLOBAL_FRAME, casted_string_name->value);
+
+    tree->value = casted_string_name;
+}
+
 void process_node_value(syntax_abstract_tree_t *tree) {
     if (tree == NULL) return;
 
@@ -422,6 +441,34 @@ void parse_expression(syntax_abstract_tree_t *tree) {
          */
         string_t *operation_var_name = string_init(tmp_var_name);
         string_append_string(operation_var_name, "%d", ++tmp_var_counter);
+
+        insert_token(operation_var_name->value);
+        tree_node_t *operation_var = find_token(operation_var_name->value);
+        operation_var->defined = true;
+
+        data_type left_type =
+                tree->left->type == SYN_NODE_INTEGER ? TYPE_INT :
+                tree->left->type == SYN_NODE_FLOAT ? TYPE_FLOAT :
+                tree->left->type == SYN_NODE_STRING ? TYPE_STRING :
+                find_token(tree->left->value->value)->type;
+        data_type right_type =
+                tree->right->type == SYN_NODE_INTEGER ? TYPE_INT :
+                tree->right->type == SYN_NODE_FLOAT ? TYPE_FLOAT :
+                tree->right->type == SYN_NODE_STRING ? TYPE_STRING :
+                find_token(tree->right->value->value)->type;
+
+        data_type cast_type_to = left_type > right_type ? left_type : right_type;
+
+        bool need_inline_left_cast = left_type != cast_type_to && tree->left->type == SYN_NODE_IDENTIFIER;
+        bool need_inline_right_cast = right_type != cast_type_to && tree->right->type == SYN_NODE_IDENTIFIER;
+
+        if (need_inline_left_cast)
+            generate_variable_inline_cast(tree->left, cast_type_to);
+
+
+        if (need_inline_right_cast)
+            generate_variable_inline_cast(tree->right, cast_type_to);
+
 
         tree->value = operation_var_name;
         tree->type = SYN_NODE_IDENTIFIER;
