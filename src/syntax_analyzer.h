@@ -15,6 +15,9 @@
 #include "errors.h"
 #include "lexical_fsm.h"
 
+#define GET_NEXT_TOKEN(fd) \
+    free_lexical_token(lexical_token); \
+    lexical_token = get_token(fd);
 /**
  * Syntax non-terminal symbols enumeration
  */
@@ -261,5 +264,7 @@ bool is_defined(syntax_abstract_tree_t *tree);
  * @return True if the node contains undefined variable, false otherwise
  */
 bool is_undefined(syntax_abstract_tree_t *tree);
+
+void free_syntax_tree(syntax_abstract_tree_t *tree);
 
 #endif //IFJ_PROJ_SYNTAX_ANALYZER_H

@@ -144,16 +144,16 @@ bool is_correct_if(syntax_abstract_tree_t *tree) {
 void expect_token(const char *msg, syntax_tree_token_type type) {
     if (get_token_type(lexical_token->type) != type) {
         SYNTAX_ERROR("%s Expecting %s, found: %s\n", msg, attributes[type].text,
-                     attributes[get_token_type(lexical_token->type)].text);
+                     attributes[get_token_type(lexical_token->type)].text)
     }
 }
 
 syntax_abstract_tree_t *f_args(FILE *fd, syntax_abstract_tree_t *args) {
     syntax_tree_token_type type = get_token_type(lexical_token->type);
     if (type == SYN_TOKEN_LEFT_PARENTHESIS) {
-        lexical_token = get_token(fd);
+        GET_NEXT_TOKEN(fd)
         if (get_token_type(lexical_token->type) == SYN_TOKEN_RIGHT_PARENTHESIS) {
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             return args;
         }
     }
@@ -170,7 +170,7 @@ syntax_abstract_tree_t *f_args(FILE *fd, syntax_abstract_tree_t *args) {
         case SYN_TOKEN_KEYWORD_FLOAT:
         case SYN_TOKEN_KEYWORD_STRING: {
             args->left->attrs->token_type = type;
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             expect_token("Function argument declaration", SYN_TOKEN_IDENTIFIER);
             args->left->value = string_init(lexical_token->value);
             break;
@@ -185,11 +185,11 @@ syntax_abstract_tree_t *f_args(FILE *fd, syntax_abstract_tree_t *args) {
         }
     }
 
-    lexical_token = get_token(fd);
+    GET_NEXT_TOKEN(fd)
     type = get_token_type(lexical_token->type);
 
     if (type == SYN_TOKEN_RIGHT_PARENTHESIS || type == SYN_TOKEN_COMMA) {
-        lexical_token = get_token(fd);
+        GET_NEXT_TOKEN(fd)
         if (type == SYN_TOKEN_RIGHT_PARENTHESIS)
             return args;
     } else {
@@ -204,25 +204,25 @@ syntax_abstract_tree_t *f_dec_stats(FILE *fd) {
     syntax_abstract_tree_t *func;
 
     expect_token("Function", SYN_TOKEN_KEYWORD_FUNCTION);
-    lexical_token = get_token(fd);
+    GET_NEXT_TOKEN(fd)
     expect_token("Identifier", SYN_TOKEN_IDENTIFIER);
     func = make_binary_node(SYN_NODE_FUNCTION_DECLARATION,
                             make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value)),
                             NULL);
-    lexical_token = get_token(fd);
+    GET_NEXT_TOKEN(fd)
     expect_token("Left parenthesis", SYN_TOKEN_LEFT_PARENTHESIS);
     // TODO: Add checking arguments unique IDs
     func->middle = f_args(fd, NULL);
 
     if (get_token_type(lexical_token->type) == SYN_TOKEN_COLON) {
-        lexical_token = get_token(fd);
+        GET_NEXT_TOKEN(fd)
         syntax_tree_token_type type = get_token_type(lexical_token->type);
         if (type != SYN_TOKEN_KEYWORD_VOID && type != SYN_TOKEN_KEYWORD_INT &&
             type != SYN_TOKEN_KEYWORD_FLOAT && type != SYN_TOKEN_KEYWORD_STRING) {
             SYNTAX_ERROR("Expecting function return type, found: %s\n", attributes[type].text)
         }
         func->attrs->token_type = type;
-        lexical_token = get_token(fd);
+        GET_NEXT_TOKEN(fd)
     }
 
     expect_token("Left curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
@@ -234,10 +234,10 @@ syntax_abstract_tree_t *f_dec_stats(FILE *fd) {
 
 syntax_abstract_tree_t *parenthesis_expression(FILE *fd) {
     expect_token("Left parenthesis", SYN_TOKEN_LEFT_PARENTHESIS);
-    lexical_token = get_token(fd);
+    GET_NEXT_TOKEN(fd)
     syntax_abstract_tree_t *tree = expression(fd, 0);
     expect_token("Right parenthesis", SYN_TOKEN_RIGHT_PARENTHESIS);
-    lexical_token = get_token(fd);
+    GET_NEXT_TOKEN(fd)
     return tree;
 }
 
@@ -252,7 +252,7 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
         case MINUS:
         case PLUS:
             op = get_token_type(lexical_token->type);
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             node = expression(fd, attributes[SYN_TOKEN_NEGATE].precedence);
             x = (op == SYN_TOKEN_SUB) ? make_binary_node(SYN_NODE_NEGATE, node, NULL) : node;
             break;
@@ -260,14 +260,14 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
             bool is_variable = lexical_token->value[0] == '$';
             if (is_variable) {
                 x = make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
-                lexical_token = get_token(fd);
+                GET_NEXT_TOKEN(fd)
             } else {
                 x = make_binary_node(SYN_NODE_CALL,
                                      make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value)), NULL);
-                lexical_token = get_token(fd);
+                GET_NEXT_TOKEN(fd)
                 for (expect_token("Left parenthesis", SYN_TOKEN_LEFT_PARENTHESIS);; expect_token("Comma",
                                                                                                  SYN_TOKEN_COMMA)) {
-                    lexical_token = get_token(fd);
+                    GET_NEXT_TOKEN(fd)
                     if (get_token_type(lexical_token->type) == SYN_TOKEN_RIGHT_PARENTHESIS)
                         break;
                     x->right = make_binary_node(SYN_NODE_ARGS, expression(fd, 0), x->right);
@@ -275,21 +275,21 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
                         break;
                     expect_token("Comma", SYN_TOKEN_COMMA);
                 }
-                lexical_token = get_token(fd);
+                GET_NEXT_TOKEN(fd)
             }
             break;
         }
         case INTEGER:
             x = make_binary_leaf(SYN_NODE_INTEGER, string_init(lexical_token->value));
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             break;
         case FLOAT:
             x = make_binary_leaf(SYN_NODE_FLOAT, string_init(lexical_token->value));
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             break;
         case STRING:
             x = make_binary_leaf(SYN_NODE_STRING, string_init(lexical_token->value));
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             break;
         default: {
             SYNTAX_ERROR("Expected expression, got: %s\n", get_readable_error_char(lexical_token->value))
@@ -301,7 +301,7 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
            attributes[get_token_type(lexical_token->type)].precedence >= precedence) {
         syntax_tree_token_type internal_op = get_token_type(lexical_token->type);
 
-        lexical_token = get_token(fd);
+        GET_NEXT_TOKEN(fd)
 
         int q = attributes[internal_op].precedence;
         if (!attributes[internal_op].right_associative) q++;
@@ -317,7 +317,7 @@ syntax_abstract_tree_t *args(FILE *fd) {
     syntax_abstract_tree_t *tree = NULL, *node;
 
     if (get_token_type(lexical_token->type) == SYN_TOKEN_RIGHT_PARENTHESIS) {
-        lexical_token = get_token(fd);
+        GET_NEXT_TOKEN(fd)
         return NULL;
     }
 
@@ -325,12 +325,12 @@ syntax_abstract_tree_t *args(FILE *fd) {
 
     while (get_token_type(lexical_token->type) == SYN_TOKEN_COMMA) {
         expect_token("Comma", SYN_TOKEN_COMMA);
-        lexical_token = get_token(fd);
+        GET_NEXT_TOKEN(fd)
         node = expression(fd, 0);
         tree = make_binary_node(SYN_NODE_ARGS, node, tree);
     }
 
-    lexical_token = get_token(fd);
+    GET_NEXT_TOKEN(fd)
 
     return tree;
 }
@@ -342,28 +342,28 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
         case IDENTIFIER: {
             v = make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
             bool is_variable = lexical_token->value[0] == '$';
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             expect_token("Assignment", is_variable ? SYN_TOKEN_ASSIGN : SYN_TOKEN_LEFT_PARENTHESIS);
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             e = is_variable ? expression(fd, 0) : args(fd);
             tree = make_binary_node(is_variable ? SYN_NODE_ASSIGN : SYN_NODE_CALL, v, e);
             expect_token("Semicolon", SYN_TOKEN_SEMICOLON);
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             break;
         }
         case INTEGER: {
             tree = expression(fd, 0);
             expect_token("Semicolon", SYN_TOKEN_SEMICOLON);
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             break;
         }
         case KEYWORD_IF: {
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             e = parenthesis_expression(fd);
             s = stmt(fd);
             s2 = NULL;
             if (lexical_token->type == KEYWORD_ELSE) {
-                lexical_token = get_token(fd);
+                GET_NEXT_TOKEN(fd)
                 s2 = stmt(fd);
 
                 if (s2 == NULL) {
@@ -382,7 +382,7 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             break;
         }
         case KEYWORD_WHILE: {
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             e = parenthesis_expression(fd);
             s = stmt(fd);
             tree = make_binary_node(SYN_NODE_KEYWORD_WHILE, e, s);
@@ -399,12 +399,12 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
         }
         case LEFT_CURLY_BRACKETS: {
             expect_token("Left curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             while (lexical_token->type != RIGHT_CURLY_BRACKETS && lexical_token->type != END_OF_FILE) {
                 tree = make_binary_node(SYN_NODE_SEQUENCE, tree, stmt(fd));
             }
             expect_token("Right curly brackets", SYN_TOKEN_RIGHT_CURLY_BRACKETS);
-            lexical_token = get_token(fd);
+            GET_NEXT_TOKEN(fd)
             break;
         }
         case END_OF_FILE: {
@@ -423,7 +423,7 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
 }
 
 syntax_abstract_tree_t *load_syntax_tree(FILE *fd) {
-    lexical_token = get_token(fd);
+    GET_NEXT_TOKEN(fd)
 
     expect_token("PHP Open bracket", SYN_TOKEN_PHP_OPEN);
     lexical_token = get_token(fd);
@@ -582,4 +582,16 @@ bool is_undefined(syntax_abstract_tree_t *tree) {
     }
 
     return false;
+}
+
+void free_syntax_tree(syntax_abstract_tree_t *tree) {
+    if (!tree) return;
+
+    free_syntax_tree(tree->left);
+    free_syntax_tree(tree->middle);
+    free_syntax_tree(tree->right);
+
+    free(tree->attrs);
+    string_free(tree->value);
+    free(tree);
 }

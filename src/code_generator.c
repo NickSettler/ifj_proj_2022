@@ -187,6 +187,13 @@ void generate_number_conversion_functions() {
         generate_label(end_label->value);
         generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, process_variable);
         generate_end();
+
+        string_free(end_label);
+        string_free(conversion_label);
+    }
+
+    for (int i = 0; i < functions_count; i++) {
+        string_free(functions[i]);
     }
 }
 
@@ -392,7 +399,8 @@ void process_node_value(syntax_abstract_tree_t *tree) {
         sprintf(var_tmp, "%a", d);
         string_replace(tree->value, var_tmp);
     } else if (tree->type == SYN_NODE_STRING) {
-        string_replace(tree->value, string_substr(tree->value, 1, tree->value->length - 1)->value);
+        string_t *substr = string_substr(tree->value, 1, tree->value->length - 1);
+        string_replace(tree->value, substr->value);
 
         string_t *new_str = string_init("");
         for (int i = 0; i < tree->value->length; i++) {
@@ -404,7 +412,9 @@ void process_node_value(syntax_abstract_tree_t *tree) {
                 string_append_char(new_str, c);
         }
 
-        string_replace(tree->value, new_str->value);
+        string_free(substr);
+        string_free(tree->value);
+        tree->value = new_str;
     }
 }
 
@@ -561,7 +571,9 @@ void parse_assign(syntax_abstract_tree_t *tree) {
                        tree->right->type == SYN_NODE_CALL;
 
     // TODO: remove redundant variable declaration and move
-    generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
+    if (find_token(tree->left->value->value)->code_generator_defined == false)
+        generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
+    find_token(tree->left->value->value)->code_generator_defined = true;
     if (!is_constant) {
         process_tree_using(tree->right, is_relational ? parse_relational_expression : parse_expression, POSTORDER);
         generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, CODE_GENERATOR_GLOBAL_FRAME,
@@ -601,9 +613,10 @@ void parse_function_call(syntax_abstract_tree_t *tree) {
     }
 
     if (needed_args_count_push) {
-        char *args_count_str = malloc(sizeof(char) * args_count);
-        sprintf(args_count_str, "%d", args_count);
-        generate_add_on_top(CODE_GENERATOR_INT_CONSTANT, args_count_str);
+        string_t *needed_args_count = string_init("");
+        string_append_string(needed_args_count, "%d", args_count);
+        generate_add_on_top(CODE_GENERATOR_INT_CONSTANT, needed_args_count->value);
+        string_free(needed_args_count);
     }
 
     generate_call(tree->left->value->value);

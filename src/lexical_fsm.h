@@ -194,6 +194,8 @@ FILE *test_lex_input(char *input);
  */
 lexical_token_t *get_token(FILE *fd);
 
+void free_lexical_token(lexical_token_t *token);
+
 /**
  * Initializes lexical token stack
  * @return pointer to lexical token stack

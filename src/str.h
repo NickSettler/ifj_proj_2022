@@ -74,7 +74,7 @@ void string_clear(string_t *str);
  * @param str pointer to string
  * @param value string value
  */
-void string_replace(string_t *str, const char *value);
+void string_replace(string_t *str, char *value);
 
 /**
  * Gets substring value of a string from start to end
@@ -99,5 +99,7 @@ bool string_check_by(string_t *str, int (*func)(int));
  * @param func pointer to a function
  */
 void string_convert_by(string_t *str, int (*func)(int));
+
+void string_free(string_t *str);
 
 #endif //IFJ_PROJ_STRING_H
