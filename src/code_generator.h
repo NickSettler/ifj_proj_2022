@@ -93,6 +93,8 @@ static const char *instructions[] = {
         "SETCHAR",
 };
 
+void set_code_gen_output(FILE *output_fd);
+
 /**
  * Generates move instruction
  * @param variable_frame frame of variable

@@ -11,6 +11,10 @@
 
 #include "code_generator.h"
 
+void set_code_gen_output(FILE *output_fd) {
+    fd = output_fd;
+}
+
 void generate_move(frames_t variable_frame, char *variable, frames_t symbol_frame, char *symbol) {
     fprintf(fd, "MOVE %s@%s %s@%s\n", frames[variable_frame], variable, frames[symbol_frame], symbol);
 }
