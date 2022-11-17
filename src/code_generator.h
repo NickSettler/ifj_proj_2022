@@ -251,7 +251,7 @@ void generate_readf(frames_t frame);
  * @brief print value to standard output
  * @param frame symbol frame
  */
-void generate_write(frames_t frame);
+void generate_write();
 
 /**
  * @brief own substring function

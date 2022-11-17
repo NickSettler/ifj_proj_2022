@@ -244,21 +244,31 @@ void generate_readf(frames_t frame) {
     fprintf(fd, "RETURN\n");
 }
 
-void generate_write(frames_t frame) {
-    fprintf(fd, "LABEL write\n");
-    fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR %s@write_to\n", frames[frame]);
-    fprintf(fd, "DEFVAR %s@check_for_nil\n", frames[frame]);
-    fprintf(fd, "POPS %s@write_to\n", frames[frame]);
-    fprintf(fd, "TYPE %s@check_for_nil %s@write_to\n", frames[frame], frames[frame]);
-    fprintf(fd, "JUMPIFEQ its_nil\n");
-    fprintf(fd, "WRITE %s@write_to\n", frames[frame]);
-    fprintf(fd, "POPFRAME\n");
-    fprintf(fd, "RETURN\n");
-    fprintf(fd, "LABEL its_nil\n");
-    fprintf(fd, "WRITE string@nil\n");
-    fprintf(fd, "POPFRAME\n");
-    fprintf(fd, "RETURN");
+void generate_write() {
+    char *stack_string_var = "$stack_string";
+    char *counter_var = "$i";
+
+    generate_label("write");
+    generate_create_frame();
+    generate_push_frame();
+
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, stack_string_var);
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, counter_var);
+
+    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, counter_var);
+
+    generate_label("write_loop");
+
+    fprintf(fd, "JUMPIFEQ write_end LF@%s int@0\n", counter_var);
+    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, stack_string_var);
+
+    fprintf(fd, "WRITE LF@%s\n", stack_string_var);
+    generate_operation(CODE_GEN_SUB_INSTRUCTION, CODE_GENERATOR_LOCAL_FRAME, counter_var, CODE_GENERATOR_LOCAL_FRAME,
+                       counter_var, CODE_GENERATOR_INT_CONSTANT, "1");
+    fprintf(fd, "JUMP write_loop\n");
+
+    generate_label("write_end");
+    generate_end();
 }
 
 void generate_substr() {
