@@ -437,9 +437,42 @@ frames_t get_node_frame(syntax_abstract_tree_t *tree) {
     }
 }
 
-void parse_expression(syntax_abstract_tree_t *tree) {
-    if (tree->type != SYN_NODE_ADD && tree->type != SYN_NODE_SUB && tree->type != SYN_NODE_MUL &&
-        tree->type != SYN_NODE_DIV && tree->type != SYN_NODE_CONCAT)
+void parse_expression(syntax_abstract_tree_t *tree, string_t *result) {
+    if (!tree || (tree->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING | SYN_NODE_IDENTIFIER))) return;
+
+    bool is_simple = check_tree_using(tree, is_simple_expression);
+
+    bool is_left_const = tree->left &&
+                         (tree->left->type &
+                          (SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING | SYN_NODE_IDENTIFIER));
+    bool is_right_const = tree->right &&
+                          (tree->right->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING |
+                                                SYN_NODE_IDENTIFIER));
+
+    bool is_left_simple = check_tree_using(tree->left, is_simple_expression);
+    bool is_right_simple = check_tree_using(tree->right, is_simple_expression);
+
+    if (is_left_simple && !is_left_const) {
+        string_t *left_var_name = string_init(tmp_var_name);
+        string_append_string(left_var_name, "%d", ++tmp_var_counter);
+        if (!(is_simple && result))
+            generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, left_var_name->value);
+        parse_expression(tree->left, is_simple && result ? result : left_var_name);
+    } else {
+        parse_expression(tree->left, NULL);
+    }
+
+    if (is_right_simple && !is_right_const) {
+        string_t *right_var_name = string_init(tmp_var_name);
+        string_append_string(right_var_name, "%d", ++tmp_var_counter);
+        if (!(is_simple && result))
+            generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, right_var_name->value);
+        parse_expression(tree->right, is_simple && result ? result : right_var_name);
+    } else {
+        parse_expression(tree->right, NULL);
+    }
+
+    if (!(tree->type & (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV | SYN_NODE_CONCAT)))
         return;
 
     instructions_t instruction =
@@ -449,71 +482,60 @@ void parse_expression(syntax_abstract_tree_t *tree) {
             tree->type == SYN_NODE_DIV ? CODE_GEN_DIV_INSTRUCTION :
             tree->type == SYN_NODE_CONCAT ? CODE_GEN_CONCAT_INSTRUCTION : -1;
 
-    bool is_left_const = tree->left->type == SYN_NODE_INTEGER || tree->left->type == SYN_NODE_FLOAT ||
-                         tree->left->type == SYN_NODE_STRING || tree->left->type == SYN_NODE_IDENTIFIER;
-    bool is_right_const = tree->right->type == SYN_NODE_INTEGER || tree->right->type == SYN_NODE_FLOAT ||
-                          tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER;
-
-    if (is_left_const && is_right_const) {
-        /* TODO: some operations might not need to be stored in separate variables
-         * $a = 1 + 2 * 3 can be stored just in $a - there is no need to store 2 * 3 in $tmp_1
-         * and then add it to $a
-         */
-        string_t *operation_var_name = string_init(tmp_var_name);
+    string_t *operation_var_name = result ? result : string_init(tmp_var_name);
+    if (!result)
         string_append_string(operation_var_name, "%d", ++tmp_var_counter);
 
-        insert_token(operation_var_name->value);
-        tree_node_t *operation_var = find_token(operation_var_name->value);
-        operation_var->defined = true;
+    insert_token(operation_var_name->value);
+    tree_node_t *operation_var = find_token(operation_var_name->value);
+    operation_var->defined = true;
 
-        data_type left_type =
-                tree->left->type == SYN_NODE_INTEGER ? TYPE_INT :
-                tree->left->type == SYN_NODE_FLOAT ? TYPE_FLOAT :
-                tree->left->type == SYN_NODE_STRING ? TYPE_STRING :
-                find_token(tree->left->value->value)->type;
-        data_type right_type =
-                tree->right->type == SYN_NODE_INTEGER ? TYPE_INT :
-                tree->right->type == SYN_NODE_FLOAT ? TYPE_FLOAT :
-                tree->right->type == SYN_NODE_STRING ? TYPE_STRING :
-                find_token(tree->right->value->value)->type;
+    data_type left_type =
+            tree->left->type == SYN_NODE_INTEGER ? TYPE_INT :
+            tree->left->type == SYN_NODE_FLOAT ? TYPE_FLOAT :
+            tree->left->type == SYN_NODE_STRING ? TYPE_STRING :
+            find_token(tree->left->value->value)->type;
+    data_type right_type =
+            tree->right->type == SYN_NODE_INTEGER ? TYPE_INT :
+            tree->right->type == SYN_NODE_FLOAT ? TYPE_FLOAT :
+            tree->right->type == SYN_NODE_STRING ? TYPE_STRING :
+            find_token(tree->right->value->value)->type;
 
-        data_type cast_type_to = left_type > right_type ? left_type : right_type;
+    data_type cast_type_to = left_type > right_type ? left_type : right_type;
 
-        bool need_inline_left_cast = left_type != cast_type_to && tree->left->type == SYN_NODE_IDENTIFIER;
-        bool need_inline_right_cast = right_type != cast_type_to && tree->right->type == SYN_NODE_IDENTIFIER;
+    bool need_inline_left_cast = left_type != cast_type_to && tree->left->type == SYN_NODE_IDENTIFIER;
+    bool need_inline_right_cast = right_type != cast_type_to && tree->right->type == SYN_NODE_IDENTIFIER;
 
-        if (need_inline_left_cast)
-            generate_variable_inline_cast(tree->left, cast_type_to);
+    if (need_inline_left_cast)
+        generate_variable_inline_cast(tree->left, cast_type_to);
 
+    if (need_inline_right_cast)
+        generate_variable_inline_cast(tree->right, cast_type_to);
 
-        if (need_inline_right_cast)
-            generate_variable_inline_cast(tree->right, cast_type_to);
+    tree->value = operation_var_name;
+    tree->type = SYN_NODE_IDENTIFIER;
 
+    frames_t left_frame = get_node_frame(tree->left);
+    frames_t right_frame = get_node_frame(tree->right);
 
-        tree->value = operation_var_name;
-        tree->type = SYN_NODE_IDENTIFIER;
+    process_node_value(tree->left);
+    process_node_value(tree->right);
 
-        frames_t left_frame = get_node_frame(tree->left);
-        frames_t right_frame = get_node_frame(tree->right);
-
-        process_node_value(tree->left);
-        process_node_value(tree->right);
-
+    if (!result)
         generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, operation_var_name->value);
-        generate_operation(instruction,
-                           CODE_GENERATOR_GLOBAL_FRAME,
-                           operation_var_name->value,
-                           left_frame,
-                           tree->left->value->value,
-                           right_frame,
-                           tree->right->value->value);
-    }
+    generate_operation(instruction,
+                       CODE_GENERATOR_GLOBAL_FRAME,
+                       operation_var_name->value,
+                       left_frame,
+                       tree->left->value->value,
+                       right_frame,
+                       tree->right->value->value);
+
 }
 
-void parse_relational_expression(syntax_abstract_tree_t *tree) {
-    if (tree->type == SYN_NODE_ADD || tree->type == SYN_NODE_SUB || tree->type == SYN_NODE_MUL ||
-        tree->type == SYN_NODE_DIV)
-        process_tree_using(tree, parse_expression, POSTORDER);
+void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result) {
+    if (tree->type & (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV))
+        parse_expression(tree, NULL);
 
     if (tree->type != SYN_NODE_LESS && tree->type != SYN_NODE_LESS_EQUAL && tree->type != SYN_NODE_GREATER &&
         tree->type != SYN_NODE_GREATER_EQUAL && tree->type != SYN_NODE_EQUAL && tree->type != SYN_NODE_NOT_EQUAL &&
@@ -534,8 +556,14 @@ void parse_relational_expression(syntax_abstract_tree_t *tree) {
                           tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER;
 
     if (is_left_const && is_right_const) {
-        string_t *operation_var_name = string_init(tmp_var_name);
-        string_append_string(operation_var_name, "%d", ++tmp_var_counter);
+        string_t *operation_var_name = result ? result : string_init(tmp_var_name);
+        if (!result) {
+            string_append_string(operation_var_name, "%d", ++tmp_var_counter);
+        }
+
+        insert_token(operation_var_name->value);
+        tree_node_t *operation_var = find_token(operation_var_name->value);
+        operation_var->defined = true;
 
         tree->value = operation_var_name;
         tree->type = SYN_NODE_IDENTIFIER;
@@ -546,7 +574,6 @@ void parse_relational_expression(syntax_abstract_tree_t *tree) {
         process_node_value(tree->left);
         process_node_value(tree->right);
 
-        generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, operation_var_name->value);
         generate_operation(instruction,
                            CODE_GENERATOR_GLOBAL_FRAME,
                            operation_var_name->value,
@@ -575,9 +602,8 @@ void parse_assign(syntax_abstract_tree_t *tree) {
         generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
     find_token(tree->left->value->value)->code_generator_defined = true;
     if (!is_constant) {
-        process_tree_using(tree->right, is_relational ? parse_relational_expression : parse_expression, POSTORDER);
-        generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, CODE_GENERATOR_GLOBAL_FRAME,
-                      tree->right->value->value);
+        if (is_relational) parse_relational_expression(tree->right, NULL);
+        else parse_expression(tree->right, tree->left->value);
     } else {
         process_node_value(tree->right);
         if (tree->right->type == SYN_NODE_CALL) {
