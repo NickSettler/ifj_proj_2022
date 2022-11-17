@@ -364,7 +364,8 @@ void generate_end() {
 
 void generate_variable_inline_cast(syntax_abstract_tree_t *tree, data_type cast_to) {
     string_t *casted_string_name = string_init("");
-    string_append_string(casted_string_name, "__%s_f", tree->value->value);
+    string_append_string(casted_string_name, "__%s_%s", tree->value->value,
+                         cast_to == TYPE_INT ? "i" : cast_to == TYPE_FLOAT ? "f" : "s");
 
     insert_token(casted_string_name->value);
     tree_node_t *casted_variable = find_token(casted_string_name->value);
@@ -396,7 +397,7 @@ void process_node_value(syntax_abstract_tree_t *tree) {
         string_t *new_str = string_init("");
         for (int i = 0; i < tree->value->length; i++) {
             char c = tree->value->value[i];
-            
+
             if (c >= 0 && c <= 32 || c == 35 || c == 92)
                 string_append_string(new_str, "\\%03d", c);
             else
