@@ -429,14 +429,15 @@ frames_t get_node_frame(syntax_abstract_tree_t *tree) {
 
 void parse_expression(syntax_abstract_tree_t *tree) {
     if (tree->type != SYN_NODE_ADD && tree->type != SYN_NODE_SUB && tree->type != SYN_NODE_MUL &&
-        tree->type != SYN_NODE_DIV)
+        tree->type != SYN_NODE_DIV && tree->type != SYN_NODE_CONCAT)
         return;
 
     instructions_t instruction =
             tree->type == SYN_NODE_ADD ? CODE_GEN_ADD_INSTRUCTION :
             tree->type == SYN_NODE_SUB ? CODE_GEN_SUB_INSTRUCTION :
             tree->type == SYN_NODE_MUL ? CODE_GEN_MUL_INSTRUCTION :
-            tree->type == SYN_NODE_DIV ? CODE_GEN_DIV_INSTRUCTION : -1;
+            tree->type == SYN_NODE_DIV ? CODE_GEN_DIV_INSTRUCTION :
+            tree->type == SYN_NODE_CONCAT ? CODE_GEN_CONCAT_INSTRUCTION : -1;
 
     bool is_left_const = tree->left->type == SYN_NODE_INTEGER || tree->left->type == SYN_NODE_FLOAT ||
                          tree->left->type == SYN_NODE_STRING || tree->left->type == SYN_NODE_IDENTIFIER;
