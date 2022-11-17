@@ -23,8 +23,10 @@
 FILE *fd;
 
 int tmp_var_counter;
+int loop_counter;
 
-static char *tmp_var_name = "$__tmp_";
+static char *tmp_var_name = "$$__tmp_";
+static char *loop_label_name = "$$__LOOP_";
 
 /**
  * @brief structure with frames
@@ -33,6 +35,7 @@ typedef enum {
     CODE_GENERATOR_INT_CONSTANT,
     CODE_GENERATOR_FLOAT_CONSTANT,
     CODE_GENERATOR_STRING_CONSTANT,
+    CODE_GENERATOR_BOOL_CONSTANT,
     CODE_GENERATOR_GLOBAL_FRAME,
     CODE_GENERATOR_LOCAL_FRAME,
     CODE_GENERATOR_TEMPORARY_FRAME,
@@ -42,7 +45,7 @@ typedef enum {
  * @brief array of frames
  */
 static const char *frames[] = {
-        "int", "float", "string", "GF", "LF", "TF",
+        "int", "float", "string", "bool", "GF", "LF", "TF",
 };
 
 /**
@@ -307,13 +310,13 @@ frames_t get_node_frame(syntax_abstract_tree_t *tree);
  * Parses math expression
  * @param tree tree node
  */
-void parse_expression(syntax_abstract_tree_t *tree);
+void parse_expression(syntax_abstract_tree_t *tree, string_t *result);
 
 /**
  * Parses relational expression
  * @param tree tree node
  */
-void parse_relational_expression(syntax_abstract_tree_t *tree);
+void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result);
 
 /**
  * Parses syntax tree assign node

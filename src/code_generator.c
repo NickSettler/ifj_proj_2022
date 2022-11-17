@@ -648,7 +648,41 @@ void parse_function_call(syntax_abstract_tree_t *tree) {
     generate_call(tree->left->value->value);
 }
 
+void parse_loop(syntax_abstract_tree_t *tree) {
+    if (tree->type != SYN_NODE_KEYWORD_WHILE) return;
+
+    string_t *loop_label = string_init(loop_label_name);
+    string_append_string(loop_label, "%d", ++loop_counter);
+
+    string_t *loop_cond_var = string_init(loop_label->value);
+    string_append_string(loop_cond_var, "_cond");
+
+    string_t *loop_start_label = string_init(loop_label->value);
+    string_append_string(loop_start_label, "_start");
+
+    string_t *loop_end_label = string_init(loop_label->value);
+    string_append_string(loop_end_label, "_end");
+
+    syntax_tree_node_type loop_type = tree->left->type;
+
+    generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, loop_cond_var->value);
+
+    parse_relational_expression(tree->left, loop_cond_var);
+
+    generate_label(loop_start_label->value);
+    generate_conditional_jump(true, loop_end_label->value, CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value,
+                              CODE_GENERATOR_BOOL_CONSTANT, "false");
+    parse_tree(tree->right);
+    tree->left->type = loop_type;
+    parse_relational_expression(tree->left, loop_cond_var);
+    generate_jump(loop_start_label->value);
+
+    generate_label(loop_end_label->value);
+}
+
 void parse_tree(syntax_abstract_tree_t *tree) {
+    if (tree->left) parse_tree(tree->left);
+
     if (tree->type != SYN_NODE_SEQUENCE) return;
 
     if (tree->right) {
@@ -658,6 +692,9 @@ void parse_tree(syntax_abstract_tree_t *tree) {
                 break;
             case SYN_NODE_CALL:
                 parse_function_call(tree->right);
+                break;
+            case SYN_NODE_KEYWORD_WHILE:
+                parse_loop(tree->right);
                 break;
             default:
                 break;
