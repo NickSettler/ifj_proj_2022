@@ -17,6 +17,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+typedef struct syntax_abstract_tree syntax_abstract_tree_t;
+
 /**
  * @enum Data_type_t
  * Data type of variable
@@ -25,9 +27,9 @@
  * @var DATA_TYPE_STRING
  */
 typedef enum {
-    TYPE_STRING,
     TYPE_INT,
     TYPE_FLOAT,
+    TYPE_STRING
 } data_type;
 
 /**
@@ -44,8 +46,10 @@ typedef enum {
  * Key
  *
  * @bool tree_node_t::defined
+ * Is variable defined
  *
  * @bool tree_node_t::global
+ * Is variable global
  */
 typedef struct tree_node {
     data_type type; // Data type of symbol / return type of function
@@ -127,10 +131,39 @@ void dispose_tree(tree_node_t **root);
  */
 void dispose_symtable();
 
+/**
+ * changes data type of the variable
+ * @param root pointer to the root of the tree
+ *
+ * @key key of the node, which data type will be changed
+ *
+ * @type new data type
+ */
+void change_data_type(tree_node_t *tree, data_type type);
+
+/**
+ * Prints tabs
+ * @param numtabs Number of tabs to be printed
+ */
 void printtabs(int numtabs);
 
+/**
+ * Prints tree
+ * @param root pointer to the root of the tree
+ * @param level Number of tabs to be printed
+ */
 void print_tree(tree_node_t *root, int level);
 
+/**
+ * Prints symtable
+ */
 void print_symtable();
+
+/**
+ * Creates global token in symtable
+ * @param tree Node that contains token
+ */
+void create_global_token(syntax_abstract_tree_t *tree);
+
 
 #endif //IFJ_PROJ_2022_SYMTABLE_H

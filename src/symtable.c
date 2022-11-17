@@ -9,6 +9,7 @@
  */
 
 #include "symtable.h"
+#include "syntax_analyzer.h"
 
 tree_node_t *symtable;
 
@@ -133,6 +134,10 @@ void dispose_symtable() {
     symtable = NULL;
 }
 
+void change_data_type(tree_node_t *tree, data_type type) {
+    tree->type = type;
+}
+
 void printtabs(int numtabs) {
     for (int i = 0; i < numtabs; i++) {
         printf("\t");
@@ -159,3 +164,10 @@ void print_tree(tree_node_t *root, int level) {
 void print_symtable() {
     print_tree(symtable, 0);
 }
+
+void create_global_token(syntax_abstract_tree_t *tree) {
+    insert_token(tree->value->value);
+    find_token(tree->value->value)->defined = true;
+    find_token(tree->value->value)->global = true;
+}
+
