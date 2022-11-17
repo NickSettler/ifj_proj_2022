@@ -141,12 +141,28 @@ void dispose_symtable();
  */
 void change_data_type(tree_node_t *tree, data_type type);
 
+/**
+ * Prints tabs
+ * @param numtabs Number of tabs to be printed
+ */
 void printtabs(int numtabs);
 
+/**
+ * Prints tree
+ * @param root pointer to the root of the tree
+ * @param level Number of tabs to be printed
+ */
 void print_tree(tree_node_t *root, int level);
 
+/**
+ * Prints symtable
+ */
 void print_symtable();
 
+/**
+ * Creates global token in symtable
+ * @param tree Node that contains token
+ */
 void create_global_token(syntax_abstract_tree_t *tree);
 
 
