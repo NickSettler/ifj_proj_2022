@@ -17,6 +17,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+typedef struct syntax_abstract_tree syntax_abstract_tree_t;
+
 /**
  * @enum Data_type_t
  * Data type of variable
@@ -144,5 +146,8 @@ void printtabs(int numtabs);
 void print_tree(tree_node_t *root, int level);
 
 void print_symtable();
+
+void create_global_token(syntax_abstract_tree_t *tree);
+
 
 #endif //IFJ_PROJ_2022_SYMTABLE_H
