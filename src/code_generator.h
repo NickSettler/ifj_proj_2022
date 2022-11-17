@@ -311,6 +311,8 @@ void parse_relational_expression(syntax_abstract_tree_t *tree);
  */
 void parse_assign(syntax_abstract_tree_t *tree);
 
+void parse_function_call(syntax_abstract_tree_t *tree);
+
 /**
  * Parses syntax tree
  * @param tree syntax tree node

@@ -400,6 +400,18 @@ void process_node_value(syntax_abstract_tree_t *tree) {
         string_replace(tree->value, var_tmp);
     } else if (tree->type == SYN_NODE_STRING) {
         string_replace(tree->value, string_substr(tree->value, 1, tree->value->length - 1)->value);
+
+        string_t *new_str = string_init("");
+        for (int i = 0; i < tree->value->length; i++) {
+            char c = tree->value->value[i];
+            
+            if (c >= 0 && c <= 32 || c == 35 || c == 92)
+                string_append_string(new_str, "\\%03d", c);
+            else
+                string_append_char(new_str, c);
+        }
+
+        string_replace(tree->value, new_str->value);
     }
 }
 
@@ -566,10 +578,50 @@ void parse_assign(syntax_abstract_tree_t *tree) {
     }
 }
 
+void parse_function_arg(syntax_abstract_tree_t *tree) {
+    if (tree->type != SYN_NODE_ARGS) return;
+
+    process_node_value(tree->left);
+
+    generate_add_on_top(get_node_frame(tree->left), tree->left->value->value);
+}
+
+void parse_function_call(syntax_abstract_tree_t *tree) {
+    if (tree->type != SYN_NODE_CALL) return;
+
+    bool needed_args_count_push = !strcmp(tree->left->value->value, "write");
+
+    int args_count = 0;
+    syntax_abstract_tree_t *arg = tree->right;
+
+    while (arg != NULL) {
+        parse_function_arg(arg);
+        args_count++;
+        arg = arg->right;
+    }
+
+    if (needed_args_count_push) {
+        char *args_count_str = malloc(sizeof(char) * args_count);
+        sprintf(args_count_str, "%d", args_count);
+        generate_add_on_top(CODE_GENERATOR_INT_CONSTANT, args_count_str);
+    }
+
+    generate_call(tree->left->value->value);
+}
+
 void parse_tree(syntax_abstract_tree_t *tree) {
     if (tree->type != SYN_NODE_SEQUENCE) return;
 
-    if (tree->right && tree->right->type == SYN_NODE_ASSIGN) {
-        parse_assign(tree->right);
+    if (tree->right) {
+        switch (tree->right->type) {
+            case SYN_NODE_ASSIGN:
+                parse_assign(tree->right);
+                break;
+            case SYN_NODE_CALL:
+                parse_function_call(tree->right);
+                break;
+            default:
+                break;
+        }
     }
 }
