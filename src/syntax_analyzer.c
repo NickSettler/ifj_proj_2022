@@ -256,10 +256,29 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
             node = expression(fd, attributes[SYN_TOKEN_NEGATE].precedence);
             x = (op == SYN_TOKEN_SUB) ? make_binary_node(SYN_NODE_NEGATE, node, NULL) : node;
             break;
-        case IDENTIFIER:
-            x = make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
-            lexical_token = get_token(fd);
+        case IDENTIFIER: {
+            bool is_variable = lexical_token->value[0] == '$';
+            if (is_variable) {
+                x = make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
+                lexical_token = get_token(fd);
+            } else {
+                x = make_binary_node(SYN_NODE_CALL,
+                                     make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value)), NULL);
+                lexical_token = get_token(fd);
+                for (expect_token("Left parenthesis", SYN_TOKEN_LEFT_PARENTHESIS);; expect_token("Comma",
+                                                                                                 SYN_TOKEN_COMMA)) {
+                    lexical_token = get_token(fd);
+                    if (get_token_type(lexical_token->type) == SYN_TOKEN_RIGHT_PARENTHESIS)
+                        break;
+                    x->right = make_binary_node(SYN_NODE_ARGS, expression(fd, 0), x->right);
+                    if (get_token_type(lexical_token->type) == SYN_TOKEN_RIGHT_PARENTHESIS)
+                        break;
+                    expect_token("Comma", SYN_TOKEN_COMMA);
+                }
+                lexical_token = get_token(fd);
+            }
             break;
+        }
         case INTEGER:
             x = make_binary_leaf(SYN_NODE_INTEGER, string_init(lexical_token->value));
             lexical_token = get_token(fd);
