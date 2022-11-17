@@ -70,6 +70,7 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
         case SYN_NODE_FLOAT:
             return TYPE_FLOAT;
         case SYN_NODE_CONCAT:
+            check_tree_for_string(tree);
         case SYN_NODE_STRING:
             return TYPE_STRING;
         case SYN_NODE_ADD:
@@ -107,6 +108,29 @@ void replace_node_int_to_float(syntax_abstract_tree_t *tree) {
         case SYN_NODE_INTEGER:
             tree->type = SYN_NODE_FLOAT;
             string_append_string(tree->value, ".0");
+            break;
+        default:
+            return;
+    }
+}
+
+void check_tree_for_string(syntax_abstract_tree_t *tree) {
+    if (!check_tree_using(tree, is_only_numbers)) {
+        process_tree_using(tree, replace_node_to_string, POSTORDER);
+    }
+}
+
+void replace_node_to_string(syntax_abstract_tree_t *tree) {
+    if (tree == NULL) {
+        return;
+    }
+    switch (tree->type) {
+        case SYN_NODE_INTEGER:
+        case SYN_NODE_FLOAT:
+            tree->type = SYN_NODE_STRING;
+            string_t *temp = string_init("");
+            string_append_string(temp, "\"%s\"", tree->value->value);
+            string_replace(tree->value, temp->value);
             break;
         default:
             return;
