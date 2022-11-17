@@ -557,7 +557,8 @@ void parse_assign(syntax_abstract_tree_t *tree) {
                          tree->right->type == SYN_NODE_OR;
 
     bool is_constant = tree->right->type == SYN_NODE_INTEGER || tree->right->type == SYN_NODE_FLOAT ||
-                       tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER;
+                       tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER ||
+                       tree->right->type == SYN_NODE_CALL;
 
     // TODO: remove redundant variable declaration and move
     generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
@@ -567,8 +568,13 @@ void parse_assign(syntax_abstract_tree_t *tree) {
                       tree->right->value->value);
     } else {
         process_node_value(tree->right);
-        generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, get_node_frame(tree->right),
-                      tree->right->value->value);
+        if (tree->right->type == SYN_NODE_CALL) {
+            parse_function_call(tree->right);
+            generate_pop_from_top(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
+        } else {
+            generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, get_node_frame(tree->right),
+                          tree->right->value->value);
+        }
     }
 }
 
