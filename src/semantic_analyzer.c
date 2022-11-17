@@ -1,93 +1,65 @@
 #include "semantic_analyzer.h"
 #include "symtable.h"
+#include "syntax_analyzer.h"
 
-void printInorder(syntax_abstract_tree_t *tree) {
+
+void semantic_tree_check(syntax_abstract_tree_t *tree) {
     if (tree == NULL)
         return;
 
-    switch (tree->type) {
-        case SYN_NODE_IDENTIFIER:
-            printf("%s\n ", tree->value->value);
-            break;
-        case SYN_NODE_INTEGER:
-            printf("%s\n", tree->value->value);
-            break;
-        case SYN_NODE_ASSIGN:
-            printf("Assign\n");
-            break;
-        case SYN_NODE_KEYWORD_IF:
-            printf("If\n");
-            break;
-        case SYN_NODE_GREATER:
-            printf("> \n");
-            break;
-        default:
-            printf("Unknown node type\n");
-    }
-    printInorder(tree->left);
-    printInorder(tree->middle);
-    printInorder(tree->right);
+    process_tree_using(tree, process_tree, INORDER);
 }
 
-void tree_traversal(syntax_abstract_tree_t *tree) {
-    if (tree == NULL)
+void process_tree(syntax_abstract_tree_t *tree) {
+    if (tree->type != SYN_NODE_SEQUENCE)
         return;
-    tree_traversal(tree->left);
     switch (tree->right->type) {
         case SYN_NODE_ASSIGN: {
-            syntax_abstract_tree_t *id_node = tree->right->left;
-            create_global_id_node(id_node);
-            find_token(id_node->value->value)->type = get_data_type(tree->right->right);
-            check_tree_for_float(tree);
+            process_assign(tree->right);
             break;
         }
-        case SYN_NODE_KEYWORD_IF:
-        case SYN_NODE_KEYWORD_WHILE:
-            defined(tree->right->left);
-            tree_traversal(tree->right->middle);
-            if (tree->right->right != NULL) {
-                tree_traversal(tree->right->right);
-            }
-            break;
-        case SYN_NODE_FUNCTION_DECLARATION:
-            // TODO: create local BST function
+        default:
             break;
     }
 }
 
-int type_check(int type_1, int type_2) {
-    return type_1 > type_2 ? type_1 : type_2;
+void process_assign(syntax_abstract_tree_t *tree) {
+    syntax_abstract_tree_t *id_node = tree->left;
+    create_global_token(id_node);
+    check_tree_for_float(tree->right);
+    find_token(id_node->value->value)->type = get_data_type(tree->right);
 }
 
 int get_data_type(syntax_abstract_tree_t *tree) {
-    if (tree == NULL) {
+    if (tree == NULL)
         return -1;
-    }
+
     switch (tree->type) {
         case SYN_NODE_IDENTIFIER:
-            defined(tree);
+            check_tree_using(tree, is_defined);
             return find_token(tree->value->value)->type;
         case SYN_NODE_INTEGER:
-            return 1 << 0; //int
+            return TYPE_INT;
         case SYN_NODE_FLOAT:
-            return 1 << 1; //float
+            return TYPE_FLOAT;
         case SYN_NODE_CONCAT:
         case SYN_NODE_STRING:
-            return 1 << 2; //string
+            return TYPE_STRING;
         case SYN_NODE_ADD:
         case SYN_NODE_SUB:
         case SYN_NODE_MUL:
         case SYN_NODE_NEGATE:
-            // throws an error if there is an expression with string
-            if (tree->left->type == SYN_NODE_STRING ||
-                (tree->left->type == SYN_NODE_IDENTIFIER && find_token(tree->left->value->value)->type == 1 << 2) ||
-                tree->right->type == SYN_NODE_STRING ||
-                (tree->right->type == SYN_NODE_IDENTIFIER && find_token(tree->right->value->value)->type == 1 << 2)) {
-                SEMANTIC_TYPE_COMPAT_ERROR("Wrong type of operand in expression")
+            if (!check_tree_using(tree, is_only_numbers)) {
+                SEMANTIC_TYPE_COMPAT_ERROR("Cannot use string in arithmetic expression")
             }
             return type_check(get_data_type(tree->left), get_data_type(tree->right));
         case SYN_NODE_DIV:
-            return 1 << 1;
+            if (!check_tree_using(tree, is_only_numbers)) {
+                SEMANTIC_TYPE_COMPAT_ERROR("Cannot use string in arithmetic expression")
+            }
+            return TYPE_FLOAT;
+        default:
+            break;
     }
     get_data_type(tree->left);
     get_data_type(tree->right);
@@ -108,22 +80,22 @@ void replace_node_int_to_float(syntax_abstract_tree_t *tree) {
             tree->type = SYN_NODE_FLOAT;
             string_append_string(tree->value, ".0");
             break;
-        case SYN_NODE_IDENTIFIER:
-            if (find_token(tree->value->value)->type == 1) {
-                change_data_type(find_token(tree->value->value), 1 << 2);
-            }
-            break;
         default:
             return;
     }
 }
+
+int type_check(int type_1, int type_2) {
+    return type_1 > type_2 ? type_1 : type_2;
+}
+
 bool is_node_an_int(syntax_abstract_tree_t *tree) {
     switch (tree->type) {
         case SYN_NODE_FLOAT:
         case SYN_NODE_DIV:
             return false;
         case SYN_NODE_IDENTIFIER:
-            if (find_token(tree->value->value)->type == 1 << 0) {
+            if (find_token(tree->value->value)->type == TYPE_FLOAT) {
                 return false;
             } else {
                 return true;
@@ -131,4 +103,12 @@ bool is_node_an_int(syntax_abstract_tree_t *tree) {
         default:
             return true;
     }
+}
+
+bool is_only_numbers(syntax_abstract_tree_t *tree) {
+    if (tree->type == SYN_NODE_STRING ||
+        (tree->type == SYN_NODE_IDENTIFIER && find_token(tree->value->value)->type == TYPE_STRING)) {
+        return false;
+    }
+    return true;
 }
