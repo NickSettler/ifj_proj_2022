@@ -205,6 +205,8 @@ generate_conditional_jump(bool is_equal, char *label, frames_t frame, char *symb
 
 void generate_header();
 
+void generate_exit(int exit_code);
+
 /**
  * @brief generate an integer to decimal conversion
  * @param *frame variable frame

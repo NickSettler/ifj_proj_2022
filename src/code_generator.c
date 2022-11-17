@@ -96,6 +96,10 @@ void generate_header() {
     fprintf(fd, ".IFJcode22\n");
 }
 
+void generate_exit(int exit_code) {
+    fprintf(fd, "EXIT int@%d\n", exit_code);
+}
+
 void generate_int_to_float(frames_t frame) {
     fprintf(fd, "LABEL float2int\n");
     fprintf(fd, "CREATEFRAME\n");
