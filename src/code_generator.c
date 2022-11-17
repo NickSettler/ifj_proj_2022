@@ -11,8 +11,8 @@
 
 #include "code_generator.h"
 
-void generate_move(frames_t frame, char *variable, char *symbol) {
-    fprintf(fd, "MOVE %s@%s %s@%s\n", frames[frame], variable, frames[frame], symbol);
+void generate_move(frames_t variable_frame, char *variable, frames_t symbol_frame, char *symbol) {
+    fprintf(fd, "MOVE %s@%s %s@%s\n", frames[variable_frame], variable, frames[symbol_frame], symbol);
 }
 
 void generate_label(char *label) {

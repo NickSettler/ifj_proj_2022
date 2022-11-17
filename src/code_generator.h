@@ -92,12 +92,13 @@ static const char *instructions[] = {
 };
 
 /**
- * @brief generating a value assignment to a variable
- * @param *frame variable frame
- * @param *variable variable name
- * @param *symbol symbol name
+ * Generates move instruction
+ * @param variable_frame frame of variable
+ * @param variable variable
+ * @param symbol_frame frame of symbol
+ * @param symbol symbol
  */
-void generate_move(frames_t frame, char *variable, char *symbol);
+void generate_move(frames_t variable_frame, char *variable, frames_t symbol_frame, char *symbol);
 
 /**
  * Generates label
