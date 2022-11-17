@@ -196,6 +196,13 @@ void generate_type(frames_t variable_frame, char *variable, frames_t symbol_fram
 void generate_operation(instructions_t instruction, frames_t result_frame, char *result, frames_t symbol1_frame,
                         char *symbol1, frames_t symbol2_frame, char *symbol2);
 
+void generate_jump(char *label);
+
+void
+generate_conditional_jump(bool is_equal, char *label, frames_t frame, char *symbol1, frames_t frame2, char *symbol2);
+
+void generate_header();
+
 /**
  * @brief generate an integer to decimal conversion
  * @param *frame variable frame

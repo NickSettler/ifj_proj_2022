@@ -82,6 +82,20 @@ void generate_operation(instructions_t instruction, frames_t result_frame, char 
     }
 }
 
+void generate_jump(char *label) {
+    fprintf(fd, "JUMP %s\n", label);
+}
+
+void
+generate_conditional_jump(bool is_equal, char *label, frames_t frame, char *symbol1, frames_t frame2, char *symbol2) {
+    fprintf(fd, "%s %s %s@%s %s@%s\n", is_equal ? "JUMPIFEQ" : "JUMPIFNEQ", label, frames[frame], symbol1,
+            frames[frame2], symbol2);
+}
+
+void generate_header() {
+    fprintf(fd, ".IFJcode22\n");
+}
+
 void generate_int_to_float(frames_t frame) {
     fprintf(fd, "LABEL float2int\n");
     fprintf(fd, "CREATEFRAME\n");
@@ -122,15 +136,18 @@ void generate_floatval() {
     generate_declaration(CODE_GENERATOR_LOCAL_FRAME, type_variable);
     generate_type(CODE_GENERATOR_LOCAL_FRAME, type_variable, CODE_GENERATOR_LOCAL_FRAME, stack_variable);
 
-    // TODO: create separate function for all jumps
-    fprintf(fd, "JUMPIFEQ floatval_end %s@%s string@float\n", frames[CODE_GENERATOR_LOCAL_FRAME], type_variable);
-    fprintf(fd, "JUMPIFEQ floatval_int %s@%s string@int\n", frames[CODE_GENERATOR_LOCAL_FRAME], type_variable);
-    fprintf(fd, "JUMP floatval_end\n");
+    generate_conditional_jump(true, "floatval_end", CODE_GENERATOR_LOCAL_FRAME, type_variable,
+                              CODE_GENERATOR_STRING_CONSTANT,
+                              "float");
+    generate_conditional_jump(true, "floatval_int", CODE_GENERATOR_LOCAL_FRAME, type_variable,
+                              CODE_GENERATOR_STRING_CONSTANT,
+                              "int");
+    generate_jump("floatval_end");
 
     generate_label("floatval_int");
-    fprintf(fd, "INT2FLOAT %s@%s %s@%s\n", frames[CODE_GENERATOR_LOCAL_FRAME], stack_variable,
-            frames[CODE_GENERATOR_LOCAL_FRAME], stack_variable);
-    fprintf(fd, "JUMP floatval_end\n");
+    generate_operation(CODE_GEN_INT2FLOAT_INSTRUCTION, CODE_GENERATOR_LOCAL_FRAME, stack_variable,
+                       CODE_GENERATOR_LOCAL_FRAME, stack_variable, 0, NULL);
+    generate_jump("floatval_end");
 
     generate_label("floatval_end");
     generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
@@ -151,15 +168,18 @@ void generate_intval() {
     generate_declaration(CODE_GENERATOR_LOCAL_FRAME, type_variable);
     generate_type(CODE_GENERATOR_LOCAL_FRAME, type_variable, CODE_GENERATOR_LOCAL_FRAME, stack_variable);
 
-    // TODO: create separate function for all jumps
-    fprintf(fd, "JUMPIFEQ intval_end %s@%s string@int\n", frames[CODE_GENERATOR_LOCAL_FRAME], type_variable);
-    fprintf(fd, "JUMPIFEQ intval_float %s@%s string@float\n", frames[CODE_GENERATOR_LOCAL_FRAME], type_variable);
-    fprintf(fd, "JUMP intval_end\n");
+    generate_conditional_jump(true, "intval_end", CODE_GENERATOR_LOCAL_FRAME, type_variable,
+                              CODE_GENERATOR_STRING_CONSTANT,
+                              "int");
+    generate_conditional_jump(true, "intval_float", CODE_GENERATOR_LOCAL_FRAME, type_variable,
+                              CODE_GENERATOR_STRING_CONSTANT,
+                              "float");
+    generate_jump("intval_end");
 
     generate_label("intval_float");
-    fprintf(fd, "FLOAT2INT %s@%s %s@%s\n", frames[CODE_GENERATOR_LOCAL_FRAME], stack_variable,
-            frames[CODE_GENERATOR_LOCAL_FRAME], stack_variable);
-    fprintf(fd, "JUMP intval_end\n");
+    generate_operation(CODE_GEN_FLOAT2INT_INSTRUCTION, CODE_GENERATOR_LOCAL_FRAME, stack_variable,
+                       CODE_GENERATOR_LOCAL_FRAME, stack_variable, 0, NULL);
+    generate_jump("intval_end");
 
     generate_label("intval_end");
     generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, stack_variable);
