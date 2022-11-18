@@ -55,7 +55,6 @@ typedef enum {
 typedef struct tree_node {
     struct tree_node *function_tree;
     data_type type;
-    data_type return_type;
     data_type argument_type;
     int argument_count;
     bool defined;

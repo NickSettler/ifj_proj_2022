@@ -44,10 +44,10 @@ void insert_function(char *key) {
 
 void insert_return_type(char *key, data_type type) {
     tree_node_t *function_ptr = find_element(symtable, key);
-    if (function_ptr->return_type == 0) {
-        function_ptr->return_type = type;
+    if (function_ptr->type == 0) {
+        function_ptr->type = type;
     } else {
-        function_ptr->return_type = (data_type) (function_ptr->return_type | type);
+        function_ptr->type = (data_type) (function_ptr->type | type);
     }
 }
 
@@ -73,7 +73,6 @@ tree_node_t *create_node(char *key) {
     result->local = false;
     result->is_function = false;
     result->type = TYPE_NULL;
-    result->return_type = TYPE_NULL;
     result->argument_type = TYPE_NULL;
     result->argument_count = 0;
 
