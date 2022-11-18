@@ -27,24 +27,16 @@ typedef struct syntax_abstract_tree syntax_abstract_tree_t;
  * @var DATA_TYPE_STRING
  */
 typedef enum {
+    TYPE_NULL = 0,
     TYPE_INT = 1 << 0,
     TYPE_FLOAT = 1 << 1,
     TYPE_STRING = 1 << 2,
 } data_type;
 
-typedef struct function_tree_node {
-    char *key;
-    data_type return_type;
-    data_type argument_type;
-    bool defined;
-    bool local;
-    struct function_tree_node *left;
-    struct function_tree_node *right;
-} function_tree_node_t;
 /**
  * @struct tree_node_t
  * Binary search tree node
-
+ *
  * @var tree_node_t::left
  * Left child
  *
@@ -59,13 +51,17 @@ typedef struct function_tree_node {
  *
  * @bool tree_node_t::global
  * Is variable global
- *
  */
 typedef struct tree_node {
-    function_tree_node_t function_tree;
+    struct tree_node *function_tree;
     data_type type;
+    data_type return_type;
+    data_type argument_type;
+    int argument_count;
     bool defined;
     bool global;
+    bool local;
+    bool is_function;
     char *key;
     struct tree_node *left;
     struct tree_node *right;
@@ -88,7 +84,7 @@ void init_tree();
  * @param global
  * @param defined
  */
-void insert_function(char *key, data_type return_type, bool global, bool defined);
+void insert_function(char *key, data_type return_type);
 
 /**
  * @brief insert function args into symtable

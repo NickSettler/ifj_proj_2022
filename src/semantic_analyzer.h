@@ -2,6 +2,8 @@
 #define IFJ_PROJ_SEMANTIC_ANALYZER_H
 
 #include <stdbool.h>
+#include "str.h"
+#include "symtable.h"
 
 typedef struct syntax_abstract_tree syntax_abstract_tree_t;
 
@@ -28,7 +30,7 @@ void process_assign(syntax_abstract_tree_t *tree);
  * @param tree Abstract syntax tree
  * @return Type of the node
  */
-int get_data_type(syntax_abstract_tree_t *tree);
+data_type get_data_type(syntax_abstract_tree_t *tree);
 
 /**
  * @brief Checks tree for float nodes
@@ -48,7 +50,7 @@ void replace_node_int_to_float(syntax_abstract_tree_t *tree);
  * @param type_2 Type of second node
  * @return Type of both nodes
  */
-int type_check(int type1, int type2);
+data_type type_check(data_type type1, data_type type2);
 
 /**
  * @brief Checks if node is int
@@ -64,10 +66,18 @@ bool is_node_an_int(syntax_abstract_tree_t *tree);
  */
 bool is_only_numbers(syntax_abstract_tree_t *tree);
 
-bool is_str_an_int(string_t *str);
+/**
+ * @brief Checks if node is float
+ * @param tree Abstract syntax tree
+ * @return True if node is float, false otherwise
+ */
+void process_if_while(syntax_abstract_tree_t *tree);
 
-bool is_str_a_float(string_t *str);
+/**
+ * @brief Checks if node is defined
+ * @param tree Abstract syntax tree
+ */
+bool check_defined(syntax_abstract_tree_t *tree);
 
-int string_conversion(syntax_abstract_tree_t *tree);
 
 #endif //IFJ_PROJ_SEMANTIC_ANALYZER_H
