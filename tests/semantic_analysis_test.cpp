@@ -57,7 +57,7 @@ namespace ifj {
             };
 
             TEST_F(SemanticAnalysisTest, VariableDefinition_DefinedVariable) {
-                CheckSymTableEntries("$a = 1;"
+                CheckSymTableEntries("<?php $a = 1;"
                                      "$b = $a + 2;", {
                                              (tree_node_t) {
                                                      .defined = true,
