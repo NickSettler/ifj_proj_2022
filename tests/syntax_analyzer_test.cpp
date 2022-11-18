@@ -141,32 +141,39 @@ namespace ifj {
             TEST_F(SyntaxAnalyzerTest, IfConditions) {
                 IsSyntaxTreeCorrect("<?php if ($a == 2) $a = 3;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_IF, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
 
                 IsSyntaxTreeCorrect("<?php if (1 != 2) $a = 3;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_NOT_EQUAL, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_IF, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
 
                 IsSyntaxTreeCorrect("<?php if (1 < 2) $a = 3;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_LESS, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_IF, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
 
                 IsSyntaxTreeCorrect("<?php if (1 > 2) $a = 3;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_GREATER, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_IF, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
 
                 IsSyntaxTreeCorrect("<?php if (1 <= 2) $a = 3;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_LESS_EQUAL, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_IF, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
 
                 IsSyntaxTreeCorrect("<?php if (1 >= 2) $a = 3;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_GREATER_EQUAL, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_IF, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
 
                 IsSyntaxTreeCorrect("<?php if ($a == 3) if ($b != 2) $c = 4;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_IF, SYN_NODE_IDENTIFIER, SYN_NODE_NOT_EQUAL, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_IF, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_NOT_EQUAL,
+                                     SYN_NODE_INTEGER, SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
 
                 IsSyntaxTreeCorrect("<?php if ($a == 4) {"
                                     "  $b = 1;"
@@ -202,8 +209,9 @@ namespace ifj {
             TEST_F(SyntaxAnalyzerTest, IfElseConditions) {
                 IsSyntaxTreeCorrect("<?php if ($a == 2) $a = 3; else $a = 4;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_IF, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
-                                     SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
 
                 IsSyntaxTreeCorrect("<?php if ($a == 2) {"
                                     " $a = 3;"
@@ -258,8 +266,8 @@ namespace ifj {
             TEST_F(SyntaxAnalyzerTest, WhileLoop) {
                 IsSyntaxTreeCorrect("<?php while ($a > 0) $a = $a - 1;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_GREATER, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_WHILE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_IDENTIFIER,
-                                     SYN_NODE_SUB, SYN_NODE_INTEGER});
+                                     SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_SUB, SYN_NODE_INTEGER});
 
                 IsSyntaxTreeCorrect("<?php while ($a > 0) {$b = $b + 1; $a = $a - 1;}",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_GREATER, SYN_NODE_INTEGER,
