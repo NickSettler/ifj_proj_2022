@@ -337,7 +337,7 @@ namespace ifj {
 
                 EXPECT_EXIT(SyntaxTreeWithError("<?php f(g();"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Semicolon Expecting ;, found: )");
+                            "\\[SYNTAX ERROR\\] Semicolon Expecting ;, found: EOF");
 
                 EXPECT_EXIT(SyntaxTreeWithError("<?php f(1 2);"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),

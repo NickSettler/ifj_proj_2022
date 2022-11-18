@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include "str.h"
 #include "syntax_analyzer.h"
+#include "symtable.h"
 
 /**
  * @brief file for writing the code
@@ -22,6 +23,10 @@
 FILE *fd;
 
 int tmp_var_counter;
+int loop_counter;
+
+static char *tmp_var_name = "$$__tmp_";
+static char *loop_label_name = "$$__LOOP_";
 
 /**
  * @brief structure with frames
@@ -30,6 +35,7 @@ typedef enum {
     CODE_GENERATOR_INT_CONSTANT,
     CODE_GENERATOR_FLOAT_CONSTANT,
     CODE_GENERATOR_STRING_CONSTANT,
+    CODE_GENERATOR_BOOL_CONSTANT,
     CODE_GENERATOR_GLOBAL_FRAME,
     CODE_GENERATOR_LOCAL_FRAME,
     CODE_GENERATOR_TEMPORARY_FRAME,
@@ -39,7 +45,7 @@ typedef enum {
  * @brief array of frames
  */
 static const char *frames[] = {
-        "int", "float", "string", "GF", "LF", "TF",
+        "int", "float", "string", "bool", "GF", "LF", "TF",
 };
 
 /**
@@ -71,10 +77,10 @@ typedef enum {
     CODE_GEN_ANDS_INSTRUCTION,
     CODE_GEN_ORS_INSTRUCTION,
     CODE_GEN_NOTS_INSTRUCTION,
-    CODE_GEN_INT2FLOATS_INSTRUCTION,
-    CODE_GEN_FLOAT2INTS_INSTRUCTION,
-    CODE_GEN_INT2CHARS_INSTRUCTION,
-    CODE_GEN_STRI2INTS_INSTRUCTION,
+    CODE_GEN_INT2FLOAT_INSTRUCTION,
+    CODE_GEN_FLOAT2INT_INSTRUCTION,
+    CODE_GEN_INT2CHAR_INSTRUCTION,
+    CODE_GEN_STRI2INT_INSTRUCTION,
     CODE_GEN_CONCAT_INSTRUCTION,
     CODE_GEN_STRLEN_INSTRUCTION,
     CODE_GEN_GETCHAR_INSTRUCTION,
@@ -87,17 +93,20 @@ typedef enum {
 static const char *instructions[] = {
         "ADD", "SUB", "MUL", "DIV", "IDIV", "ADDS", "SUBS", "MULS", "DIVS", "IDIVS",
         "LT", "GT", "EQ", "LTS", "GTS", "EQS", "NOTLT", "NOTGT", "NOTEQ", "AND", "OR", "NOT",
-        "ANDS", "ORS", "NOTS", "INT2FLOATS", "FLOAT2INTS", "INT2CHARS", "STRI2INTS",
-        "CONCAT", "STRLEN", "GETCHAR", "SETCHAR",
+        "ANDS", "ORS", "NOTS", "INT2FLOAT", "FLOAT2INT", "INT2CHAR", "STRI2INT", "CONCAT", "STRLEN", "GETCHAR",
+        "SETCHAR",
 };
 
+void set_code_gen_output(FILE *output_fd);
+
 /**
- * @brief generating a value assignment to a variable
- * @param *frame variable frame
- * @param *variable variable name
- * @param *symbol symbol name
+ * Generates move instruction
+ * @param variable_frame frame of variable
+ * @param variable variable
+ * @param symbol_frame frame of symbol
+ * @param symbol symbol
  */
-void generate_move(frames_t frame, char *variable, char *symbol);
+void generate_move(frames_t variable_frame, char *variable, frames_t symbol_frame, char *symbol);
 
 /**
  * Generates label
@@ -195,6 +204,15 @@ void generate_type(frames_t variable_frame, char *variable, frames_t symbol_fram
 void generate_operation(instructions_t instruction, frames_t result_frame, char *result, frames_t symbol1_frame,
                         char *symbol1, frames_t symbol2_frame, char *symbol2);
 
+void generate_jump(char *label);
+
+void
+generate_conditional_jump(bool is_equal, char *label, frames_t frame, char *symbol1, frames_t frame2, char *symbol2);
+
+void generate_header();
+
+void generate_exit(int exit_code);
+
 /**
  * @brief generate an integer to decimal conversion
  * @param *frame variable frame
@@ -207,15 +225,25 @@ void generate_int_to_float(frames_t frame);
  */
 void generate_float_to_int(frames_t frame);
 
-/**
- * Generates function to convert to float
- */
 void generate_floatval();
 
 /**
  * Generates function to convert to int
  */
 void generate_intval();
+
+/**
+ * Generates conversion function header
+ * @param label function label
+ * @param process_variable variable to work with
+ * @param type_variable variable with type
+ */
+void generate_conversion_base(char *label, char *process_variable, char *type_variable);
+
+/**
+ * Generates function to convert to number data types
+ */
+void generate_number_conversion_functions();
 
 /**
  * @brief generate a decimal to string conversion
@@ -251,7 +279,7 @@ void generate_readf(frames_t frame);
  * @brief print value to standard output
  * @param frame symbol frame
  */
-void generate_write(frames_t frame);
+void generate_write();
 
 /**
  * @brief own substring function
@@ -262,6 +290,8 @@ void generate_substr();
  * @brief generate end of code
  */
 void generate_end();
+
+void generate_variable_inline_cast(syntax_abstract_tree_t *tree, data_type cast_to);
 
 /**
  * Processes tree value to required target language format
@@ -280,19 +310,21 @@ frames_t get_node_frame(syntax_abstract_tree_t *tree);
  * Parses math expression
  * @param tree tree node
  */
-void parse_expression(syntax_abstract_tree_t *tree);
+void parse_expression(syntax_abstract_tree_t *tree, string_t *result);
 
 /**
  * Parses relational expression
  * @param tree tree node
  */
-void parse_relational_expression(syntax_abstract_tree_t *tree);
+void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result);
 
 /**
  * Parses syntax tree assign node
  * @param tree syntax tree assign node
  */
 void parse_assign(syntax_abstract_tree_t *tree);
+
+void parse_function_call(syntax_abstract_tree_t *tree);
 
 /**
  * Parses syntax tree

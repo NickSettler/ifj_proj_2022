@@ -15,6 +15,9 @@
 #include "errors.h"
 #include "lexical_fsm.h"
 
+#define GET_NEXT_TOKEN(fd) \
+    free_lexical_token(lexical_token); \
+    lexical_token = get_token(fd);
 /**
  * Syntax non-terminal symbols enumeration
  */
@@ -69,33 +72,33 @@ typedef enum {
  * Syntax tree node enumeration
  */
 typedef enum {
-    SYN_NODE_IDENTIFIER,
-    SYN_NODE_STRING,
-    SYN_NODE_INTEGER,
-    SYN_NODE_FLOAT,
-    SYN_NODE_SEQUENCE,
-    SYN_NODE_ARGS,
-    SYN_NODE_ADD,
-    SYN_NODE_SUB,
-    SYN_NODE_MUL,
-    SYN_NODE_DIV,
-    SYN_NODE_NEGATE,
-    SYN_NODE_CONCAT,
-    SYN_NODE_NOT,
-    SYN_NODE_OR,
-    SYN_NODE_AND,
-    SYN_NODE_LESS,
-    SYN_NODE_LESS_EQUAL,
-    SYN_NODE_GREATER,
-    SYN_NODE_GREATER_EQUAL,
-    SYN_NODE_EQUAL,
-    SYN_NODE_NOT_EQUAL,
-    SYN_NODE_CALL,
-    SYN_NODE_ASSIGN,
-    SYN_NODE_KEYWORD_IF,
-    SYN_NODE_KEYWORD_WHILE,
-    SYN_NODE_FUNCTION_DECLARATION,
-    SYN_NODE_FUNCTION_ARG,
+    SYN_NODE_IDENTIFIER = 1 << 0,
+    SYN_NODE_STRING = 1 << 1,
+    SYN_NODE_INTEGER = 1 << 2,
+    SYN_NODE_FLOAT = 1 << 3,
+    SYN_NODE_SEQUENCE = 1 << 4,
+    SYN_NODE_ARGS = 1 << 5,
+    SYN_NODE_ADD = 1 << 6,
+    SYN_NODE_SUB = 1 << 7,
+    SYN_NODE_MUL = 1 << 8,
+    SYN_NODE_DIV = 1 << 9,
+    SYN_NODE_NEGATE = 1 << 10,
+    SYN_NODE_CONCAT = 1 << 11,
+    SYN_NODE_NOT = 1 << 12,
+    SYN_NODE_OR = 1 << 13,
+    SYN_NODE_AND = 1 << 14,
+    SYN_NODE_LESS = 1 << 15,
+    SYN_NODE_LESS_EQUAL = 1 << 16,
+    SYN_NODE_GREATER = 1 << 17,
+    SYN_NODE_GREATER_EQUAL = 1 << 18,
+    SYN_NODE_EQUAL = 1 << 19,
+    SYN_NODE_NOT_EQUAL = 1 << 20,
+    SYN_NODE_CALL = 1 << 21,
+    SYN_NODE_ASSIGN = 1 << 22,
+    SYN_NODE_KEYWORD_IF = 1 << 23,
+    SYN_NODE_KEYWORD_WHILE = 1 << 24,
+    SYN_NODE_FUNCTION_DECLARATION = 1 << 25,
+    SYN_NODE_FUNCTION_ARG = 1 << 26,
 } syntax_tree_node_type;
 
 typedef enum {
@@ -261,5 +264,14 @@ bool is_defined(syntax_abstract_tree_t *tree);
  * @return True if the node contains undefined variable, false otherwise
  */
 bool is_undefined(syntax_abstract_tree_t *tree);
+
+/**
+ * Checks if the AST contains simple expression. Such expression can be compiled using one variable
+ * @param tree Syntax abstract tree
+ * @return True if the node contains simple expression, false otherwise
+ */
+bool is_simple_expression(syntax_abstract_tree_t *tree);
+
+void free_syntax_tree(syntax_abstract_tree_t *tree);
 
 #endif //IFJ_PROJ_SYNTAX_ANALYZER_H

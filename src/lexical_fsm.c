@@ -371,9 +371,22 @@ lexical_token_t *get_token(FILE *fd) {
         INTERNAL_ERROR("Unable to allocate memory for lexical token");
     }
 
+    char *token_value = (char *) malloc(sizeof(char) * (token_string->length + 1));
+    if (token_value == NULL) {
+        INTERNAL_ERROR("Unable to allocate memory for lexical token value");
+    }
+
+    strcpy(token_value, token_string->value);
+
     token->type = token_type;
-    token->value = token_string->value;
+    token->value = token_value;
+
+    string_free(token_string);
     return token;
+}
+
+void free_lexical_token(lexical_token_t *token) {
+    free(token);
 }
 
 lexical_token_stack_t *lexical_token_stack_init() {
