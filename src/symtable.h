@@ -27,9 +27,10 @@ typedef struct syntax_abstract_tree syntax_abstract_tree_t;
  * @var DATA_TYPE_STRING
  */
 typedef enum {
-    TYPE_INT,
-    TYPE_FLOAT,
-    TYPE_STRING
+    TYPE_NULL = 1 << 0,
+    TYPE_INT = 1 << 1,
+    TYPE_FLOAT = 1 << 2,
+    TYPE_STRING = 1 << 3,
 } data_type;
 
 /**
@@ -43,7 +44,7 @@ typedef enum {
  * Right child
  *
  * @var tree_node_t::key
- * Key
+ * Key is identifier
  *
  * @bool tree_node_t::defined
  * Is variable defined
@@ -52,13 +53,51 @@ typedef enum {
  * Is variable global
  */
 typedef struct tree_node {
-    data_type type; // Data type of symbol / return type of function
-    bool defined; // Defined if current function was defined
-    bool global;  // Global if current symbol is global
-    char *key;  // Key is identifier
+    struct tree_node *function_tree;
+    data_type type;
+    data_type argument_type;
+    int argument_count;
+    bool defined;
+    bool global;
+    bool local;
+    bool is_function;
+    char *key;
     struct tree_node *left;
     struct tree_node *right;
 } tree_node_t;
+
+/**
+ * @brief Initialize symbol table with built-in functions
+ */
+void init_symtable();
+
+/**
+ * @brief Initialize function tree
+ */
+void init_tree();
+
+/**
+ * @brief insert function into symtable
+ * @param key
+ * @param return_type
+ * @param global
+ * @param defined
+ */
+void insert_function(char *key);
+
+/**
+ * @brief insert return type into function
+ * @param key
+ * @param type
+ */
+void insert_return_type(char *key, data_type type);
+
+/**
+ * @brief insert function args into symtable
+ * @param key
+ * @param type
+ */
+void insert_args(char *key, data_type type);
 
 /**
  * Creates tree node with key

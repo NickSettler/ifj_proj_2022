@@ -14,6 +14,8 @@ extern "C" {
 #include "../src/symtable.h"
 #include "../src/lexical_fsm.h"
 #include "../src/syntax_analyzer.h"
+#include "../src/semantic_analyzer.c"
+#include "../src/semantic_analyzer.h"
 }
 
 namespace ifj {
@@ -38,6 +40,7 @@ namespace ifj {
                     fd = test_lex_input((char *) input.c_str());
 
                     tree = load_syntax_tree(fd);
+                    semantic_tree_check(tree);
                 }
 
                 void CheckSymTableEntries(const std::string &input, const std::vector<tree_node_t> &expected) {
@@ -65,14 +68,56 @@ namespace ifj {
                                                      .key = "$b",
                                              },
                                      });
+                CheckSymTableEntries("$b = 1;"
+                                     "if ($b > 2) "
+                                     "{"
+                                     " $a = 4;"
+                                     "} else {"
+                                     " $b = $b - 1;"
+                                     "}", {
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "$b",
+                                             },
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "$a",
+                                             },
+                                     });
             }
 
             TEST_F(SemanticAnalysisTest, VariableDefinition_UndefinedVariable) {
-                EXPECT_EXIT({
-                                fd = test_lex_input("$a = 1;"
-                                                    "$b = $c + 2;");
-                                tree = load_syntax_tree(fd);
-                            },
+                EXPECT_EXIT(CheckSymTableEntries("$a = 1;"
+                                                 "$b = $c + 2;", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
+                EXPECT_EXIT(CheckSymTableEntries("if ($b == 2) "
+                                                 "{"
+                                                 " $a = 3.4;"
+                                                 "} else {"
+                                                 " $b = $b - 1;"
+                                                 "}", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
+                EXPECT_EXIT(CheckSymTableEntries("$b = 1;"
+                                                 "if ($b == 2) "
+                                                 "{"
+                                                 " $b = 4;"
+                                                 "} else {"
+                                                 " $b = $c - 1;"
+                                                 "}", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
+                EXPECT_EXIT(CheckSymTableEntries("$b = 1;"
+                                                 "if ($b == 2) "
+                                                 "{"
+                                                 " $b = $c;"
+                                                 "} else {"
+                                                 " $b = $b - 1;"
+                                                 "}", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
+                EXPECT_EXIT(CheckSymTableEntries("$a = $a + 1;", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
             }

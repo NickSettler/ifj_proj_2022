@@ -13,6 +13,53 @@
 
 tree_node_t *symtable;
 
+void init_symtable() {
+    init_tree();
+}
+
+void init_tree() {
+    insert_function("readi");
+    insert_return_type("readi", TYPE_INT);
+    insert_return_type("readi", TYPE_NULL);
+    insert_function("reads");
+    insert_return_type("reads", TYPE_INT);
+    insert_return_type("reads", TYPE_NULL);
+    insert_function("readf");
+    insert_return_type("readf", TYPE_INT);
+    insert_return_type("readf", TYPE_NULL);
+    insert_function("write");
+    insert_args("write", TYPE_FLOAT);
+    insert_args("write", TYPE_INT);
+    insert_args("write", TYPE_STRING);
+    insert_args("write", TYPE_NULL);
+}
+
+void insert_function(char *key) {
+    insert_token(key);
+    tree_node_t *function_ptr = find_element(symtable, key);
+    function_ptr->defined = true;
+    function_ptr->global = true;
+    function_ptr->is_function = true;
+}
+
+void insert_return_type(char *key, data_type type) {
+    tree_node_t *function_ptr = find_element(symtable, key);
+    if (function_ptr->type == 0) {
+        function_ptr->type = type;
+    } else {
+        function_ptr->type = (data_type) (function_ptr->type | type);
+    }
+}
+
+void insert_args(char *key, data_type type) {
+    tree_node_t *function_ptr = find_element(symtable, key);
+    if (function_ptr->argument_type == 0) {
+        function_ptr->argument_type = type;
+    } else {
+        function_ptr->argument_type = (data_type) (function_ptr->argument_type | type);
+    }
+}
+
 tree_node_t *create_node(char *key) {
     tree_node_t *result = (tree_node_t *) malloc(sizeof(tree_node_t));
     if (result == 0) {
@@ -22,6 +69,12 @@ tree_node_t *create_node(char *key) {
     result->right = NULL;
     result->key = key;
     result->defined = false;
+    result->global = false;
+    result->local = false;
+    result->is_function = false;
+    result->type = TYPE_NULL;
+    result->argument_type = TYPE_NULL;
+    result->argument_count = 0;
 
     return result;
 }
@@ -151,7 +204,8 @@ void print_tree(tree_node_t *root, int level) {
         return;
     }
     printtabs(level);
-    printf("key = %s\n", root->key);
+    printf("key = %s, defined = %d, global = %d, type = %d", root->key, root->defined, root->global,
+           root->type);
     printtabs(level);
     printf("left\n");
     print_tree(root->left, level + 1);

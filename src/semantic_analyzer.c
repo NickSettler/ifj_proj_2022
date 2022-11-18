@@ -1,21 +1,27 @@
 #include "semantic_analyzer.h"
-#include "symtable.h"
 #include "syntax_analyzer.h"
 
 
 void semantic_tree_check(syntax_abstract_tree_t *tree) {
     if (tree == NULL)
         return;
-
+    init_symtable();
     process_tree_using(tree, process_tree, INORDER);
 }
 
 void process_tree(syntax_abstract_tree_t *tree) {
+    if (tree == NULL)
+        return;
     if (tree->type != SYN_NODE_SEQUENCE)
         return;
     switch (tree->right->type) {
         case SYN_NODE_ASSIGN: {
             process_assign(tree->right);
+            break;
+        }
+        case SYN_NODE_KEYWORD_IF:
+        case SYN_NODE_KEYWORD_WHILE: {
+            process_if_while(tree->right);
             break;
         }
         default:
@@ -24,19 +30,40 @@ void process_tree(syntax_abstract_tree_t *tree) {
 }
 
 void process_assign(syntax_abstract_tree_t *tree) {
+    check_tree_using(tree->right, check_defined);
     syntax_abstract_tree_t *id_node = tree->left;
     create_global_token(id_node);
     check_tree_for_float(tree->right);
     find_token(id_node->value->value)->type = get_data_type(tree->right);
 }
 
-int get_data_type(syntax_abstract_tree_t *tree) {
+void process_if_while(syntax_abstract_tree_t *tree) {
+    check_tree_using(tree->left, check_defined);
+    process_tree(tree->right);
+    process_tree(tree->middle);
+}
+
+bool check_defined(syntax_abstract_tree_t *tree) {
     if (tree == NULL)
-        return -1;
+        return true;
+    if (tree->type == SYN_NODE_IDENTIFIER) {
+        if (check_tree_using(tree, is_defined) == 0) {
+            SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", tree->value->value);
+        } else {
+            return true;
+        }
+    }
+
+    return true;
+}
+
+data_type get_data_type(syntax_abstract_tree_t *tree) {
+    if (tree == NULL)
+        return (data_type) -1;
 
     switch (tree->type) {
         case SYN_NODE_IDENTIFIER:
-            check_tree_using(tree, is_defined);
+            check_tree_using(tree, check_defined);;
             return find_token(tree->value->value)->type;
         case SYN_NODE_INTEGER:
             return TYPE_INT;
@@ -65,9 +92,10 @@ int get_data_type(syntax_abstract_tree_t *tree) {
     get_data_type(tree->right);
 }
 
+
 void check_tree_for_float(syntax_abstract_tree_t *tree) {
     if (!check_tree_using(tree, is_node_an_int)) {
-        process_tree_using(tree, replace_node_int_to_float, POSTORDER);
+        process_tree_using(tree, replace_node_int_to_float, INORDER);
     }
 }
 
@@ -85,7 +113,7 @@ void replace_node_int_to_float(syntax_abstract_tree_t *tree) {
     }
 }
 
-int type_check(int type_1, int type_2) {
+data_type type_check(data_type type_1, data_type type_2) {
     return type_1 > type_2 ? type_1 : type_2;
 }
 
