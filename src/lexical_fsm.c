@@ -379,7 +379,7 @@ lexical_token_t *get_token(FILE *fd) {
     strcpy(token_value, token_string->value);
 
     token->type = token_type;
-    token->value = token_string->value;
+    token->value = token_value;
 
     string_free(token_string);
     return token;
