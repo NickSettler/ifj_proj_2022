@@ -61,6 +61,8 @@ typedef enum {
     SYN_TOKEN_RIGHT_PARENTHESIS,
     SYN_TOKEN_LEFT_CURLY_BRACKETS,
     SYN_TOKEN_RIGHT_CURLY_BRACKETS,
+    SYN_TOKEN_PHP_OPEN,
+    SYN_TOKEN_PHP_CLOSE,
 } syntax_tree_token_type;
 
 /**

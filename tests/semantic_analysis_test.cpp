@@ -57,7 +57,7 @@ namespace ifj {
             };
 
             TEST_F(SemanticAnalysisTest, VariableDefinition_DefinedVariable) {
-                CheckSymTableEntries("$a = 1;"
+                CheckSymTableEntries("<?php $a = 1;"
                                      "$b = $a + 2;", {
                                              (tree_node_t) {
                                                      .defined = true,
@@ -68,7 +68,7 @@ namespace ifj {
                                                      .key = "$b",
                                              },
                                      });
-                CheckSymTableEntries("$b = 1;"
+                CheckSymTableEntries("<?php $b = 1;"
                                      "if ($b > 2) "
                                      "{"
                                      " $a = 4;"
@@ -87,11 +87,11 @@ namespace ifj {
             }
 
             TEST_F(SemanticAnalysisTest, VariableDefinition_UndefinedVariable) {
-                EXPECT_EXIT(CheckSymTableEntries("$a = 1;"
+                EXPECT_EXIT(CheckSymTableEntries("<?php $a = 1;"
                                                  "$b = $c + 2;", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("if ($b == 2) "
+                EXPECT_EXIT(CheckSymTableEntries("<?php if ($b == 2) "
                                                  "{"
                                                  " $a = 3.4;"
                                                  "} else {"
@@ -99,7 +99,7 @@ namespace ifj {
                                                  "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("$b = 1;"
+                EXPECT_EXIT(CheckSymTableEntries("<?php $b = 1;"
                                                  "if ($b == 2) "
                                                  "{"
                                                  " $b = 4;"
@@ -108,7 +108,7 @@ namespace ifj {
                                                  "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("$b = 1;"
+                EXPECT_EXIT(CheckSymTableEntries("<?php $b = 1;"
                                                  "if ($b == 2) "
                                                  "{"
                                                  " $b = $c;"
@@ -117,7 +117,7 @@ namespace ifj {
                                                  "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("$a = $a + 1;", {}),
+                EXPECT_EXIT(CheckSymTableEntries("<?php $a = $a + 1;", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
             }
