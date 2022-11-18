@@ -52,8 +52,10 @@ struct {
         {"void",     "Keyword_VOID",      SYN_TOKEN_KEYWORD_VOID,         false, false, false, -1, (syntax_tree_node_type) -1},
         {"(",        "LeftParenthesis",   SYN_TOKEN_LEFT_PARENTHESIS,     false, false, false, -1, (syntax_tree_node_type) -1},
         {")",        "RightParenthesis",  SYN_TOKEN_RIGHT_PARENTHESIS,    false, false, false, -1, (syntax_tree_node_type) -1},
-        {"{",        "LeftCurlyBracket",  SYN_TOKEN_RIGHT_CURLY_BRACKETS, false, false, false, -1, (syntax_tree_node_type) -1},
-        {"}",        "RightCurlyBracket", SYN_TOKEN_RIGHT_CURLY_BRACKETS, false, false, false, -1, (syntax_tree_node_type) -1}
+        {"{",        "LeftCurlyBracket",  SYN_TOKEN_LEFT_CURLY_BRACKETS,  false, false, false, -1, (syntax_tree_node_type) -1},
+        {"}",        "RightCurlyBracket", SYN_TOKEN_RIGHT_CURLY_BRACKETS, false, false, false, -1, (syntax_tree_node_type) -1},
+        {"<?php",    "PHPOpen",           SYN_TOKEN_PHP_OPEN,             false, false, false, -1, (syntax_tree_node_type) -1},
+        {"?>",       "PHPClose",          SYN_TOKEN_PHP_CLOSE,            false, false, false, -1, (syntax_tree_node_type) -1},
 };
 
 syntax_abstract_tree_t *
@@ -382,6 +384,10 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
         case END_OF_FILE: {
             break;
         }
+        case CLOSE_PHP_BRACKET: {
+            lexical_token = get_token(fd);
+            break;
+        }
         default: {
             SYNTAX_ERROR("Expected statement, got: %s\n", lexical_token->value)
         }
@@ -393,10 +399,23 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
 syntax_abstract_tree_t *load_syntax_tree(FILE *fd) {
     lexical_token = get_token(fd);
 
+    expect_token("PHP Open bracket", SYN_TOKEN_PHP_OPEN);
+    lexical_token = get_token(fd);
+
     syntax_abstract_tree_t *tree = NULL;
 
-    while (lexical_token->type != END_OF_FILE) {
+    while (lexical_token->type != END_OF_FILE && lexical_token->type != CLOSE_PHP_BRACKET) {
         tree = make_binary_node(SYN_NODE_SEQUENCE, tree, stmt(fd));
+    }
+
+    if (lexical_token->type != CLOSE_PHP_BRACKET && lexical_token->type != END_OF_FILE) {
+        SYNTAX_ERROR("Expected end of file, got: %s\n", lexical_token->value)
+    } else {
+        lexical_token = get_token(fd);
+    }
+
+    if (lexical_token->type != END_OF_FILE) {
+        SYNTAX_ERROR("Expected end of file, got: %s\n", lexical_token->value)
     }
 
     return tree;
@@ -476,6 +495,10 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_KEYWORD_STRING;
         case KEYWORD_VOID:
             return SYN_TOKEN_KEYWORD_VOID;
+        case OPEN_PHP_BRACKET:
+            return SYN_TOKEN_PHP_OPEN;
+        case CLOSE_PHP_BRACKET:
+            return SYN_TOKEN_PHP_CLOSE;
         default:
             return (syntax_tree_token_type) -1;
     }
