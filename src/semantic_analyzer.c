@@ -126,14 +126,16 @@ void replace_node_to_string(syntax_abstract_tree_t *tree) {
     }
     switch (tree->type) {
         case SYN_NODE_INTEGER:
-        case SYN_NODE_FLOAT:
+        case SYN_NODE_FLOAT: {
             tree->type = SYN_NODE_STRING;
             string_t *temp = string_init("");
             string_append_string(temp, "\"%s\"", tree->value->value);
             string_replace(tree->value, temp->value);
             break;
-        default:
+        }
+        default: {
             return;
+        }
     }
 }
 
