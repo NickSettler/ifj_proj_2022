@@ -27,10 +27,10 @@ typedef struct syntax_abstract_tree syntax_abstract_tree_t;
  * @var DATA_TYPE_STRING
  */
 typedef enum {
-    TYPE_NULL = 0,
-    TYPE_INT = 1 << 0,
-    TYPE_FLOAT = 1 << 1,
-    TYPE_STRING = 1 << 2,
+    TYPE_NULL = 1 << 0,
+    TYPE_INT = 1 << 1,
+    TYPE_FLOAT = 1 << 2,
+    TYPE_STRING = 1 << 3,
 } data_type;
 
 /**
@@ -84,7 +84,14 @@ void init_tree();
  * @param global
  * @param defined
  */
-void insert_function(char *key, data_type return_type);
+void insert_function(char *key);
+
+/**
+ * @brief insert return type into function
+ * @param key
+ * @param type
+ */
+void insert_return_type(char *key, data_type type);
 
 /**
  * @brief insert function args into symtable

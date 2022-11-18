@@ -171,15 +171,11 @@ syntax_abstract_tree_t *f_args(FILE *fd, syntax_abstract_tree_t *args) {
             lexical_token = get_token(fd);
             expect_token("Function argument declaration", SYN_TOKEN_IDENTIFIER);
             args->left->value = string_init(lexical_token->value);
-            // TODO: Move all semantic analysis to separate file
-//            find_token(lexical_token->value)->defined = true;
             break;
         }
         case SYN_TOKEN_IDENTIFIER: {
             args->left->value = string_init(lexical_token->value);
             args->left->attrs->token_type = SYN_TOKEN_KEYWORD_VOID;
-            // TODO: Move all semantic analysis to separate file
-//            find_token(lexical_token->value)->defined = true;
             break;
         }
         default: {
@@ -515,4 +511,26 @@ void *process_tree_using(syntax_abstract_tree_t *tree, void (*process)(syntax_ab
     process_tree_using(tree->middle, process, traversal_type);
     process_tree_using(tree->right, process, traversal_type);
     if (traversal_type == POSTORDER)process(tree);
+}
+
+bool is_defined(syntax_abstract_tree_t *tree) {
+    if (tree->type == SYN_NODE_IDENTIFIER) {
+        tree_node_t *node = find_token(tree->value->value);
+        if (!node) return false;
+
+        return node->defined == true;
+    }
+
+    return true;
+}
+
+bool is_undefined(syntax_abstract_tree_t *tree) {
+    if (tree->type == SYN_NODE_IDENTIFIER) {
+        tree_node_t *node = find_token(tree->value->value);
+        if (!node) return true;
+
+        return node->defined == false;
+    }
+
+    return false;
 }

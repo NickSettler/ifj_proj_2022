@@ -18,25 +18,37 @@ void init_symtable() {
 }
 
 void init_tree() {
-    insert_function("readi", TYPE_INT);
-    insert_args("readi", TYPE_INT);
-    insert_function("reads", TYPE_STRING);
-    insert_args("reads", TYPE_STRING);
-    insert_function("readf", TYPE_FLOAT);
-    insert_args("readf", TYPE_FLOAT);
-    insert_function("write", TYPE_STRING);
+    insert_function("readi");
+    insert_return_type("readi", TYPE_INT);
+    insert_return_type("readi", TYPE_NULL);
+    insert_function("reads");
+    insert_return_type("reads", TYPE_INT);
+    insert_return_type("reads", TYPE_NULL);
+    insert_function("readf");
+    insert_return_type("readf", TYPE_INT);
+    insert_return_type("readf", TYPE_NULL);
+    insert_function("write");
     insert_args("write", TYPE_FLOAT);
     insert_args("write", TYPE_INT);
     insert_args("write", TYPE_STRING);
+    insert_args("write", TYPE_NULL);
 }
 
-void insert_function(char *key, data_type return_type) {
+void insert_function(char *key) {
     insert_token(key);
     tree_node_t *function_ptr = find_element(symtable, key);
     function_ptr->defined = true;
     function_ptr->global = true;
     function_ptr->is_function = true;
-    function_ptr->return_type = return_type;
+}
+
+void insert_return_type(char *key, data_type type) {
+    tree_node_t *function_ptr = find_element(symtable, key);
+    if (function_ptr->return_type == 0) {
+        function_ptr->return_type = type;
+    } else {
+        function_ptr->return_type = (data_type) (function_ptr->return_type | type);
+    }
 }
 
 void insert_args(char *key, data_type type) {

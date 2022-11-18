@@ -5,7 +5,7 @@
 void semantic_tree_check(syntax_abstract_tree_t *tree) {
     if (tree == NULL)
         return;
-
+    init_symtable();
     process_tree_using(tree, process_tree, INORDER);
 }
 
@@ -30,7 +30,7 @@ void process_tree(syntax_abstract_tree_t *tree) {
 }
 
 void process_assign(syntax_abstract_tree_t *tree) {
-    check_defined(tree->right);
+    check_tree_using(tree->right, check_defined);
     syntax_abstract_tree_t *id_node = tree->left;
     create_global_token(id_node);
     check_tree_for_float(tree->right);
@@ -38,26 +38,23 @@ void process_assign(syntax_abstract_tree_t *tree) {
 }
 
 void process_if_while(syntax_abstract_tree_t *tree) {
-    check_defined(tree->left);
+    check_tree_using(tree->left, check_defined);
     process_tree(tree->right);
     process_tree(tree->middle);
 }
 
 bool check_defined(syntax_abstract_tree_t *tree) {
     if (tree == NULL)
-        return false;
-    switch (tree->type) {
-        case SYN_NODE_IDENTIFIER:
-            if (check_tree_using(tree, is_defined) == 0) {
-                SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", tree->value->value);
-            }
-            break;
-        default:
-            break;
+        return true;
+    if (tree->type == SYN_NODE_IDENTIFIER) {
+        if (check_tree_using(tree, is_defined) == 0) {
+            SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", tree->value->value);
+        } else {
+            return true;
+        }
     }
-    check_defined(tree->left);
-    check_defined(tree->middle);
-    check_defined(tree->right);
+
+    return true;
 }
 
 data_type get_data_type(syntax_abstract_tree_t *tree) {
@@ -66,7 +63,7 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
 
     switch (tree->type) {
         case SYN_NODE_IDENTIFIER:
-            check_defined(tree);
+            check_tree_using(tree, check_defined);;
             return find_token(tree->value->value)->type;
         case SYN_NODE_INTEGER:
             return TYPE_INT;
