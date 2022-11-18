@@ -355,6 +355,11 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             if (!check_tree_using(tree, is_correct_if)) {
                 SYNTAX_ERROR("Incorrect if statement\n")
             }
+            if (tree->middle->type != SYN_NODE_SEQUENCE)
+                tree->middle = make_binary_node(SYN_NODE_SEQUENCE, NULL, tree->middle);
+            if (tree->right != NULL && tree->right->type != SYN_NODE_SEQUENCE &&
+                tree->right->type != SYN_NODE_KEYWORD_IF)
+                tree->right = make_binary_node(SYN_NODE_SEQUENCE, NULL, tree->right);
             break;
         }
         case KEYWORD_WHILE: {
@@ -365,6 +370,8 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             if (s == NULL) {
                 SYNTAX_ERROR("Expected statement after while\n")
             }
+            if (s->type != SYN_NODE_SEQUENCE)
+                tree->right = make_binary_node(SYN_NODE_SEQUENCE, NULL, s);
             break;
         }
         case KEYWORD_FUNCTION: {
