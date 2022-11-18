@@ -51,6 +51,17 @@ void check_tree_for_float(syntax_abstract_tree_t *tree);
 void replace_node_int_to_float(syntax_abstract_tree_t *tree);
 
 /**
+ * Checks tree for string nodes
+ * @param tree Abstract syntax tree
+ */
+void check_tree_for_string(syntax_abstract_tree_t *tree);
+
+/**
+ * Replaces int or float nodes to string
+ * @param tree Abstract syntax tree
+ */
+void replace_node_to_string(syntax_abstract_tree_t *tree);
+/**
  * Checks types of two nodes
  * @param type_1 Type of first node
  * @param type_2 Type of second node
