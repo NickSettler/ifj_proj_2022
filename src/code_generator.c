@@ -680,6 +680,53 @@ void parse_loop(syntax_abstract_tree_t *tree) {
     generate_label(loop_end_label->value);
 }
 
+void parse_condition(syntax_abstract_tree_t *tree) {
+    if (tree->type != SYN_NODE_KEYWORD_IF) return;
+
+    string_t *cond_label = string_init(condition_label_name);
+    string_append_string(cond_label, "%d", ++condition_counter);
+
+    string_t *condition_var = string_init(cond_label->value);
+    string_append_string(condition_var, "_cond");
+
+    string_t *condition_body_label = string_init(cond_label->value);
+    string_append_string(condition_body_label, "_body");
+
+    string_t *condition_else_label = string_init(cond_label->value);
+    string_append_string(condition_else_label, "_else");
+
+    string_t *condition_end_label = string_init(cond_label->value);
+    string_append_string(condition_end_label, "_end");
+
+    bool has_else = tree->right != NULL && tree->right->right != NULL;
+
+
+    generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, condition_var->value);
+    parse_relational_expression(tree->left, condition_var);
+
+    if (has_else) {
+        generate_conditional_jump(true, condition_body_label->value, CODE_GENERATOR_GLOBAL_FRAME, condition_var->value,
+                                  CODE_GENERATOR_BOOL_CONSTANT, "true");
+        generate_conditional_jump(true, condition_else_label->value, CODE_GENERATOR_GLOBAL_FRAME, condition_var->value,
+                                  CODE_GENERATOR_BOOL_CONSTANT, "false");
+    } else {
+        generate_conditional_jump(true, condition_end_label->value, CODE_GENERATOR_GLOBAL_FRAME, condition_var->value,
+                                  CODE_GENERATOR_BOOL_CONSTANT, "false");
+    }
+
+    generate_label(condition_body_label->value);
+    parse_tree(tree->middle);
+    generate_jump(condition_end_label->value);
+
+    if (has_else) {
+        generate_label(condition_else_label->value);
+        parse_tree(tree->right);
+        generate_jump(condition_end_label->value);
+    }
+
+    generate_label(condition_end_label->value);
+}
+
 void parse_tree(syntax_abstract_tree_t *tree) {
     if (tree->left) parse_tree(tree->left);
 
@@ -695,6 +742,9 @@ void parse_tree(syntax_abstract_tree_t *tree) {
                 break;
             case SYN_NODE_KEYWORD_WHILE:
                 parse_loop(tree->right);
+                break;
+            case SYN_NODE_KEYWORD_IF:
+                parse_condition(tree->right);
                 break;
             default:
                 break;

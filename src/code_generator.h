@@ -24,9 +24,11 @@ FILE *fd;
 
 int tmp_var_counter;
 int loop_counter;
+int condition_counter;
 
-static char *tmp_var_name = "$$__tmp_";
+static char *tmp_var_name = "$$__TMP_";
 static char *loop_label_name = "$$__LOOP_";
+static char *condition_label_name = "$$__COND_";
 
 /**
  * @brief structure with frames
@@ -324,7 +326,29 @@ void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result)
  */
 void parse_assign(syntax_abstract_tree_t *tree);
 
+/**
+ * Generates function arguments
+ * @param tree syntax tree function call argument node
+ */
+void parse_function_arg(syntax_abstract_tree_t *tree);
+
+/**
+ * Generates function call
+ * @param tree syntax tree function call node
+ */
 void parse_function_call(syntax_abstract_tree_t *tree);
+
+/**
+ * Generates while loop
+ * @param tree syntax tree while node
+ */
+void parse_loop(syntax_abstract_tree_t *tree);
+
+/**
+ * Generates if statement
+ * @param tree syntax tree if node
+ */
+void parse_condition(syntax_abstract_tree_t *tree);
 
 /**
  * Parses syntax tree
