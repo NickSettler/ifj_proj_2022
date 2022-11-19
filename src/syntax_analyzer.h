@@ -31,6 +31,7 @@ typedef enum {
 typedef enum {
     SYN_TOKEN_EOF,
     SYN_TOKEN_IDENTIFIER,
+    SYN_TOKEN_NULL,
     SYN_TOKEN_STRING,
     SYN_TOKEN_INTEGER,
     SYN_TOKEN_FLOAT,
@@ -97,8 +98,9 @@ typedef enum {
     SYN_NODE_ASSIGN = 1 << 22,
     SYN_NODE_KEYWORD_IF = 1 << 23,
     SYN_NODE_KEYWORD_WHILE = 1 << 24,
-    SYN_NODE_FUNCTION_DECLARATION = 1 << 25,
-    SYN_NODE_FUNCTION_ARG = 1 << 26,
+    SYN_NODE_KEYWORD_NULL = 1 << 25,
+    SYN_NODE_FUNCTION_DECLARATION = 1 << 26,
+    SYN_NODE_FUNCTION_ARG = 1 << 27,
 } syntax_tree_node_type;
 
 typedef enum {

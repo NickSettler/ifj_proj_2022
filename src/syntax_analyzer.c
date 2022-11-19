@@ -21,6 +21,7 @@ struct {
 } attributes[] = {
         {"EOF",      "End_of_file",       SYN_TOKEN_EOF,                  false, false, false, -1, (syntax_tree_node_type) -1},
         {"ID",       "Identifier",        SYN_TOKEN_IDENTIFIER,           false, false, false, -1, SYN_NODE_IDENTIFIER},
+        {"NULL",     "Null",              SYN_TOKEN_NULL,                 false, false, false, -1, SYN_NODE_STRING},
         {"STRING",   "String",            SYN_TOKEN_STRING,               false, false, false, -1, SYN_NODE_STRING},
         {"INTEGER",  "Integer",           SYN_TOKEN_INTEGER,              false, false, false, -1, SYN_NODE_INTEGER},
         {"FLOAT",    "Float",             SYN_TOKEN_FLOAT,                false, false, false, -1, SYN_NODE_FLOAT},
@@ -279,6 +280,10 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
             }
             break;
         }
+        case KEYWORD_NULL:
+            x = make_binary_leaf(SYN_NODE_KEYWORD_NULL, NULL);
+            GET_NEXT_TOKEN(fd)
+            break;
         case INTEGER:
             x = make_binary_leaf(SYN_NODE_INTEGER, string_init(lexical_token->value));
             GET_NEXT_TOKEN(fd)
@@ -453,6 +458,8 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_EOF;
         case IDENTIFIER:
             return SYN_TOKEN_IDENTIFIER;
+        case KEYWORD_NULL:
+            return SYN_TOKEN_NULL;
         case STRING:
             return SYN_TOKEN_STRING;
         case INTEGER:
