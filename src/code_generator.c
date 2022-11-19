@@ -10,6 +10,7 @@
  */
 
 #include "code_generator.h"
+#include "semantic_analyzer.h"
 
 void set_code_gen_output(FILE *output_fd) {
     fd = output_fd;
@@ -399,11 +400,8 @@ void process_node_value(syntax_abstract_tree_t *tree) {
         sprintf(var_tmp, "%a", d);
         string_replace(tree->value, var_tmp);
     } else if (tree->type == SYN_NODE_STRING) {
-        string_t *substr = string_substr(tree->value, 1, tree->value->length - 1);
-        string_replace(tree->value, substr->value);
-
         string_t *new_str = string_init("");
-        for (int i = 0; i < tree->value->length; i++) {
+        for (int i = 1; i < tree->value->length - 1; i++) {
             char c = tree->value->value[i];
 
             if (c >= 0 && c <= 32 || c == 35 || c == 92)
@@ -412,7 +410,6 @@ void process_node_value(syntax_abstract_tree_t *tree) {
                 string_append_char(new_str, c);
         }
 
-        string_free(substr);
         string_free(tree->value);
         tree->value = new_str;
     }
@@ -489,17 +486,10 @@ void parse_expression(syntax_abstract_tree_t *tree, string_t *result) {
     insert_token(operation_var_name->value);
     tree_node_t *operation_var = find_token(operation_var_name->value);
     operation_var->defined = true;
+    operation_var->type = get_data_type(tree);
 
-    data_type left_type =
-            tree->left->type == SYN_NODE_INTEGER ? TYPE_INT :
-            tree->left->type == SYN_NODE_FLOAT ? TYPE_FLOAT :
-            tree->left->type == SYN_NODE_STRING ? TYPE_STRING :
-            find_token(tree->left->value->value)->type;
-    data_type right_type =
-            tree->right->type == SYN_NODE_INTEGER ? TYPE_INT :
-            tree->right->type == SYN_NODE_FLOAT ? TYPE_FLOAT :
-            tree->right->type == SYN_NODE_STRING ? TYPE_STRING :
-            find_token(tree->right->value->value)->type;
+    data_type left_type = get_data_type(tree->left);
+    data_type right_type = get_data_type(tree->right);
 
     data_type cast_type_to = left_type > right_type ? left_type : right_type;
 
@@ -542,7 +532,7 @@ void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result)
         tree->type != SYN_NODE_NOT && tree->type != SYN_NODE_AND && tree->type != SYN_NODE_OR)
         return;
 
-    instructions_t instruction = tree->type == SYN_NODE_LESS ? CODE_GEN_LTS_INSTRUCTION :
+    instructions_t instruction = tree->type == SYN_NODE_LESS ? CODE_GEN_LT_INSTRUCTION :
                                  tree->type == SYN_NODE_GREATER ? CODE_GEN_GT_INSTRUCTION :
                                  tree->type == SYN_NODE_EQUAL ? CODE_GEN_EQ_INSTRUCTION :
                                  tree->type == SYN_NODE_OR ? CODE_GEN_OR_INSTRUCTION :
