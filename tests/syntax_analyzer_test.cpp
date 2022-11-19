@@ -57,6 +57,15 @@ namespace ifj {
                 IsSyntaxTreeCorrect("<?php $a = 12 + 32;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
                                      SYN_NODE_ADD, SYN_NODE_INTEGER});
+                IsSyntaxTreeCorrect("<?php $a = 12.2 + 32;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_FLOAT,
+                                     SYN_NODE_ADD, SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php $a = \"Hello world!\";",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_STRING});
+
+                IsSyntaxTreeCorrect("<?php $a = null;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_KEYWORD_NULL});
 
                 EXPECT_EXIT(SyntaxTreeWithError("<?php $a = "), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected expression, got: EOF");
