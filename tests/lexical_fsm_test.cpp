@@ -622,6 +622,66 @@ namespace ifj {
                             }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
                             "\\[LEXICAL ERROR\\] Invalid arithmetic operator");
             }
+
+            TEST_F(LexicalAnalyzerTest, SquareBrackets) {
+                IsStackCorrect("$test = [1, 2];", 8,
+                               (lexical_token_t) {IDENTIFIER, "$test"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {LEFT_SQUARE_BRACKETS, "["},
+                               (lexical_token_t) {INTEGER, "1"},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {INTEGER, "2"},
+                               (lexical_token_t) {RIGHT_SQUARE_BRACKETS, "]"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+
+                IsStackCorrect("$test[0] = \"2\";"
+                               "$test[1] = \"1\";", 14,
+                               (lexical_token_t) {IDENTIFIER, "$test"},
+                               (lexical_token_t) {LEFT_SQUARE_BRACKETS, "["},
+                               (lexical_token_t) {INTEGER, "0"},
+                               (lexical_token_t) {RIGHT_SQUARE_BRACKETS, "]"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {STRING, "\"2\""},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {IDENTIFIER, "$test"},
+                               (lexical_token_t) {LEFT_SQUARE_BRACKETS, "["},
+                               (lexical_token_t) {INTEGER, "1"},
+                               (lexical_token_t) {RIGHT_SQUARE_BRACKETS, "]"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {STRING, "\"1\""},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+
+                IsStackCorrect("$test = [\"a\", \"b\", 1, [\"c\", \"d\", [\"2\", \"3\"], \"e\"], \".\"];", 26,
+                               (lexical_token_t) {IDENTIFIER, "$test"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {LEFT_SQUARE_BRACKETS, "["},
+                               (lexical_token_t) {STRING, "\"a\""},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {STRING, "\"b\""},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {INTEGER, "1"},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {LEFT_SQUARE_BRACKETS, "["},
+                               (lexical_token_t) {STRING, "\"c\""},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {STRING, "\"d\""},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {LEFT_SQUARE_BRACKETS, "["},
+                               (lexical_token_t) {STRING, "\"2\""},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {STRING, "\"3\""},
+                               (lexical_token_t) {RIGHT_SQUARE_BRACKETS, "]"},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {STRING, "\"e\""},
+                               (lexical_token_t) {RIGHT_SQUARE_BRACKETS, "]"},
+                               (lexical_token_t) {COMMA, ","},
+                               (lexical_token_t) {STRING, "\".\""},
+                               (lexical_token_t) {RIGHT_SQUARE_BRACKETS, "]"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+                );
+            }
         }
     }
 }
