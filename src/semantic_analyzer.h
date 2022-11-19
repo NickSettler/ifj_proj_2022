@@ -5,6 +5,12 @@
 #include "str.h"
 #include "symtable.h"
 
+typedef struct semantic_analyzer {
+    bool FUNCTION_SCOPE;
+    char *function_name;
+    int argument_count;
+} semantic_analyzer_t;
+
 typedef struct syntax_abstract_tree syntax_abstract_tree_t;
 
 /**
@@ -12,6 +18,8 @@ typedef struct syntax_abstract_tree syntax_abstract_tree_t;
  * @param tree Abstract syntax tree
  */
 void semantic_tree_check(syntax_abstract_tree_t *tree);
+
+semantic_analyzer_t *init_semantic_state();
 
 /**
  * Runs semantic analyzer on all nodes in the syntax tree
@@ -30,6 +38,9 @@ void process_if_while(syntax_abstract_tree_t *tree);
  * @param tree Abstract syntax tree
  */
 void process_assign(syntax_abstract_tree_t *tree);
+
+
+void process_function_declaration(syntax_abstract_tree_t *tree);
 
 /**
  * Checks types of nodes and returns type of the node
@@ -88,6 +99,10 @@ bool is_only_numbers(syntax_abstract_tree_t *tree);
  * @param tree Abstract syntax tree
  */
 bool check_defined(syntax_abstract_tree_t *tree);
+
+void get_return_type(syntax_abstract_tree_t *tree);
+
+void insert_arguments(syntax_abstract_tree_t *tree);
 
 
 #endif //IFJ_PROJ_SEMANTIC_ANALYZER_H

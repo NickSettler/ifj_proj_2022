@@ -205,5 +205,6 @@ void print_symtable();
  */
 void create_global_token(syntax_abstract_tree_t *tree);
 
+void create_local_token(syntax_abstract_tree_t *tree, char *function_name);
 
 #endif //IFJ_PROJ_2022_SYMTABLE_H

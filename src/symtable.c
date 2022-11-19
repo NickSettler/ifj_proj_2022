@@ -11,6 +11,7 @@
 #include "symtable.h"
 #include "syntax_analyzer.h"
 
+
 tree_node_t *symtable;
 
 void init_symtable() {
@@ -224,4 +225,13 @@ void create_global_token(syntax_abstract_tree_t *tree) {
     find_token(tree->value->value)->defined = true;
     find_token(tree->value->value)->global = true;
 }
+
+void create_local_token(syntax_abstract_tree_t *tree, char *function_name) {
+    tree_node_t *local_sym_table = find_token(function_name)->function_tree;
+    insert_element(&local_sym_table, tree->value->value);
+    find_element(local_sym_table, tree->value->value)->defined = true;
+    find_element(local_sym_table, tree->value->value)->local = true;
+    find_token(function_name)->function_tree = local_sym_table;
+}
+
 
