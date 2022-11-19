@@ -4,7 +4,7 @@
 % Author: Nikita Pasynkov <xpasyn0034@stud.fit.vutbr.cz>
 
 
-\documentclass[a4paper, 11pt]{article}
+\documentclass[a4paper, 12pt]{article}
 
 
 \usepackage[czech]{babel}
@@ -16,7 +16,7 @@
 \usepackage{graphicx} % insert picture
 \usepackage[unicode]{hyperref}
 \hypersetup{
-	colorlinks = true,
+	colorlinks = false,
 	hypertexnames = false,
 	citecolor = blue
 }
@@ -99,15 +99,45 @@
 
 	\subsection{Syntaktická analýza}
 
-	Nejdůležitější částí celého programu je syntaktická analýza.
+	Nejdůležitější částí celého programu je syntaktická analýza. Syntaktická analýza je implementována v souboru
+	\texttt{syntax\_analyzer.c}, a její rozhraní pro implementaci v \texttt{syntax\_analyzer.h}.
 
-	Až na výrazy se syntaktická analýza řídí LL -- gramatikou a~metodou rekurzivního sestupu podle pravidel v~LL - tabulce
-	\ref{table:ll_gramatika}.
+	Syntaktická analýza je implementována pomocí rekurzívního sestupu na základě LL gramatiky~\ref{table:ll_gramatika}. Syntaktický
+	analyzátor zpracovává všechny části LL gramatiky na výrazy podle pravidel v LL - tabulce~\ref{table:ll_table}. Úkolem
+	syntetického analyzátoru je sestavit abstraktní syntaktický strom na základě seznamu tokenů. Strom je postaven
+	tak, že je nastavena priorita operací a ve výsledku můžeme načtením tohoto stromu spustit kód v
+	požadovaném pořadí. Pokud je nalezena chyba, překladač dokončí kontrolu, vymaže alokovanou paměť
+	a zobrazí chybovou hlášku na standartní chybový vstup. Syntaktický analyzátor nijak neupravuje tokeny a všechny
+	chyby jsou detekovány až v průběhu sémantické analýzy. Po vytvoření abstraktního syntaktického stromu
+	syntaktický analyzátor přejde do další fáze sémantické analýzy.
 
+	Například výraz \texttt{\$a = 1;} \texttt{\$b = 2;}
+	bude reprezentován v abstraktním syntaktickém stromu jako na obrázku~\ref{figure:ast}.
+
+	\begin{figure}[!ht]
+		\centering
+		\includegraphics[width=1\linewidth]{ast.pdf}
+		\caption{Abstraktní syntaktický strom}
+		\label{figure:ast}
+	\end{figure}
 
 	\subsection{Sémantická analýza}
+	Sémantická analýza je implementována v souboru \texttt{semantic\_analyzer.c} a její rozhraní pro implementaci
+	v \texttt{semantic\_analyzer.h}. Sémantický analyzátor pracuje s abstraktním syntaktickým stromem, který
+	vytvořil syntaktický analyzátor. Úkolem sémantického analyzátoru je kontrola sémantickou správnost zdrojového
+	programu: kontrola deklarací, datových typů, seznamů parametrů apod. a to pomocí kontroly datových typu. K
+	tomu využívá datové struktury a funkce pro sémantické kontroly. Pokud při kontrole je nalezena chyba, překladač dokončí
+	kontrolu, vymaže alokovanou paměť a zobrazí chybovou hlášku na standartní chybový vstup. Po dokončení
+	sémantické analýzy se překladač přesune do fáze generování kódu.
 
+	Příklad stromu pro syntetickou analýzu je na obrázku~\ref{figure:symtable}.
 
+	\begin{figure}[!ht]
+		\centering
+		\includegraphics[width=0.8\linewidth]{symtable.pdf}
+		\caption{Symtable}
+		\label{figure:symtable}
+	\end{figure}
 
 
 	\subsection{Generování cílového kódu}
@@ -258,7 +288,7 @@
 	\section{Precedenční tabulka}
 	\begin{table}[!ht]
 		\centering
-		\includegraphics[width=0.7\linewidth]{precedence_table.png}
+		\includegraphics[width=0.7\linewidth]{precedence_table.pdf}
 		\caption{Precedenční tabulka použitá při precedenční syntaktické analýze výrazů}
 		\label{table:prec_table}
 	\end{table}
