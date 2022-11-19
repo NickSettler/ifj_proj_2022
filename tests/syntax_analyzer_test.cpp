@@ -493,6 +493,60 @@ namespace ifj {
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected end of file, got: ;");
             }
+
+            TEST_F(SyntaxAnalyzerTest, LogicalOperators) {
+                IsSyntaxTreeCorrect("<?php $a = 1 && 2;", {
+                        SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER, SYN_NODE_AND,
+                        SYN_NODE_INTEGER
+                });
+
+                IsSyntaxTreeCorrect("<?php $a = 1 || 2;", {
+                        SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER, SYN_NODE_OR,
+                        SYN_NODE_INTEGER
+                });
+
+                IsSyntaxTreeCorrect("<?php $a = 1 != 2;", {
+                        SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER, SYN_NODE_NOT_EQUAL,
+                        SYN_NODE_INTEGER
+                });
+
+                IsSyntaxTreeCorrect("<?php if ($a == 10 && $b == 5) $a = 5;", {
+                        SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                        SYN_NODE_AND, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                        SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                        SYN_NODE_INTEGER
+                });
+
+                IsSyntaxTreeCorrect("<?php if ($a == 10 || $b == 5) $a = 5;", {
+                        SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                        SYN_NODE_OR, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                        SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                        SYN_NODE_INTEGER
+                });
+
+                IsSyntaxTreeCorrect("<?php if ($a != 10) $a = 5;", {
+                        SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_NOT_EQUAL, SYN_NODE_INTEGER,
+                        SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                        SYN_NODE_INTEGER
+                });
+
+                IsSyntaxTreeCorrect("<?php if ($a == 10 && ($b == 5 || $c != 10) && $d == 10) $a = 5;", {
+                        SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                        SYN_NODE_AND, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                        SYN_NODE_OR, SYN_NODE_IDENTIFIER, SYN_NODE_NOT_EQUAL, SYN_NODE_INTEGER,
+                        SYN_NODE_AND, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                        SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
+                        SYN_NODE_ASSIGN, SYN_NODE_INTEGER
+                });
+
+                EXPECT_EXIT(SyntaxTreeWithError("<?php $a = 1 &&"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: EOF");
+
+                EXPECT_EXIT(SyntaxTreeWithError("<?php $a = 1 &&;"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
+            }
         }
     }
 }
