@@ -9,9 +9,11 @@ typedef struct semantic_analyzer {
     bool FUNCTION_SCOPE;
     char *function_name;
     int argument_count;
+    tree_node_t *symtable_ptr;
 } semantic_analyzer_t;
 
 typedef struct syntax_abstract_tree syntax_abstract_tree_t;
+
 
 /**
  * Runs semantic analyzer on a tree
@@ -104,5 +106,6 @@ void get_return_type(syntax_abstract_tree_t *tree);
 
 void insert_arguments(syntax_abstract_tree_t *tree);
 
+bool is_defined(syntax_abstract_tree_t *tree);
 
 #endif //IFJ_PROJ_SEMANTIC_ANALYZER_H

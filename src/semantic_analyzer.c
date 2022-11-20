@@ -2,12 +2,14 @@
 #include "syntax_analyzer.h"
 
 semantic_analyzer_t *semantic_state;
+extern tree_node_t *symtable;
 
 void semantic_tree_check(syntax_abstract_tree_t *tree) {
     if (tree == NULL)
         return;
-//    init_symtable();
+    init_symtable();
     semantic_state = init_semantic_state();
+    semantic_state->symtable_ptr = symtable;
     semantic_tree_check(tree->left);
     process_tree(tree->right);
 }
@@ -17,9 +19,9 @@ semantic_analyzer_t *init_semantic_state() {
     if (result == 0) {
         INTERNAL_ERROR("Malloc for semantic analyzer failed");
     }
-    result->FUNCTION_SCOPE = false;
     result->function_name = NULL;
     result->argument_count = 0;
+    result->symtable_ptr = NULL;
     return result;
 }
 
@@ -44,6 +46,7 @@ void process_tree(syntax_abstract_tree_t *tree) {
             semantic_state->FUNCTION_SCOPE = true;
             process_function_declaration(tree);
             semantic_state->FUNCTION_SCOPE = false;
+            semantic_state->symtable_ptr = symtable;
             break;
         }
         default:
@@ -53,16 +56,13 @@ void process_tree(syntax_abstract_tree_t *tree) {
 
 void process_assign(syntax_abstract_tree_t *tree) {
     syntax_abstract_tree_t *id_node = tree->left;
+    check_tree_using(tree->right, check_defined);
     if (semantic_state->FUNCTION_SCOPE == false) {
-        check_tree_using(tree->right, check_defined);
         create_global_token(id_node);
-        find_token(id_node->value->value)->type = get_data_type(tree->right);
     } else {
         create_local_token(id_node, semantic_state->function_name);
-        struct tree_node *function_ptr = find_token(semantic_state->function_name)->function_tree;
-        find_element(function_ptr, id_node->value->value)->type = get_data_type(tree->right);
-//        check_tree_using(tree->right, check_defined);
     }
+    find_element(semantic_state->symtable_ptr, id_node->value->value)->type = get_data_type(tree->right);
     check_tree_for_float(tree->right);
 
 }
@@ -81,7 +81,10 @@ void process_function_declaration(syntax_abstract_tree_t *tree) {
     semantic_state->function_name = function_name;
     get_return_type(tree);
     insert_arguments(tree->middle);
+    tree_node_t *function_node = find_token(function_name);
+    semantic_state->symtable_ptr = function_node->function_tree;
     process_tree(tree->right);
+    semantic_state->symtable_ptr = symtable;
 }
 
 bool check_defined(syntax_abstract_tree_t *tree) {
@@ -98,6 +101,18 @@ bool check_defined(syntax_abstract_tree_t *tree) {
     return true;
 }
 
+bool is_defined(syntax_abstract_tree_t *tree) {
+    if (tree->type == SYN_NODE_IDENTIFIER) {
+        tree_node_t *node = find_element(semantic_state->symtable_ptr, tree->value->value);
+        if (!node) return false;
+
+        return node->defined == true;
+    }
+
+    return true;
+}
+
+
 data_type get_data_type(syntax_abstract_tree_t *tree) {
     if (tree == NULL)
         return (data_type) -1;
@@ -105,7 +120,7 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
     switch (tree->type) {
         case SYN_NODE_IDENTIFIER:
             check_tree_using(tree, check_defined);
-            return find_token(tree->value->value)->type;
+            return find_element(semantic_state->symtable_ptr, tree->value->value)->type;
         case SYN_NODE_INTEGER:
             return TYPE_INT;
         case SYN_NODE_FLOAT:
@@ -191,11 +206,10 @@ bool is_node_an_int(syntax_abstract_tree_t *tree) {
         case SYN_NODE_DIV:
             return false;
         case SYN_NODE_IDENTIFIER:
-            if (find_token(tree->value->value)->type == TYPE_FLOAT) {
+            if (find_element(semantic_state->symtable_ptr, tree->value->value)->type == TYPE_FLOAT) {
                 return false;
-            } else {
-                return true;
             }
+            return true;
         default:
             return true;
     }
@@ -203,7 +217,8 @@ bool is_node_an_int(syntax_abstract_tree_t *tree) {
 
 bool is_only_numbers(syntax_abstract_tree_t *tree) {
     if (tree->type == SYN_NODE_STRING ||
-        (tree->type == SYN_NODE_IDENTIFIER && find_token(tree->value->value)->type == TYPE_STRING)) {
+        (tree->type == SYN_NODE_IDENTIFIER &&
+         find_element(semantic_state->symtable_ptr, tree->value->value)->type == TYPE_STRING)) {
         return false;
     }
     return true;
@@ -214,7 +229,7 @@ void insert_arguments(syntax_abstract_tree_t *tree) {
         return;
 
     switch (tree->left->type) {
-        case SYN_NODE_IDENTIFIER:
+        case SYN_NODE_IDENTIFIER: {
             semantic_state->argument_count++;
             if (find_token(semantic_state->function_name) == NULL) {
                 SEMANTIC_UNDEF_VAR_ERROR("Function %s used before declaration", semantic_state->function_name)
@@ -236,6 +251,7 @@ void insert_arguments(syntax_abstract_tree_t *tree) {
             }
             find_token(semantic_state->function_name)->argument_count = semantic_state->argument_count;
             break;
+        }
         default:
             break;
     }
@@ -248,13 +264,13 @@ void get_return_type(syntax_abstract_tree_t *tree) {
     }
     switch (tree->attrs->token_type) {
         case SYN_TOKEN_KEYWORD_INT:
-            find_token(semantic_state->function_name)->type = TYPE_INT;
+            semantic_state->symtable_ptr->type = TYPE_INT;
             break;
         case SYN_TOKEN_KEYWORD_FLOAT:
-            find_token(semantic_state->function_name)->type = TYPE_FLOAT;
+            semantic_state->symtable_ptr->type = TYPE_FLOAT;
             break;
         case SYN_TOKEN_KEYWORD_STRING:
-            find_token(semantic_state->function_name)->type = TYPE_STRING;
+            semantic_state->symtable_ptr->type = TYPE_STRING;
             break;
         default:
             break;

@@ -11,6 +11,7 @@
 
 #include "syntax_analyzer.h"
 #include "symtable.h"
+#include "semantic_analyzer.h"
 
 struct {
     char *text, *enum_text;
@@ -569,27 +570,6 @@ void *process_tree_using(syntax_abstract_tree_t *tree, void (*process)(syntax_ab
     if (traversal_type == POSTORDER)process(tree);
 }
 
-bool is_defined(syntax_abstract_tree_t *tree) {
-    if (tree->type == SYN_NODE_IDENTIFIER) {
-        tree_node_t *node = find_token(tree->value->value);
-        if (!node) return false;
-
-        return node->defined == true;
-    }
-
-    return true;
-}
-
-bool is_undefined(syntax_abstract_tree_t *tree) {
-    if (tree->type == SYN_NODE_IDENTIFIER) {
-        tree_node_t *node = find_token(tree->value->value);
-        if (!node) return true;
-
-        return node->defined == false;
-    }
-
-    return false;
-}
 
 bool is_simple_expression(syntax_abstract_tree_t *tree) {
     if (tree->type & (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV)) {

@@ -14,11 +14,12 @@
 
 tree_node_t *symtable;
 
-void init_symtable() {
-    init_tree();
+tree_node_t *init_symtable() {
+    tree_node_t *symtable_ptr = init_tree();
+    return symtable_ptr;
 }
 
-void init_tree() {
+tree_node_t *init_tree() {
     insert_function("readi");
     insert_return_type("readi", TYPE_INT);
     insert_return_type("readi", TYPE_NULL);
@@ -33,6 +34,7 @@ void init_tree() {
     insert_args("write", TYPE_INT);
     insert_args("write", TYPE_STRING);
     insert_args("write", TYPE_NULL);
+    return symtable;
 }
 
 void insert_function(char *key) {
@@ -48,7 +50,7 @@ void insert_return_type(char *key, data_type type) {
     if (function_ptr->type == 0) {
         function_ptr->type = type;
     } else {
-        function_ptr->type = (data_type) (function_ptr->type | type);
+        function_ptr->type = (data_type)(function_ptr->type | type);
     }
 }
 
@@ -57,7 +59,7 @@ void insert_args(char *key, data_type type) {
     if (function_ptr->argument_type == 0) {
         function_ptr->argument_type = type;
     } else {
-        function_ptr->argument_type = (data_type) (function_ptr->argument_type | type);
+        function_ptr->argument_type = (data_type)(function_ptr->argument_type | type);
     }
 }
 
