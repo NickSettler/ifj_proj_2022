@@ -97,15 +97,33 @@ bool is_node_an_int(syntax_abstract_tree_t *tree);
 bool is_only_numbers(syntax_abstract_tree_t *tree);
 
 /**
- * Checks if node is defined
+ * Checks if node is defined, if not, throws an error
  * @param tree Abstract syntax tree
  */
 bool check_defined(syntax_abstract_tree_t *tree);
 
+/**
+ * Checks if node is defined
+ * @param tree Abstract syntax tree
+ */
+bool is_defined(syntax_abstract_tree_t *tree);
+
+/**
+ * Insert return_type of function to symtable
+ * @param tree
+ */
 void get_return_type(syntax_abstract_tree_t *tree);
 
+/**
+ * Insert arguments of function to symtable
+ * @param tree
+ */
 void insert_arguments(syntax_abstract_tree_t *tree);
 
-bool is_defined(syntax_abstract_tree_t *tree);
+/**
+ * Checks if symtable_ptr is in function scope
+ * @return
+ */
+semantic_analyzer_t *semantic_state_ptr();
 
 #endif //IFJ_PROJ_SEMANTIC_ANALYZER_H

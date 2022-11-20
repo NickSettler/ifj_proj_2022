@@ -61,6 +61,7 @@ void process_assign(syntax_abstract_tree_t *tree) {
         create_global_token(id_node);
     } else {
         create_local_token(id_node, semantic_state->function_name);
+        semantic_state_ptr();
     }
     find_element(semantic_state->symtable_ptr, id_node->value->value)->type = get_data_type(tree->right);
     check_tree_for_float(tree->right);
@@ -76,15 +77,21 @@ void process_if_while(syntax_abstract_tree_t *tree) {
 
 void process_function_declaration(syntax_abstract_tree_t *tree) {
     syntax_abstract_tree_t *id_node = tree->left;
-    create_global_token(id_node);
-    char *function_name = id_node->value->value;
-    semantic_state->function_name = function_name;
+    semantic_state->function_name = id_node->value->value;
+
+    insert_function(semantic_state->function_name);
     get_return_type(tree);
     insert_arguments(tree->middle);
-    tree_node_t *function_node = find_token(function_name);
-    semantic_state->symtable_ptr = function_node->function_tree;
+
+    semantic_state_ptr();
     process_tree(tree->right);
     semantic_state->symtable_ptr = symtable;
+}
+
+semantic_analyzer_t *semantic_state_ptr() {
+    tree_node_t *function_node = find_token(semantic_state->function_name);
+    semantic_state->symtable_ptr = function_node->function_tree;
+    return semantic_state;
 }
 
 bool check_defined(syntax_abstract_tree_t *tree) {
@@ -231,23 +238,19 @@ void insert_arguments(syntax_abstract_tree_t *tree) {
     switch (tree->left->type) {
         case SYN_NODE_IDENTIFIER: {
             semantic_state->argument_count++;
-            if (find_token(semantic_state->function_name) == NULL) {
+            if (find_token(semantic_state->function_name)->type == NULL) {
                 SEMANTIC_UNDEF_VAR_ERROR("Function %s used before declaration", semantic_state->function_name)
-            } else {
-                tree_node_t *local_sym_table = find_token(semantic_state->function_name)->function_tree;
-                char *arg_value = tree->left->value->value;
-                insert_element(&local_sym_table, arg_value);
-                tree_node_t *arg = find_element(local_sym_table, arg_value);
-                arg->argument_count = semantic_state->argument_count;
-                arg->local = true;
-                find_token(semantic_state->function_name)->function_tree = local_sym_table;
-                if (tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_INT) {
-                    arg->argument_type = TYPE_INT;
-                } else if (tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_FLOAT) {
-                    arg->argument_type = TYPE_FLOAT;
-                } else if (tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_STRING) {
-                    arg->argument_type = TYPE_STRING;
-                }
+            }
+            create_local_token(tree->left, semantic_state->function_name);
+            char *arg_value = tree->left->value->value;
+            tree_node_t *arg_node = find_token(semantic_state->function_name)->function_tree;
+            tree_node_t *arg = find_element(arg_node, arg_value);
+            if (tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_INT) {
+                arg->argument_type = TYPE_INT;
+            } else if (tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_FLOAT) {
+                arg->argument_type = TYPE_FLOAT;
+            } else if (tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_STRING) {
+                arg->argument_type = TYPE_STRING;
             }
             find_token(semantic_state->function_name)->argument_count = semantic_state->argument_count;
             break;
@@ -264,13 +267,13 @@ void get_return_type(syntax_abstract_tree_t *tree) {
     }
     switch (tree->attrs->token_type) {
         case SYN_TOKEN_KEYWORD_INT:
-            semantic_state->symtable_ptr->type = TYPE_INT;
+            find_token(semantic_state->function_name)->type = TYPE_INT;
             break;
         case SYN_TOKEN_KEYWORD_FLOAT:
-            semantic_state->symtable_ptr->type = TYPE_FLOAT;
+            find_token(semantic_state->function_name)->type = TYPE_FLOAT;
             break;
         case SYN_TOKEN_KEYWORD_STRING:
-            semantic_state->symtable_ptr->type = TYPE_STRING;
+            find_token(semantic_state->function_name)->type = TYPE_STRING;
             break;
         default:
             break;

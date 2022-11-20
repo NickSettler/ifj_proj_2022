@@ -50,7 +50,7 @@ void insert_return_type(char *key, data_type type) {
     if (function_ptr->type == 0) {
         function_ptr->type = type;
     } else {
-        function_ptr->type = (data_type)(function_ptr->type | type);
+        function_ptr->type = (data_type) (function_ptr->type | type);
     }
 }
 
@@ -59,7 +59,7 @@ void insert_args(char *key, data_type type) {
     if (function_ptr->argument_type == 0) {
         function_ptr->argument_type = type;
     } else {
-        function_ptr->argument_type = (data_type)(function_ptr->argument_type | type);
+        function_ptr->argument_type = (data_type) (function_ptr->argument_type | type);
     }
 }
 
@@ -230,9 +230,11 @@ void create_global_token(syntax_abstract_tree_t *tree) {
 
 void create_local_token(syntax_abstract_tree_t *tree, char *function_name) {
     tree_node_t *local_sym_table = find_token(function_name)->function_tree;
-    insert_element(&local_sym_table, tree->value->value);
-    find_element(local_sym_table, tree->value->value)->defined = true;
-    find_element(local_sym_table, tree->value->value)->local = true;
+    char *key = tree->value->value;
+    insert_element(&local_sym_table, key);
+    tree_node_t *local_token = find_element(local_sym_table, key);
+    local_token->local = true;
+    local_token->defined = true;
     find_token(function_name)->function_tree = local_sym_table;
 }
 
