@@ -588,7 +588,7 @@ void parse_expression(syntax_abstract_tree_t *tree, string_t *result) {
     data_type left_type = get_data_type(tree->left);
     data_type right_type = get_data_type(tree->right);
 
-    data_type cast_type_to = type_check(left_type, right_type);
+    data_type cast_type_to = type_check(left_type, right_type) & ~TYPE_NULL;
 
     bool need_inline_left_cast = left_type != cast_type_to && tree->left->type == SYN_NODE_IDENTIFIER;
     bool need_inline_right_cast = right_type != cast_type_to && tree->right->type == SYN_NODE_IDENTIFIER;
