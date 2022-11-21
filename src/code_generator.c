@@ -320,12 +320,13 @@ void generate_write() {
 }
 
 void generate_substr() {
-    generate_label("substring");
-    generate_create_frame();
-    generate_push_frame();
-
+    char *function_label = "substring";
     char *loop_label = "substr_loop";
     char *loop_end_label = "substr_loop_end";
+
+    generate_label(function_label);
+    generate_create_frame();
+    generate_push_frame();
 
     char *end_index_var = "$end_index";
     char *start_index_var = "$start_index";
