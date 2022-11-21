@@ -615,8 +615,7 @@ void parse_assign(syntax_abstract_tree_t *tree) {
     } else {
         process_node_value(tree->right);
         if (tree->right->type == SYN_NODE_CALL) {
-            parse_function_call(tree->right);
-            generate_pop_from_top(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
+            parse_function_call(tree->right, tree->left);
         } else {
             generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, get_node_frame(tree->right),
                           tree->right->value->value);
@@ -629,31 +628,98 @@ void parse_function_arg(syntax_abstract_tree_t *tree) {
 
     process_node_value(tree->left);
 
-    generate_add_on_top(get_node_frame(tree->left), tree->left->value->value);
+    bool is_internal_func = code_generator_parameters->current_callee_instruction != (instructions_t) -1;
+
+    if (is_internal_func) {
+        switch (code_generator_parameters->current_callee_instruction) {
+            case CODE_GEN_WRITE_INSTRUCTION:
+                generate_operation(code_generator_parameters->current_callee_instruction, get_node_frame(tree->left),
+                                   tree->left->value->value, (frames_t) -1, NULL, (frames_t) -1, NULL);
+                break;
+            case CODE_GEN_READI_INSTRUCTION:
+            case CODE_GEN_READF_INSTRUCTION:
+            case CODE_GEN_READS_INSTRUCTION:
+                generate_operation(
+                        code_generator_parameters->current_callee_instruction,
+                        get_node_frame(code_generator_parameters->current_callee_result),
+                        code_generator_parameters->current_callee_result->value->value,
+                        (frames_t) -1,
+                        code_generator_parameters->current_callee_instruction == CODE_GEN_READI_INSTRUCTION ? "int" :
+                        code_generator_parameters->current_callee_instruction == CODE_GEN_READF_INSTRUCTION ? "float" :
+                        "string",
+                        (frames_t) -1,
+                        NULL
+                );
+                break;
+            default:
+                break;
+        }
+    }
 }
 
-void parse_function_call(syntax_abstract_tree_t *tree) {
+void parse_function_call(syntax_abstract_tree_t *tree, syntax_abstract_tree_t *result) {
     if (tree->type != SYN_NODE_CALL) return;
 
-    bool needed_args_count_push = !strcmp(tree->left->value->value, "write");
+    string_convert_by(tree->left->value, tolower);
+    instructions_t internal_func =
+            !strcmp(tree->left->value->value, "write") ? CODE_GEN_WRITE_INSTRUCTION :
+            !strcmp(tree->left->value->value, "readi") ? CODE_GEN_READI_INSTRUCTION :
+            !strcmp(tree->left->value->value, "readf") ? CODE_GEN_READF_INSTRUCTION :
+            !strcmp(tree->left->value->value, "reads") ? CODE_GEN_READS_INSTRUCTION :
+            (instructions_t) -1;
 
-    int args_count = 0;
-    syntax_abstract_tree_t *arg = tree->right;
+    code_generator_parameters->current_callee_instruction = internal_func;
+    if (result)
+        code_generator_parameters->current_callee_result = result;
 
-    while (arg != NULL) {
-        parse_function_arg(arg);
-        args_count++;
-        arg = arg->right;
+    if (internal_func != -1) {
+        switch (internal_func) {
+            case CODE_GEN_WRITE_INSTRUCTION: {
+                process_tree_using(tree->right, parse_function_arg, POSTORDER);
+                break;
+            }
+            case CODE_GEN_READI_INSTRUCTION:
+            case CODE_GEN_READF_INSTRUCTION:
+            case CODE_GEN_READS_INSTRUCTION: {
+                if (find_token(result->value->value)->code_generator_defined == false)
+                    generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, result->value->value);
+
+                find_token(result->value->value)->code_generator_defined = true;
+                generate_operation(internal_func, CODE_GENERATOR_GLOBAL_FRAME, result->value->value, (frames_t) -1,
+                                   NULL, (frames_t) -1, NULL);
+                break;
+            }
+            default:
+                break;
+        }
+    } else {
+
     }
 
-    if (needed_args_count_push) {
-        string_t *needed_args_count = string_init("");
-        string_append_string(needed_args_count, "%d", args_count);
-        generate_add_on_top(CODE_GENERATOR_INT_CONSTANT, needed_args_count->value);
-        string_free(needed_args_count);
-    }
+    code_generator_parameters->current_callee_instruction = (instructions_t) -1;
+    code_generator_parameters->current_callee_result = NULL;
 
-    generate_call(tree->left->value->value);
+//    if (internal_func != -1) {
+//    } else {
+//        bool needed_args_count_push = !strcmp(tree->left->value->value, "write");
+//        int args_count = 0;
+//        syntax_abstract_tree_t *arg = tree->right;
+
+//        while (arg != NULL) {
+//            parse_function_arg(arg);
+//            args_count++;
+//            arg = arg->right;
+//        }
+//
+//        if (needed_args_count_push) {
+//            string_t *needed_args_count = string_init("");
+//            string_append_string(needed_args_count, "%d", args_count);
+//            generate_add_on_top(CODE_GENERATOR_INT_CONSTANT, needed_args_count->value);
+//            string_free(needed_args_count);
+//        }
+
+//        generate_call(tree->left->value->value);
+//    }
 }
 
 void parse_loop(syntax_abstract_tree_t *tree) {
@@ -745,7 +811,7 @@ void parse_tree(syntax_abstract_tree_t *tree) {
                 parse_assign(tree->right);
                 break;
             case SYN_NODE_CALL:
-                parse_function_call(tree->right);
+                parse_function_call(tree->right, NULL);
                 break;
             case SYN_NODE_KEYWORD_WHILE:
                 parse_loop(tree->right);

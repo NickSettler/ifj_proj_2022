@@ -346,7 +346,7 @@ void parse_function_arg(syntax_abstract_tree_t *tree);
  * Generates function call
  * @param tree syntax tree function call node
  */
-void parse_function_call(syntax_abstract_tree_t *tree);
+void parse_function_call(syntax_abstract_tree_t *tree, syntax_abstract_tree_t *result);
 
 /**
  * Generates while loop
