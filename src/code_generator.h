@@ -83,6 +83,10 @@ typedef enum {
     CODE_GEN_FLOAT2INT_INSTRUCTION,
     CODE_GEN_INT2CHAR_INSTRUCTION,
     CODE_GEN_STRI2INT_INSTRUCTION,
+    CODE_GEN_READI_INSTRUCTION,
+    CODE_GEN_READF_INSTRUCTION,
+    CODE_GEN_READS_INSTRUCTION,
+    CODE_GEN_WRITE_INSTRUCTION,
     CODE_GEN_CONCAT_INSTRUCTION,
     CODE_GEN_STRLEN_INSTRUCTION,
     CODE_GEN_GETCHAR_INSTRUCTION,
@@ -93,10 +97,9 @@ typedef enum {
  * @brief array of instructions
  */
 static const char *instructions[] = {
-        "ADD", "SUB", "MUL", "DIV", "IDIV", "ADDS", "SUBS", "MULS", "DIVS", "IDIVS",
-        "LT", "GT", "EQ", "LTS", "GTS", "EQS", "NOTLT", "NOTGT", "NOTEQ", "AND", "OR", "NOT",
-        "ANDS", "ORS", "NOTS", "INT2FLOAT", "FLOAT2INT", "INT2CHAR", "STRI2INT", "CONCAT", "STRLEN", "GETCHAR",
-        "SETCHAR",
+        "ADD", "SUB", "MUL", "DIV", "IDIV", "ADDS", "SUBS", "MULS", "DIVS", "IDIVS", "LT", "GT", "EQ", "LTS", "GTS",
+        "EQS", "NOTLT", "NOTGT", "NOTEQ", "AND", "OR", "NOT", "ANDS", "ORS", "NOTS", "INT2FLOAT", "FLOAT2INT",
+        "INT2CHAR", "STRI2INT", "READ", "READ", "READ", "WRITE", "CONCAT", "STRLEN", "GETCHAR", "SETCHAR",
 };
 
 void set_code_gen_output(FILE *output_fd);

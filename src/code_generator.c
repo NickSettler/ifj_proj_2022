@@ -84,6 +84,13 @@ void generate_operation(instructions_t instruction, frames_t result_frame, char 
                instruction == CODE_GEN_FLOAT2INT_INSTRUCTION || instruction == CODE_GEN_INT2CHAR_INSTRUCTION) {
         fprintf(fd, "%s %s@%s %s@%s\n", instructions[instruction], frames[result_frame], result, frames[symbol1_frame],
                 symbol1);
+    } else if (instruction == CODE_GEN_READI_INSTRUCTION || instruction == CODE_GEN_READF_INSTRUCTION ||
+               instruction == CODE_GEN_READS_INSTRUCTION) {
+        fprintf(fd, "%s %s@%s %s\n", instructions[instruction], frames[result_frame], result,
+                instruction == CODE_GEN_READI_INSTRUCTION ? "int" : instruction == CODE_GEN_READF_INSTRUCTION ? "float"
+                                                                                                              : "string");
+    } else if (instruction == CODE_GEN_WRITE_INSTRUCTION) {
+        fprintf(fd, "%s %s@%s\n", instructions[instruction], frames[result_frame], result);
     } else {
         fprintf(fd, "%s %s@%s %s@%s %s@%s\n", instructions[instruction], frames[result_frame], result,
                 frames[symbol1_frame], symbol1,
