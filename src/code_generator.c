@@ -467,7 +467,7 @@ void parse_expression(syntax_abstract_tree_t *tree, string_t *result) {
 
     if (is_left_simple && !is_left_const) {
         string_t *left_var_name = string_init(tmp_var_name);
-        string_append_string(left_var_name, "%d", ++tmp_var_counter);
+        string_append_string(left_var_name, "%d", ++code_generator_parameters->tmp_var_counter);
         if (!(is_simple && result))
             generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, left_var_name->value);
         parse_expression(tree->left, is_simple && result ? result : left_var_name);
@@ -477,7 +477,7 @@ void parse_expression(syntax_abstract_tree_t *tree, string_t *result) {
 
     if (is_right_simple && !is_right_const) {
         string_t *right_var_name = string_init(tmp_var_name);
-        string_append_string(right_var_name, "%d", ++tmp_var_counter);
+        string_append_string(right_var_name, "%d", ++code_generator_parameters->tmp_var_counter);
         if (!(is_simple && result))
             generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, right_var_name->value);
         parse_expression(tree->right, is_simple && result ? result : right_var_name);
@@ -497,7 +497,7 @@ void parse_expression(syntax_abstract_tree_t *tree, string_t *result) {
 
     string_t *operation_var_name = result ? result : string_init(tmp_var_name);
     if (!result)
-        string_append_string(operation_var_name, "%d", ++tmp_var_counter);
+        string_append_string(operation_var_name, "%d", ++code_generator_parameters->tmp_var_counter);
 
     insert_token(operation_var_name->value);
     tree_node_t *operation_var = find_token(operation_var_name->value);
@@ -536,7 +536,6 @@ void parse_expression(syntax_abstract_tree_t *tree, string_t *result) {
                        tree->left->value->value,
                        right_frame,
                        tree->right->value->value);
-
 }
 
 void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result) {
@@ -566,7 +565,7 @@ void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result)
     if (is_left_const && is_right_const) {
         string_t *operation_var_name = result ? result : string_init(tmp_var_name);
         if (!result) {
-            string_append_string(operation_var_name, "%d", ++tmp_var_counter);
+            string_append_string(operation_var_name, "%d", ++code_generator_parameters->tmp_var_counter);
         }
 
         insert_token(operation_var_name->value);
@@ -605,10 +604,11 @@ void parse_assign(syntax_abstract_tree_t *tree) {
                        tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER ||
                        tree->right->type == SYN_NODE_CALL;
 
-    // TODO: remove redundant variable declaration and move
     if (find_token(tree->left->value->value)->code_generator_defined == false)
         generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
+
     find_token(tree->left->value->value)->code_generator_defined = true;
+
     if (!is_constant) {
         if (is_relational) parse_relational_expression(tree->right, NULL);
         else parse_expression(tree->right, tree->left->value);
@@ -660,7 +660,7 @@ void parse_loop(syntax_abstract_tree_t *tree) {
     if (tree->type != SYN_NODE_KEYWORD_WHILE) return;
 
     string_t *loop_label = string_init(loop_label_name);
-    string_append_string(loop_label, "%d", ++loop_counter);
+    string_append_string(loop_label, "%d", ++code_generator_parameters->loop_counter);
 
     string_t *loop_cond_var = string_init(loop_label->value);
     string_append_string(loop_cond_var, "_cond");
@@ -692,7 +692,7 @@ void parse_condition(syntax_abstract_tree_t *tree) {
     if (tree->type != SYN_NODE_KEYWORD_IF) return;
 
     string_t *cond_label = string_init(condition_label_name);
-    string_append_string(cond_label, "%d", ++condition_counter);
+    string_append_string(cond_label, "%d", ++code_generator_parameters->condition_counter);
 
     string_t *condition_var = string_init(cond_label->value);
     string_append_string(condition_var, "_cond");
@@ -707,7 +707,6 @@ void parse_condition(syntax_abstract_tree_t *tree) {
     string_append_string(condition_end_label, "_end");
 
     bool has_else = tree->right != NULL && tree->right->right != NULL;
-
 
     generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, condition_var->value);
     parse_relational_expression(tree->left, condition_var);
@@ -758,4 +757,14 @@ void parse_tree(syntax_abstract_tree_t *tree) {
                 break;
         }
     }
+}
+
+void code_generator_init() {
+    code_generator_parameters = (code_generator_parameters_t *) malloc(sizeof(code_generator_parameters_t));
+
+    code_generator_parameters->tmp_var_counter = 0;
+    code_generator_parameters->condition_counter = 0;
+    code_generator_parameters->loop_counter = 0;
+    code_generator_parameters->current_callee_instruction = (instructions_t) -1;
+    code_generator_parameters->current_callee_result = NULL;
 }

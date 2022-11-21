@@ -22,10 +22,6 @@
  */
 FILE *fd;
 
-int tmp_var_counter;
-int loop_counter;
-int condition_counter;
-
 static char *tmp_var_name = "$$__TMP_";
 static char *loop_label_name = "$$__LOOP_";
 static char *condition_label_name = "$$__COND_";
@@ -102,6 +98,16 @@ static const char *instructions[] = {
         "EQS", "NOTLT", "NOTGT", "NOTEQ", "AND", "OR", "NOT", "ANDS", "ORS", "NOTS", "INT2FLOAT", "FLOAT2INT",
         "INT2CHAR", "STRI2INT", "READ", "READ", "READ", "WRITE", "CONCAT", "STRLEN", "GETCHAR", "SETCHAR",
 };
+
+typedef struct code_generator_parameters {
+    int tmp_var_counter;
+    int loop_counter;
+    int condition_counter;
+    instructions_t current_callee_instruction;
+    syntax_abstract_tree_t *current_callee_result;
+} code_generator_parameters_t;
+
+static code_generator_parameters_t *code_generator_parameters;
 
 void set_code_gen_output(FILE *output_fd);
 
@@ -359,5 +365,11 @@ void parse_condition(syntax_abstract_tree_t *tree);
  * @param tree syntax tree node
  */
 void parse_tree(syntax_abstract_tree_t *tree);
+
+/**
+ * Initializes code generator
+ * @return code generator parameters
+ */
+void code_generator_init();
 
 #endif //IFJ_PROJ_2022_CODE_GENERATOR_H
