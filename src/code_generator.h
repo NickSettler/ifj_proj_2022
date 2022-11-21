@@ -297,9 +297,14 @@ void generate_readf(frames_t frame);
 void generate_write();
 
 /**
- * @brief own substring function
+ * Generates internal substring function
  */
 void generate_substr();
+
+/**
+ * Generates internal character ordinal value function
+ */
+void generate_ord();
 
 /**
  * @brief generate end of code
@@ -349,7 +354,7 @@ void parse_function_arg(syntax_abstract_tree_t *tree);
  * Generates function call
  * @param tree syntax tree function call node
  */
-void parse_function_call(syntax_abstract_tree_t *tree, syntax_abstract_tree_t *result);
+void parse_function_call(syntax_abstract_tree_t *tree, string_t *result);
 
 /**
  * Generates while loop
