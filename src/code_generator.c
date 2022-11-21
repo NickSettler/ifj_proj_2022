@@ -419,6 +419,13 @@ void process_node_value(syntax_abstract_tree_t *tree) {
 
         string_free(tree->value);
         tree->value = new_str;
+    } else if (tree->type & SYN_NODE_KEYWORD_NULL) {
+        if (tree->value == NULL)
+            tree->value = string_init("nil");
+        else
+            string_replace(tree->value, "nil");
+    } else if (tree->type & (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV)) {
+        parse_expression(tree, NULL);
     }
 }
 
@@ -432,6 +439,8 @@ frames_t get_node_frame(syntax_abstract_tree_t *tree) {
             return CODE_GENERATOR_FLOAT_CONSTANT;
         case SYN_NODE_STRING:
             return CODE_GENERATOR_STRING_CONSTANT;
+        case SYN_NODE_KEYWORD_NULL:
+            return CODE_GENERATOR_NULL_CONSTANT;
         case SYN_NODE_IDENTIFIER: {
             // TODO: get frame from symbol table
             return CODE_GENERATOR_GLOBAL_FRAME;
@@ -548,9 +557,11 @@ void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result)
                                  CODE_GEN_NOTEQ_INSTRUCTION;
 
     bool is_left_const = tree->left->type == SYN_NODE_INTEGER || tree->left->type == SYN_NODE_FLOAT ||
-                         tree->left->type == SYN_NODE_STRING || tree->left->type == SYN_NODE_IDENTIFIER;
+                         tree->left->type == SYN_NODE_STRING || tree->left->type == SYN_NODE_IDENTIFIER ||
+                         tree->left->type == SYN_NODE_KEYWORD_NULL;
     bool is_right_const = tree->right->type == SYN_NODE_INTEGER || tree->right->type == SYN_NODE_FLOAT ||
-                          tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER;
+                          tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER ||
+                          tree->right->type == SYN_NODE_KEYWORD_NULL;
 
     if (is_left_const && is_right_const) {
         string_t *operation_var_name = result ? result : string_init(tmp_var_name);

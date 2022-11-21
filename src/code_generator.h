@@ -34,6 +34,7 @@ static char *condition_label_name = "$$__COND_";
  * @brief structure with frames
  */
 typedef enum {
+    CODE_GENERATOR_NULL_CONSTANT,
     CODE_GENERATOR_INT_CONSTANT,
     CODE_GENERATOR_FLOAT_CONSTANT,
     CODE_GENERATOR_STRING_CONSTANT,
@@ -47,7 +48,7 @@ typedef enum {
  * @brief array of frames
  */
 static const char *frames[] = {
-        "int", "float", "string", "bool", "GF", "LF", "TF",
+        "nil", "int", "float", "string", "bool", "GF", "LF", "TF",
 };
 
 /**
