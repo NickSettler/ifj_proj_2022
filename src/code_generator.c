@@ -91,6 +91,15 @@ void generate_operation(instructions_t instruction, frames_t result_frame, char 
                                                                                                               : "string");
     } else if (instruction == CODE_GEN_WRITE_INSTRUCTION) {
         fprintf(fd, "%s %s@%s\n", instructions[instruction], frames[result_frame], result);
+    } else if (instruction == CODE_GEN_JUMPIFEQS_INSTRUCTION || instruction == CODE_GEN_JUMPIFNEQS_INSTRUCTION) {
+        fprintf(fd, "%s %s\n", instructions[instruction], result);
+    } else if (instruction == CODE_GEN_LTS_INSTRUCTION || instruction == CODE_GEN_GTS_INSTRUCTION ||
+
+               instruction == CODE_GEN_EQS_INSTRUCTION || instruction == CODE_GEN_ORS_INSTRUCTION ||
+               instruction == CODE_GEN_ANDS_INSTRUCTION || instruction == CODE_GEN_ADDS_INSTRUCTION ||
+               instruction == CODE_GEN_SUBS_INSTRUCTION || instruction == CODE_GEN_MULS_INSTRUCTION ||
+               instruction == CODE_GEN_DIVS_INSTRUCTION || instruction == CODE_GEN_IDIVS_INSTRUCTION) {
+        fprintf(fd, "%s\n", instructions[instruction]);
     } else {
         fprintf(fd, "%s %s@%s %s@%s %s@%s\n", instructions[instruction], frames[result_frame], result,
                 frames[symbol1_frame], symbol1,

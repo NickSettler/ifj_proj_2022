@@ -88,6 +88,8 @@ typedef enum {
     CODE_GEN_STRLEN_INSTRUCTION,
     CODE_GEN_GETCHAR_INSTRUCTION,
     CODE_GEN_SETCHAR_INSTRUCTION,
+    CODE_GEN_JUMPIFEQS_INSTRUCTION,
+    CODE_GEN_JUMPIFNEQS_INSTRUCTION,
 } instructions_t;
 
 /**
@@ -96,7 +98,8 @@ typedef enum {
 static const char *instructions[] = {
         "ADD", "SUB", "MUL", "DIV", "IDIV", "ADDS", "SUBS", "MULS", "DIVS", "IDIVS", "LT", "GT", "EQ", "LTS", "GTS",
         "EQS", "NOTLT", "NOTGT", "NOTEQ", "AND", "OR", "NOT", "ANDS", "ORS", "NOTS", "INT2FLOAT", "FLOAT2INT",
-        "INT2CHAR", "STRI2INT", "READ", "READ", "READ", "WRITE", "CONCAT", "STRLEN", "GETCHAR", "SETCHAR",
+        "INT2CHAR", "STRI2INT", "READ", "READ", "READ", "WRITE", "CONCAT", "STRLEN", "GETCHAR", "SETCHAR", "JUMPIFEQS",
+        "JUMPIFNEQS",
 };
 
 typedef struct code_generator_parameters {
