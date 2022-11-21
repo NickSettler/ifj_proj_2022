@@ -51,9 +51,6 @@ namespace ifj {
                         EXPECT_EQ(token->defined, node.defined)
                                             << "Token " << node.key << ". Expected defined " << node.defined
                                             << ", got " << token->defined;
-//                        EXPECT_EQ(token->type, node.type)
-//                                            << "Token " << node.key << ". Expected type " << node.type
-//                                            << ", got " << token->type;
                         EXPECT_NE(token, nullptr) << "Token " << node.key << " not found in symtable";
                     }
                     dispose_symtable();
@@ -92,7 +89,6 @@ namespace ifj {
                                      "}", {
                                              (tree_node_t) {
                                                      .defined = true,
-//                                                     .type = TYPE_FLOAT,
                                                      .key = "f",
                                              },
                                      });
@@ -100,7 +96,6 @@ namespace ifj {
                                      "}", {
                                              (tree_node_t) {
                                                      .defined = true,
-//                                                     .type = TYPE_INT,
                                                      .key = "fork",
                                              },
                                      });

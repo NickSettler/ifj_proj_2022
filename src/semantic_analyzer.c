@@ -9,7 +9,6 @@ void semantic_tree_check(syntax_abstract_tree_t *tree) {
         return;
     init_symtable();
     semantic_state = init_semantic_state();
-    semantic_state->symtable_ptr = symtable;
     semantic_tree_check(tree->left);
     process_tree(tree->right);
 }
@@ -22,6 +21,7 @@ semantic_analyzer_t *init_semantic_state() {
     result->function_name = NULL;
     result->argument_count = 0;
     result->symtable_ptr = NULL;
+    result->symtable_ptr = symtable;
     return result;
 }
 
@@ -68,7 +68,6 @@ void process_assign(syntax_abstract_tree_t *tree) {
 
 }
 
-// TODO: Check without {}
 void process_if_while(syntax_abstract_tree_t *tree) {
     check_tree_using(tree->left, check_defined);
     process_tree(tree->right);
@@ -80,7 +79,7 @@ void process_function_declaration(syntax_abstract_tree_t *tree) {
     semantic_state->function_name = id_node->value->value;
 
     insert_function(semantic_state->function_name);
-    get_return_type(tree);
+    set_return_type(tree);
     insert_arguments(tree->middle);
 
     semantic_state_ptr();
@@ -88,10 +87,10 @@ void process_function_declaration(syntax_abstract_tree_t *tree) {
     semantic_state->symtable_ptr = symtable;
 }
 
-semantic_analyzer_t *semantic_state_ptr() {
+void semantic_state_ptr() {
     tree_node_t *function_node = find_token(semantic_state->function_name);
     semantic_state->symtable_ptr = function_node->function_tree;
-    return semantic_state;
+    return;
 }
 
 bool check_defined(syntax_abstract_tree_t *tree) {
@@ -238,20 +237,18 @@ void insert_arguments(syntax_abstract_tree_t *tree) {
     switch (tree->left->type) {
         case SYN_NODE_IDENTIFIER: {
             semantic_state->argument_count++;
-            if (find_token(semantic_state->function_name)->type == NULL) {
+            if (find_token(semantic_state->function_name) == NULL) {
                 SEMANTIC_UNDEF_VAR_ERROR("Function %s used before declaration", semantic_state->function_name)
             }
             create_local_token(tree->left, semantic_state->function_name);
             char *arg_value = tree->left->value->value;
             tree_node_t *arg_node = find_token(semantic_state->function_name)->function_tree;
             tree_node_t *arg = find_element(arg_node, arg_value);
-            if (tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_INT) {
-                arg->argument_type = TYPE_INT;
-            } else if (tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_FLOAT) {
-                arg->argument_type = TYPE_FLOAT;
-            } else if (tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_STRING) {
-                arg->argument_type = TYPE_STRING;
-            }
+            arg->argument_type =
+                    tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_INT ? TYPE_INT :
+                    tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_FLOAT ? TYPE_FLOAT :
+                    tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_STRING ? TYPE_STRING
+                                                                              : (data_type) -1;
             find_token(semantic_state->function_name)->argument_count = semantic_state->argument_count;
             break;
         }
@@ -261,7 +258,7 @@ void insert_arguments(syntax_abstract_tree_t *tree) {
     insert_arguments(tree->right);
 }
 
-void get_return_type(syntax_abstract_tree_t *tree) {
+void set_return_type(syntax_abstract_tree_t *tree) {
     if (tree == NULL) {
         return;
     }
