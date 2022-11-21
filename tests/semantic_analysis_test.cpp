@@ -145,12 +145,6 @@ namespace ifj {
                 EXPECT_EXIT(CheckSymTableEntries("<?php while ($a > 0) $a = $a - 1;", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("<?php $a = 1;"
-                                                 "function f(int $v, string $g, int $c): float {"
-                                                 "$a =  $a + 1;"
-                                                 "}", {}),
-                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
-                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
             }
         }
     }
