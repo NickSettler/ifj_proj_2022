@@ -320,65 +320,85 @@ void generate_write() {
 }
 
 void generate_substr() {
-    fprintf(fd, "LABEL substr\n");
-    fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR LF@retval1\n");
-    fprintf(fd, "MOVE LF@retval1 string@\n");
+    generate_label("substring");
+    generate_create_frame();
+    generate_push_frame();
 
-    fprintf(fd, "DEFVAR LF@s\n");           // ("s", 1)
-    fprintf(fd, "MOVE LF@s int@1\n");
+    char *loop_label = "substr_loop";
+    char *loop_end_label = "substr_loop_end";
 
-    fprintf(fd, "DEFVAR LF@i\n");           // ("i", 2)
-    fprintf(fd, "MOVE LF@i int@2\n");
+    char *end_index_var = "$end_index";
+    char *start_index_var = "$start_index";
+    char *string_var = "$string";
 
-    fprintf(fd, "DEFVAR LF@j\n");           // ("j", 3)
-    fprintf(fd, "MOVE LF@j int@3\n");
+    char *string_length_var = "$string_length";
+    char *condition_var = "$condition";
+    char *character_var = "$character";
+    char *result_var = "$result";
 
-    fprintf(fd, "DEFVAR LF@tmp\n");         // ("tmp",)
-    fprintf(fd, "MOVE LF@tmp nil@nil\n");
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, end_index_var);
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, start_index_var);
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, string_var);
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, string_length_var);
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, condition_var);
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, character_var);
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, result_var);
 
-    fprintf(fd, "DEFVAR LF@length\n");      // ("length")
-    fprintf(fd, "MOVE LF@length nil@nil\n");
+    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, string_var);
+    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, start_index_var);
+    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, end_index_var);
+    generate_operation(CODE_GEN_STRLEN_INSTRUCTION, CODE_GENERATOR_LOCAL_FRAME, string_length_var,
+                       CODE_GENERATOR_LOCAL_FRAME, string_var, (frames_t) -1, NULL);
+    generate_move(CODE_GENERATOR_LOCAL_FRAME, condition_var, CODE_GENERATOR_BOOL_CONSTANT, "false");
+    generate_move(CODE_GENERATOR_LOCAL_FRAME, character_var, CODE_GENERATOR_STRING_CONSTANT, "");
+    generate_move(CODE_GENERATOR_LOCAL_FRAME, result_var, CODE_GENERATOR_NULL_CONSTANT, "nil");
 
-    fprintf(fd, "DEFVAR LF@sing LF@s\n");   // ("sing")
-    fprintf(fd, "MOVE LF@sing nil@nil\n");
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, start_index_var);
+    generate_add_on_top(CODE_GENERATOR_INT_CONSTANT, "0");
+    generate_operation(CODE_GEN_LTS_INSTRUCTION, (frames_t) -1, NULL, (frames_t) -1, NULL, (frames_t) -1, NULL);
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, end_index_var);
+    generate_add_on_top(CODE_GENERATOR_INT_CONSTANT, "0");
+    generate_operation(CODE_GEN_LTS_INSTRUCTION, (frames_t) -1, NULL, (frames_t) -1, NULL, (frames_t) -1, NULL);
+    generate_operation(CODE_GEN_ORS_INSTRUCTION, (frames_t) -1, NULL, (frames_t) -1, NULL, (frames_t) -1, NULL);
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, start_index_var);
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, end_index_var);
+    generate_operation(CODE_GEN_GTS_INSTRUCTION, (frames_t) -1, NULL, (frames_t) -1, NULL, (frames_t) -1, NULL);
+    generate_operation(CODE_GEN_ORS_INSTRUCTION, (frames_t) -1, NULL, (frames_t) -1, NULL, (frames_t) -1, NULL);
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, start_index_var);
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, string_length_var);
+    generate_operation(CODE_GEN_GTS_INSTRUCTION, (frames_t) -1, NULL, (frames_t) -1, NULL, (frames_t) -1, NULL);
+    generate_operation(CODE_GEN_ORS_INSTRUCTION, (frames_t) -1, NULL, (frames_t) -1, NULL, (frames_t) -1, NULL);
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, start_index_var);
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, string_length_var);
+    generate_operation(CODE_GEN_EQS_INSTRUCTION, (frames_t) -1, NULL, (frames_t) -1, NULL, (frames_t) -1, NULL);
+    generate_operation(CODE_GEN_ORS_INSTRUCTION, (frames_t) -1, NULL, (frames_t) -1, NULL, (frames_t) -1, NULL);
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, end_index_var);
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, string_length_var);
+    generate_operation(CODE_GEN_GTS_INSTRUCTION, (frames_t) -1, NULL, (frames_t) -1, NULL, (frames_t) -1, NULL);
+    generate_operation(CODE_GEN_ORS_INSTRUCTION, (frames_t) -1, NULL, (frames_t) -1, NULL, (frames_t) -1, NULL);
+    generate_add_on_top(CODE_GENERATOR_BOOL_CONSTANT, "true");
+    generate_operation(CODE_GEN_JUMPIFEQS_INSTRUCTION, (frames_t) -1, loop_end_label, (frames_t) -1, NULL,
+                       (frames_t) -1, NULL);
 
-    fprintf(fd, "TYPE LF@tmp LF@s\n");
-    fprintf(fd, "JUMPIFEQ error LF@tmp string@nil\n");
-    fprintf(fd, "TYPE LF@tmp LF@i\n");
-    fprintf(fd, "JUMPIFEQ error LF@tmp string@nil\n");
-    fprintf(fd, "TYPE LF@tmp LF@j\n");
-    fprintf(fd, "JUMPIFEQ error LF@tmp string@nil\n");
+    generate_move(CODE_GENERATOR_LOCAL_FRAME, result_var, CODE_GENERATOR_STRING_CONSTANT, "");
 
-    fprintf(fd, "STRLEN LF@length LF@s\n");
-    fprintf(fd, "LT LF@tmp LF@i int@1\n");
-    fprintf(fd, "JUMPIFEQ return LF@tmp bool@false\n");
-    fprintf(fd, "GT LF@tmp LF@j LF@lenght\n");
-    fprintf(fd, "JUMPIFEQ return LF@tmp bool@false\n");
+    generate_label(loop_label);
+    generate_operation(CODE_GEN_LT_INSTRUCTION, CODE_GENERATOR_LOCAL_FRAME, condition_var, CODE_GENERATOR_LOCAL_FRAME,
+                       start_index_var, CODE_GENERATOR_LOCAL_FRAME, end_index_var);
+    generate_conditional_jump(true, loop_end_label, CODE_GENERATOR_LOCAL_FRAME, condition_var,
+                              CODE_GENERATOR_BOOL_CONSTANT, "false");
+    generate_operation(CODE_GEN_GETCHAR_INSTRUCTION, CODE_GENERATOR_LOCAL_FRAME, character_var,
+                       CODE_GENERATOR_LOCAL_FRAME, string_var, CODE_GENERATOR_LOCAL_FRAME, start_index_var);
+    generate_operation(CODE_GEN_CONCAT_INSTRUCTION, CODE_GENERATOR_LOCAL_FRAME, result_var, CODE_GENERATOR_LOCAL_FRAME,
+                       result_var, CODE_GENERATOR_LOCAL_FRAME, character_var);
+    generate_operation(CODE_GEN_ADD_INSTRUCTION, CODE_GENERATOR_LOCAL_FRAME, start_index_var,
+                       CODE_GENERATOR_LOCAL_FRAME, start_index_var, CODE_GENERATOR_INT_CONSTANT, "1");
+    generate_jump(loop_label);
+    generate_label(loop_end_label);
 
-    fprintf(fd, "GT LF@tmp LF@j LF@length\n");
-    fprintf(fd, "JUMPIFEQ return LF@tmp bool@true\n");
-    fprintf(fd, "LT LF@tmp LF@j int@1\n");
-    fprintf(fd, "JUMPIFEQ return LF@tmp bool@true\n");
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, result_var);
 
-    fprintf(fd, "GT LF@tmp LF@i LF@j\n");
-    fprintf(fd, "JUMPIFEQ return LF@tmp bool@true\n");
-
-    fprintf(fd, "SUB LF@i LF@i int@1\n");
-    fprintf(fd, "SUB LF@j LF@j int@1\n");
-
-    fprintf(fd, "LABEL loop\n");
-    fprintf(fd, "GETCHAR LF@sing LF@s LF@i\n");
-    fprintf(fd, "CONCAT LF@retval1 LF@retval1 LF@sing\n");
-
-    fprintf(fd, "ADD LF@i LF@i int@1\n");
-    fprintf(fd, "LT LF@tmp LF@i LF@j\n");
-    fprintf(fd, "JUMPIFEQ return LF@tmp bool@true\n");
-    fprintf(fd, "JUMP loop\n");
-
-    fprintf(fd, "LABEL return\n");
-    fprintf(fd, "POPFRAME\n");
-    fprintf(fd, "RETURN\n");
+    generate_end();
 }
 
 void generate_end() {
