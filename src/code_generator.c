@@ -722,7 +722,19 @@ void parse_function_call(syntax_abstract_tree_t *tree, syntax_abstract_tree_t *r
                 break;
         }
     } else {
+        syntax_abstract_tree_t *arg = tree->right;
 
+        while (arg) {
+            process_node_value(arg->left);
+            frames_t frame = get_node_frame(arg->left);
+            generate_add_on_top(frame, arg->left->value->value);
+            arg = arg->right;
+        }
+
+        generate_call(tree->left->value->value);
+
+        if (result)
+            generate_pop_from_top(CODE_GENERATOR_GLOBAL_FRAME, result->value->value);
     }
 
     code_generator_parameters->current_callee_instruction = (instructions_t) -1;
