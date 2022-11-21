@@ -19,6 +19,7 @@
 
 typedef struct syntax_abstract_tree syntax_abstract_tree_t;
 
+
 /**
  * @enum Data_type_t
  * Data type of variable
@@ -70,12 +71,12 @@ typedef struct tree_node {
 /**
  * @brief Initialize symbol table with built-in functions
  */
-void init_symtable();
+tree_node_t *init_symtable();
 
 /**
  * @brief Initialize function tree
  */
-void init_tree();
+tree_node_t *init_tree();
 
 /**
  * @brief insert function into symtable
@@ -205,5 +206,10 @@ void print_symtable();
  */
 void create_global_token(syntax_abstract_tree_t *tree);
 
+/**
+ * Creates local token in symtable
+ * @param tree Node that contains token
+ */
+void create_local_token(syntax_abstract_tree_t *tree, char *function_name);
 
 #endif //IFJ_PROJ_2022_SYMTABLE_H

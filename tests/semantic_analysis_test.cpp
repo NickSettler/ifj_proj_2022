@@ -48,11 +48,12 @@ namespace ifj {
 
                     for (auto node: expected) {
                         tree_node_t *token = find_token(node.key);
-                        EXPECT_NE(token, nullptr) << "Token " << node.key << " not found in symtable";
                         EXPECT_EQ(token->defined, node.defined)
                                             << "Token " << node.key << ". Expected defined " << node.defined
                                             << ", got " << token->defined;
+                        EXPECT_NE(token, nullptr) << "Token " << node.key << " not found in symtable";
                     }
+                    dispose_symtable();
                 }
             };
 
@@ -71,7 +72,7 @@ namespace ifj {
                 CheckSymTableEntries("<?php $b = 1;"
                                      "if ($b > 2) "
                                      "{"
-                                     " $a = 4;"
+                                     " $v = 4;"
                                      "} else {"
                                      " $b = $b - 1;"
                                      "}", {
@@ -81,14 +82,32 @@ namespace ifj {
                                              },
                                              (tree_node_t) {
                                                      .defined = true,
-                                                     .key = "$a",
+                                                     .key = "$v",
                                              },
                                      });
+                CheckSymTableEntries("<?php function f(int $v, string $g, int $c): float {"
+                                     "}", {
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "f",
+                                             },
+                                     });
+                CheckSymTableEntries("<?php function fork(): int {"
+                                     "}", {
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "fork",
+                                             },
+                                     });
+
             }
 
             TEST_F(SemanticAnalysisTest, VariableDefinition_UndefinedVariable) {
                 EXPECT_EXIT(CheckSymTableEntries("<?php $a = 1;"
                                                  "$b = $c + 2;", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
+                EXPECT_EXIT(CheckSymTableEntries("<?php $a = $a + 1;", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
                 EXPECT_EXIT(CheckSymTableEntries("<?php if ($b == 2) "
@@ -118,6 +137,12 @@ namespace ifj {
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
                 EXPECT_EXIT(CheckSymTableEntries("<?php $a = $a + 1;", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
+                EXPECT_EXIT(CheckSymTableEntries("<?php while ($a > 0) {$b = $b + 1; $a = $a - 1;}", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
+                EXPECT_EXIT(CheckSymTableEntries("<?php while ($a > 0) $a = $a - 1;", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
             }

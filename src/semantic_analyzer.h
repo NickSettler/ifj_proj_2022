@@ -5,6 +5,13 @@
 #include "str.h"
 #include "symtable.h"
 
+typedef struct semantic_analyzer {
+    bool FUNCTION_SCOPE;
+    char *function_name;
+    int argument_count;
+    tree_node_t *symtable_ptr;
+} semantic_analyzer_t;
+
 typedef struct syntax_abstract_tree syntax_abstract_tree_t;
 
 /**
@@ -12,6 +19,12 @@ typedef struct syntax_abstract_tree syntax_abstract_tree_t;
  * @param tree Abstract syntax tree
  */
 void semantic_tree_check(syntax_abstract_tree_t *tree);
+
+/**
+ * Initializes semantic analyzer
+ * @return Pointer to semantic analyzer
+ */
+semantic_analyzer_t *init_semantic_state();
 
 /**
  * Runs semantic analyzer on all nodes in the syntax tree
@@ -30,6 +43,8 @@ void process_if_while(syntax_abstract_tree_t *tree);
  * @param tree Abstract syntax tree
  */
 void process_assign(syntax_abstract_tree_t *tree);
+
+void process_function_declaration(syntax_abstract_tree_t *tree);
 
 /**
  * Checks types of nodes and returns type of the node
@@ -84,10 +99,33 @@ bool is_node_an_int(syntax_abstract_tree_t *tree);
 bool is_only_numbers(syntax_abstract_tree_t *tree);
 
 /**
- * Checks if node is defined
+ * Checks if node is defined, if not, throws an error
  * @param tree Abstract syntax tree
  */
 bool check_defined(syntax_abstract_tree_t *tree);
 
+/**
+ * Checks if node is defined
+ * @param tree Abstract syntax tree
+ */
+bool is_defined(syntax_abstract_tree_t *tree);
+
+/**
+ * Insert return_type of function to symtable
+ * @param tree Abstract syntax tree
+ */
+void set_return_type(syntax_abstract_tree_t *tree);
+
+/**
+ * Insert arguments of function to symtable
+ * @param tree Abstract syntax tree
+ */
+void insert_arguments(syntax_abstract_tree_t *tree);
+
+/**
+ * Checks if symtable_ptr is in function scope
+ * @return
+ */
+void semantic_state_ptr();
 
 #endif //IFJ_PROJ_SEMANTIC_ANALYZER_H

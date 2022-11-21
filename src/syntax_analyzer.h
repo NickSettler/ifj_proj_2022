@@ -253,19 +253,6 @@ syntax_abstract_tree_t *get_from_tree_using(syntax_abstract_tree_t *tree, bool (
 void *process_tree_using(syntax_abstract_tree_t *tree, void (*process)(syntax_abstract_tree_t *),
                          syntax_tree_traversal_type traversal_type);
 
-/**
- * Checks if AST contains defined variable
- * @param node Syntax abstract tree
- * @return True if the node contains defined variable, false otherwise
- */
-bool is_defined(syntax_abstract_tree_t *tree);
-
-/**
- * Checks if the AST contains undefined variable
- * @param tree Syntax abstract tree
- * @return True if the node contains undefined variable, false otherwise
- */
-bool is_undefined(syntax_abstract_tree_t *tree);
 
 /**
  * Checks if the AST contains simple expression. Such expression can be compiled using one variable
