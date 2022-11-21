@@ -21,19 +21,23 @@ tree_node_t *init_symtable() {
 
 tree_node_t *init_tree() {
     insert_function("readi");
-    insert_return_type("readi", TYPE_INT);
-    insert_return_type("readi", TYPE_NULL);
+    insert_return_type("readi", TYPE_INT | TYPE_NULL);
     insert_function("reads");
-    insert_return_type("reads", TYPE_INT);
-    insert_return_type("reads", TYPE_NULL);
+    insert_return_type("reads", TYPE_STRING | TYPE_NULL);
     insert_function("readf");
-    insert_return_type("readf", TYPE_INT);
-    insert_return_type("readf", TYPE_NULL);
+    insert_return_type("readf", TYPE_FLOAT | TYPE_NULL);
     insert_function("write");
     insert_args("write", TYPE_FLOAT);
     insert_args("write", TYPE_INT);
     insert_args("write", TYPE_STRING);
     insert_args("write", TYPE_NULL);
+    insert_function("substring");
+    insert_args("substring", TYPE_STRING);
+    insert_args("substring", TYPE_INT);
+    insert_args("substring", TYPE_INT);
+    insert_return_type("substring", TYPE_STRING | TYPE_NULL);
+    insert_function("strlen");
+    insert_return_type("strlen", TYPE_INT);
     return symtable;
 }
 
