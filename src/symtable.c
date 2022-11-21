@@ -78,6 +78,7 @@ tree_node_t *create_node(char *key) {
     result->type = TYPE_NULL;
     result->argument_type = TYPE_NULL;
     result->argument_count = 0;
+    result->function_tree = NULL;
 
     return result;
 }
