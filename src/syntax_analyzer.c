@@ -576,7 +576,10 @@ bool is_simple_expression(syntax_abstract_tree_t *tree) {
         bool is_left_operation = tree->left->type & (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV);
         bool is_right_operation = tree->right->type & (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV);
 
-        return !(is_left_operation & is_right_operation);
+        bool is_left_function = tree->left->type & SYN_NODE_CALL;
+        bool is_right_function = tree->right->type & SYN_NODE_CALL;
+
+        return !(is_left_operation & is_right_operation) && !(is_left_function & is_right_function);
     }
 
     return true;
