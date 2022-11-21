@@ -18,9 +18,9 @@ semantic_analyzer_t *init_semantic_state() {
     if (result == 0) {
         INTERNAL_ERROR("Malloc for semantic analyzer failed");
     }
+    result->FUNCTION_SCOPE=false;
     result->function_name = NULL;
     result->argument_count = 0;
-    result->symtable_ptr = NULL;
     result->symtable_ptr = symtable;
     return result;
 }
