@@ -85,14 +85,14 @@ namespace ifj {
                                                      .key = "$v",
                                              },
                                      });
-                CheckSymTableEntries("function f(int $v, string $g, int $c): float {"
+                CheckSymTableEntries("<?php function f(int $v, string $g, int $c): float {"
                                      "}", {
                                              (tree_node_t) {
                                                      .defined = true,
                                                      .key = "f",
                                              },
                                      });
-                CheckSymTableEntries("function fork(): int {"
+                CheckSymTableEntries("<?php function fork(): int {"
                                      "}", {
                                              (tree_node_t) {
                                                      .defined = true,
