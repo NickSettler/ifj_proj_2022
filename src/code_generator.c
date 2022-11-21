@@ -695,6 +695,7 @@ void parse_function_call(syntax_abstract_tree_t *tree, syntax_abstract_tree_t *r
             !strcmp(tree->left->value->value, "readi") ? CODE_GEN_READI_INSTRUCTION :
             !strcmp(tree->left->value->value, "readf") ? CODE_GEN_READF_INSTRUCTION :
             !strcmp(tree->left->value->value, "reads") ? CODE_GEN_READS_INSTRUCTION :
+            !strcmp(tree->left->value->value, "strlen") ? CODE_GEN_STRLEN_INSTRUCTION :
             (instructions_t) -1;
 
     code_generator_parameters->current_callee_instruction = internal_func;
@@ -712,11 +713,23 @@ void parse_function_call(syntax_abstract_tree_t *tree, syntax_abstract_tree_t *r
             case CODE_GEN_READS_INSTRUCTION: {
                 if (find_token(result->value->value)->code_generator_defined == false)
                     generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, result->value->value);
-
                 find_token(result->value->value)->code_generator_defined = true;
+
                 generate_operation(internal_func, CODE_GENERATOR_GLOBAL_FRAME, result->value->value, (frames_t) -1,
                                    NULL, (frames_t) -1, NULL);
                 break;
+            }
+            case CODE_GEN_STRLEN_INSTRUCTION: {
+                if (find_token(result->value->value)->code_generator_defined == false)
+                    generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, result->value->value);
+                find_token(result->value->value)->code_generator_defined = true;
+
+                process_node_value(tree->right->left);
+
+                frames_t frame = get_node_frame(tree->right->left);
+
+                generate_operation(internal_func, CODE_GENERATOR_GLOBAL_FRAME, result->value->value, frame,
+                                   tree->right->left->value->value, (frames_t) -1, NULL);
             }
             default:
                 break;
