@@ -552,7 +552,16 @@ void parse_expression(syntax_abstract_tree_t *tree, string_t *result) {
         string_append_string(right_var_name, "%d", ++code_generator_parameters->tmp_var_counter);
         if (!(is_simple && result))
             generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, right_var_name->value);
-        parse_expression(tree->right, is_simple && result ? result : right_var_name);
+
+        bool is_function_call = tree->right->type & SYN_NODE_CALL;
+
+        if (is_function_call) {
+            parse_function_call(tree->right, right_var_name);
+            tree->right->type = SYN_NODE_IDENTIFIER;
+            tree->right->value = right_var_name;
+        } else {
+            parse_expression(tree->right, is_simple && result ? result : right_var_name);
+        }
     } else {
         parse_expression(tree->right, NULL);
     }
