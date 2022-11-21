@@ -38,6 +38,12 @@ tree_node_t *init_tree() {
     insert_return_type("substring", TYPE_STRING | TYPE_NULL);
     insert_function("strlen");
     insert_return_type("strlen", TYPE_INT);
+    insert_function("ord");
+    insert_args("ord", TYPE_STRING);
+    insert_args("ord", TYPE_INT);
+    insert_function("chr");
+    insert_args("chr", TYPE_INT);
+    insert_return_type("chr", TYPE_STRING);
     return symtable;
 }
 
