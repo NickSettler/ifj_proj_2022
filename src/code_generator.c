@@ -448,6 +448,8 @@ void generate_end() {
 }
 
 void generate_variable_inline_cast(syntax_abstract_tree_t *tree, data_type cast_to) {
+    if (cast_to | TYPE_STRING) return;
+    
     string_t *casted_string_name = string_init("");
     string_append_string(casted_string_name, "__%s_%s", tree->value->value,
                          cast_to == TYPE_INT ? "i" : cast_to == TYPE_FLOAT ? "f" : "s");
