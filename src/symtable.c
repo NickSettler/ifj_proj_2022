@@ -21,26 +21,20 @@ tree_node_t *init_symtable() {
 
 tree_node_t *init_tree() {
     insert_function("readi");
-    insert_return_type("readi", TYPE_INT | TYPE_NULL);
+    insert_return_type("readi", (data_type) (TYPE_INT | TYPE_NULL));
     insert_function("reads");
-    insert_return_type("reads", TYPE_STRING | TYPE_NULL);
+    insert_return_type("reads", (data_type) (TYPE_STRING | TYPE_NULL));
     insert_function("readf");
-    insert_return_type("readf", TYPE_FLOAT | TYPE_NULL);
+    insert_return_type("readf", (data_type) (TYPE_FLOAT | TYPE_NULL));
     insert_function("write");
-    insert_args("write", TYPE_FLOAT);
-    insert_args("write", TYPE_INT);
-    insert_args("write", TYPE_STRING);
-    insert_args("write", TYPE_NULL);
+    insert_args("write", (data_type) (TYPE_FLOAT | TYPE_INT | TYPE_STRING | TYPE_NULL));
     insert_function("substring");
-    insert_args("substring", TYPE_STRING);
-    insert_args("substring", TYPE_INT);
-    insert_args("substring", TYPE_INT);
-    insert_return_type("substring", TYPE_STRING | TYPE_NULL);
+    insert_args("substring", (data_type) (TYPE_STRING | TYPE_INT));
+    insert_return_type("substring", (data_type) (TYPE_STRING | TYPE_NULL));
     insert_function("strlen");
     insert_return_type("strlen", TYPE_INT);
     insert_function("ord");
-    insert_args("ord", TYPE_STRING);
-    insert_args("ord", TYPE_INT);
+    insert_args("ord", (data_type) (TYPE_STRING | TYPE_INT));
     insert_function("chr");
     insert_args("chr", TYPE_INT);
     insert_return_type("chr", TYPE_STRING);
