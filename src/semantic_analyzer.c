@@ -138,6 +138,12 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
         case SYN_NODE_ADD:
         case SYN_NODE_SUB:
         case SYN_NODE_MUL:
+        case SYN_NODE_EQUAL:
+        case SYN_NODE_LESS:
+        case SYN_NODE_GREATER:
+        case SYN_NODE_LESS_EQUAL:
+        case SYN_NODE_GREATER_EQUAL:
+        case SYN_NODE_NOT_EQUAL:
         case SYN_NODE_NEGATE:
             if (!check_tree_using(tree, is_only_numbers)) {
                 SEMANTIC_TYPE_COMPAT_ERROR("Cannot use string in arithmetic expression")
