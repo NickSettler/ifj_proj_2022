@@ -20,44 +20,47 @@ struct {
     int precedence;
     syntax_tree_node_type node_type;
 } attributes[] = {
-        {"EOF",      "End_of_file",       SYN_TOKEN_EOF,                  false, false, false, -1, (syntax_tree_node_type) -1},
-        {"ID",       "Identifier",        SYN_TOKEN_IDENTIFIER,           false, false, false, -1, SYN_NODE_IDENTIFIER},
-        {"NULL",     "Null",              SYN_TOKEN_NULL,                 false, false, false, -1, SYN_NODE_STRING},
-        {"STRING",   "String",            SYN_TOKEN_STRING,               false, false, false, -1, SYN_NODE_STRING},
-        {"INTEGER",  "Integer",           SYN_TOKEN_INTEGER,              false, false, false, -1, SYN_NODE_INTEGER},
-        {"FLOAT",    "Float",             SYN_TOKEN_FLOAT,                false, false, false, -1, SYN_NODE_FLOAT},
-        {"+",        "Op_add",            SYN_TOKEN_ADD,                  false, true,  false, 12, SYN_NODE_ADD},
-        {"-",        "Op_sub",            SYN_TOKEN_SUB,                  false, true,  false, 12, SYN_NODE_SUB},
-        {"*",        "Op_multiply",       SYN_TOKEN_MUL,                  false, true,  false, 13, SYN_NODE_MUL},
-        {"/",        "Op_divide",         SYN_TOKEN_DIV,                  false, true,  false, 13, SYN_NODE_DIV},
-        {"-",        "Op_negate",         SYN_TOKEN_NEGATE,               false, false, true,  14, SYN_NODE_NEGATE},
-        {".",        "Op_concat",         SYN_TOKEN_CONCAT,               false, true,  false, 12, SYN_NODE_CONCAT},
-        {"!",        "Op_not",            SYN_TOKEN_NOT,                  false, false, true,  14, SYN_NODE_NOT},
-        {"||",       "Op_or",             SYN_TOKEN_OR,                   false, true,  false, 4,  SYN_NODE_OR},
-        {"&&",       "Op_and",            SYN_TOKEN_AND,                  false, true,  false, 5,  SYN_NODE_AND},
-        {"<",        "Op_less",           SYN_TOKEN_LESS,                 false, true,  false, 10, SYN_NODE_LESS},
-        {"<=",       "Op_lessequal",      SYN_TOKEN_LESS_EQUAL,           false, true,  false, 10, SYN_NODE_LESS_EQUAL},
-        {">",        "Op_greater",        SYN_TOKEN_GREATER,              false, true,  false, 10, SYN_NODE_GREATER},
-        {">=",       "Op_greaterequal",   SYN_TOKEN_GREATER_EQUAL,        false, true,  false, 10, SYN_NODE_GREATER_EQUAL},
-        {"==",       "Op_equal",          SYN_TOKEN_EQUAL,                false, true,  false, 9,  SYN_NODE_EQUAL},
-        {"!=",       "Op_not_equal",      SYN_TOKEN_NOT_EQUAL,            false, true,  false, 9,  SYN_NODE_NOT_EQUAL},
-        {"=",        "Op_Assign",         SYN_TOKEN_ASSIGN,               false, false, false, -1, SYN_NODE_ASSIGN},
-        {";",        "Semicolon",         SYN_TOKEN_SEMICOLON,            false, false, false, -1, (syntax_tree_node_type) -1},
-        {":",        "Colon",             SYN_TOKEN_COLON,                false, false, false, -1, (syntax_tree_node_type) -1},
-        {",",        "Comma",             SYN_TOKEN_COMMA,                false, false, false, -1, (syntax_tree_node_type) -1},
-        {"if",       "Keyword_IF",        SYN_TOKEN_KEYWORD_IF,           false, false, false, -1, SYN_NODE_KEYWORD_IF},
-        {"else",     "Keyword_ELSE",      SYN_TOKEN_KEYWORD_ELSE,         false, false, false, -1, (syntax_tree_node_type) -1},
-        {"function", "Keyword_FUNCTION",  SYN_TOKEN_KEYWORD_FUNCTION,     false, false, false, -1, (syntax_tree_node_type) -1},
-        {"int",      "Keyword_INT",       SYN_TOKEN_KEYWORD_INT,          false, false, false, -1, (syntax_tree_node_type) -1},
-        {"float",    "Keyword_FLOAT",     SYN_TOKEN_KEYWORD_FLOAT,        false, false, false, -1, (syntax_tree_node_type) -1},
-        {"string",   "Keyword_STRING",    SYN_TOKEN_KEYWORD_STRING,       false, false, false, -1, (syntax_tree_node_type) -1},
-        {"void",     "Keyword_VOID",      SYN_TOKEN_KEYWORD_VOID,         false, false, false, -1, (syntax_tree_node_type) -1},
-        {"(",        "LeftParenthesis",   SYN_TOKEN_LEFT_PARENTHESIS,     false, false, false, -1, (syntax_tree_node_type) -1},
-        {")",        "RightParenthesis",  SYN_TOKEN_RIGHT_PARENTHESIS,    false, false, false, -1, (syntax_tree_node_type) -1},
-        {"{",        "LeftCurlyBracket",  SYN_TOKEN_LEFT_CURLY_BRACKETS,  false, false, false, -1, (syntax_tree_node_type) -1},
-        {"}",        "RightCurlyBracket", SYN_TOKEN_RIGHT_CURLY_BRACKETS, false, false, false, -1, (syntax_tree_node_type) -1},
-        {"<?php",    "PHPOpen",           SYN_TOKEN_PHP_OPEN,             false, false, false, -1, (syntax_tree_node_type) -1},
-        {"?>",       "PHPClose",          SYN_TOKEN_PHP_CLOSE,            false, false, false, -1, (syntax_tree_node_type) -1},
+        {"EOF",      "End_of_file",        SYN_TOKEN_EOF,                  false, false, false, -1, (syntax_tree_node_type) -1},
+        {"ID",       "Identifier",         SYN_TOKEN_IDENTIFIER,           false, false, false, -1, SYN_NODE_IDENTIFIER},
+        {"NULL",     "Null",               SYN_TOKEN_NULL,                 false, false, false, -1, SYN_NODE_STRING},
+        {"STRING",   "String",             SYN_TOKEN_STRING,               false, false, false, -1, SYN_NODE_STRING},
+        {"INTEGER",  "Integer",            SYN_TOKEN_INTEGER,              false, false, false, -1, SYN_NODE_INTEGER},
+        {"FLOAT",    "Float",              SYN_TOKEN_FLOAT,                false, false, false, -1, SYN_NODE_FLOAT},
+        {"+",        "Op_add",             SYN_TOKEN_ADD,                  false, true,  false, 12, SYN_NODE_ADD},
+        {"-",        "Op_sub",             SYN_TOKEN_SUB,                  false, true,  false, 12, SYN_NODE_SUB},
+        {"*",        "Op_multiply",        SYN_TOKEN_MUL,                  false, true,  false, 13, SYN_NODE_MUL},
+        {"/",        "Op_divide",          SYN_TOKEN_DIV,                  false, true,  false, 13, SYN_NODE_DIV},
+        {"-",        "Op_negate",          SYN_TOKEN_NEGATE,               false, false, true,  14, SYN_NODE_NEGATE},
+        {".",        "Op_concat",          SYN_TOKEN_CONCAT,               false, true,  false, 12, SYN_NODE_CONCAT},
+        {"!",        "Op_not",             SYN_TOKEN_NOT,                  false, false, true,  14, SYN_NODE_NOT},
+        {"||",       "Op_or",              SYN_TOKEN_OR,                   false, true,  false, 4,  SYN_NODE_OR},
+        {"&&",       "Op_and",             SYN_TOKEN_AND,                  false, true,  false, 5,  SYN_NODE_AND},
+        {"<",        "Op_less",            SYN_TOKEN_LESS,                 false, true,  false, 10, SYN_NODE_LESS},
+        {"<=",       "Op_lessequal",       SYN_TOKEN_LESS_EQUAL,           false, true,  false, 10, SYN_NODE_LESS_EQUAL},
+        {">",        "Op_greater",         SYN_TOKEN_GREATER,              false, true,  false, 10, SYN_NODE_GREATER},
+        {">=",       "Op_greaterequal",    SYN_TOKEN_GREATER_EQUAL,        false, true,  false, 10, SYN_NODE_GREATER_EQUAL},
+        {"==",       "Op_equal",           SYN_TOKEN_EQUAL,                false, true,  false, 9,  SYN_NODE_EQUAL},
+        {"!=",       "Op_not_equal",       SYN_TOKEN_NOT_EQUAL,            false, true,  false, 9,  SYN_NODE_NOT_EQUAL},
+        {"===",      "Op_typed_equal",     SYN_TOKEN_TYPED_EQUAL,          false, true,  false, 9,  SYN_NODE_TYPED_EQUAL},
+        {"!==",      "Op_typed_not_equal", SYN_TOKEN_TYPED_EQUAL,          false, true,  false, 9,  SYN_NODE_TYPED_NOT_EQUAL},
+        {"=",        "Op_Assign",          SYN_TOKEN_ASSIGN,               false, false, false, -1, SYN_NODE_ASSIGN},
+        {";",        "Semicolon",          SYN_TOKEN_SEMICOLON,            false, false, false, -1, (syntax_tree_node_type) -1},
+        {":",        "Colon",              SYN_TOKEN_COLON,                false, false, false, -1, (syntax_tree_node_type) -1},
+        {",",        "Comma",              SYN_TOKEN_COMMA,                false, false, false, -1, (syntax_tree_node_type) -1},
+        {"if",       "Keyword_IF",         SYN_TOKEN_KEYWORD_IF,           false, false, false, -1, SYN_NODE_KEYWORD_IF},
+        {"else",     "Keyword_ELSE",       SYN_TOKEN_KEYWORD_ELSE,         false, false, false, -1, (syntax_tree_node_type) -1},
+        {"function", "Keyword_FUNCTION",   SYN_TOKEN_KEYWORD_FUNCTION,     false, false, false, -1, (syntax_tree_node_type) -1},
+        {"return",   "Keyword_RETURN",     SYN_TOKEN_KEYWORD_RETURN,       false, false, false, -1, SYN_NODE_KEYWORD_RETURN},
+        {"int",      "Keyword_INT",        SYN_TOKEN_KEYWORD_INT,          false, false, false, -1, (syntax_tree_node_type) -1},
+        {"float",    "Keyword_FLOAT",      SYN_TOKEN_KEYWORD_FLOAT,        false, false, false, -1, (syntax_tree_node_type) -1},
+        {"string",   "Keyword_STRING",     SYN_TOKEN_KEYWORD_STRING,       false, false, false, -1, (syntax_tree_node_type) -1},
+        {"void",     "Keyword_VOID",       SYN_TOKEN_KEYWORD_VOID,         false, false, false, -1, (syntax_tree_node_type) -1},
+        {"(",        "LeftParenthesis",    SYN_TOKEN_LEFT_PARENTHESIS,     false, false, false, -1, (syntax_tree_node_type) -1},
+        {")",        "RightParenthesis",   SYN_TOKEN_RIGHT_PARENTHESIS,    false, false, false, -1, (syntax_tree_node_type) -1},
+        {"{",        "LeftCurlyBracket",   SYN_TOKEN_LEFT_CURLY_BRACKETS,  false, false, false, -1, (syntax_tree_node_type) -1},
+        {"}",        "RightCurlyBracket",  SYN_TOKEN_RIGHT_CURLY_BRACKETS, false, false, false, -1, (syntax_tree_node_type) -1},
+        {"<?php",    "PHPOpen",            SYN_TOKEN_PHP_OPEN,             false, false, false, -1, (syntax_tree_node_type) -1},
+        {"?>",       "PHPClose",           SYN_TOKEN_PHP_CLOSE,            false, false, false, -1, (syntax_tree_node_type) -1},
 };
 
 syntax_abstract_tree_t *
@@ -403,6 +406,14 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             tree = f_dec_stats(fd);
             break;
         }
+        case KEYWORD_RETURN: {
+            GET_NEXT_TOKEN(fd)
+            e = expression(fd, 0);
+            tree = make_binary_node(SYN_NODE_KEYWORD_RETURN, NULL, e);
+            expect_token("Semicolon", SYN_TOKEN_SEMICOLON);
+            GET_NEXT_TOKEN(fd)
+            break;
+        }
         case LEFT_CURLY_BRACKETS: {
             expect_token("Left curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
             GET_NEXT_TOKEN(fd)
@@ -499,6 +510,10 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_EQUAL;
         case NOT_EQUAL:
             return SYN_TOKEN_NOT_EQUAL;
+        case TYPED_EQUAL:
+            return SYN_TOKEN_TYPED_EQUAL;
+        case TYPED_NOT_EQUAL:
+            return SYN_TOKEN_TYPED_NOT_EQUAL;
         case ASSIGN:
             return SYN_TOKEN_ASSIGN;
         case SEMICOLON:
@@ -521,6 +536,8 @@ syntax_tree_token_type get_token_type(LEXICAL_FSM_TOKENS token) {
             return SYN_TOKEN_KEYWORD_ELSE;
         case KEYWORD_FUNCTION:
             return SYN_TOKEN_KEYWORD_FUNCTION;
+        case KEYWORD_RETURN:
+            return SYN_TOKEN_KEYWORD_RETURN;
         case KEYWORD_INTEGER:
             return SYN_TOKEN_KEYWORD_INT;
         case KEYWORD_FLOAT:
