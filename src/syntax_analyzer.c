@@ -415,9 +415,12 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
         }
         case KEYWORD_RETURN: {
             GET_NEXT_TOKEN(fd)
-            e = expression(fd, 0);
-            tree = make_binary_node(SYN_NODE_KEYWORD_RETURN, NULL, e);
-            expect_token("Semicolon", SYN_TOKEN_SEMICOLON);
+            if (get_token_type(lexical_token->type) == SYN_TOKEN_SEMICOLON) {
+                tree = make_binary_node(SYN_NODE_KEYWORD_RETURN, NULL, make_binary_leaf(SYN_NODE_KEYWORD_VOID, NULL));
+            } else {
+                tree = make_binary_node(SYN_NODE_KEYWORD_RETURN, NULL, expression(fd, 0));
+                expect_token("Semicolon", SYN_TOKEN_SEMICOLON);
+            }
             GET_NEXT_TOKEN(fd)
             break;
         }
