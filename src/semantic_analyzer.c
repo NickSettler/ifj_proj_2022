@@ -49,6 +49,9 @@ void process_tree(syntax_abstract_tree_t *tree) {
             semantic_state->symtable_ptr = symtable;
             break;
         }
+        case SYN_NODE_CALL:
+            process_call(tree);
+            break;
         default:
             break;
     }
@@ -77,9 +80,12 @@ void process_if_while(syntax_abstract_tree_t *tree) {
 void process_function_declaration(syntax_abstract_tree_t *tree) {
     syntax_abstract_tree_t *id_node = tree->left;
     semantic_state->function_name = id_node->value->value;
+    semantic_state->argument_count = 0; // reset argument count
 
     insert_function(semantic_state->function_name);
     set_return_type(tree);
+    find_element(semantic_state->symtable_ptr, semantic_state->function_name)->argument_count = count_arguments(tree->middle); // set argument count to function
+    create_args_array();
     insert_arguments(tree->middle);
 
     semantic_state_ptr();
@@ -87,10 +93,28 @@ void process_function_declaration(syntax_abstract_tree_t *tree) {
     semantic_state->symtable_ptr = symtable;
 }
 
+void process_call(syntax_abstract_tree_t *tree) {
+    data_type *arg_ptr =  find_element(semantic_state->symtable_ptr, semantic_state->function_name)->args_array;
+    int counter = 0;
+    compare_arguments(tree->right, arg_ptr, counter);
+}
+
+void compare_arguments(syntax_abstract_tree_t *tree, data_type *arg_array_ptr, int counter) {
+    if (tree == NULL)
+        return;
+    if (arg_array_ptr[counter] == (data_type) - 1) {
+        compare_arguments(tree->right, arg_array_ptr, counter + 1);
+        return;
+    }
+    if (arg_array_ptr[counter] != get_data_type(tree->left)) {
+        SEMANTIC_FUNC_ARG_ERROR("Wrong type of argument");
+    }
+    compare_arguments(tree->right, arg_array_ptr, counter + 1);
+}
+
 void semantic_state_ptr() {
     tree_node_t *function_node = find_token(semantic_state->function_name);
     semantic_state->symtable_ptr = function_node->function_tree;
-    return;
 }
 
 bool check_defined(syntax_abstract_tree_t *tree) {
@@ -117,7 +141,6 @@ bool is_defined(syntax_abstract_tree_t *tree) {
 
     return true;
 }
-
 
 data_type get_data_type(syntax_abstract_tree_t *tree) {
     if (tree == NULL)
@@ -161,7 +184,6 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
     get_data_type(tree->left);
     get_data_type(tree->right);
 }
-
 
 void check_tree_for_float(syntax_abstract_tree_t *tree) {
     if (!check_tree_using(tree, is_node_an_int)) {
@@ -256,12 +278,26 @@ void insert_arguments(syntax_abstract_tree_t *tree) {
                     tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_STRING ? TYPE_STRING
                                                                               : (data_type) -1;
             find_token(semantic_state->function_name)->argument_count = semantic_state->argument_count;
+
+            data_type *arg_ptr =  find_element(semantic_state->symtable_ptr, semantic_state->function_name)->args_array;
+            arg_ptr[semantic_state->argument_count - 1] = arg->argument_type;
             break;
         }
         default:
             break;
     }
     insert_arguments(tree->right);
+}
+
+int count_arguments(syntax_abstract_tree_t *tree) {
+    if (tree == NULL)
+        return 0;
+    return 1 + count_arguments(tree->right);
+}
+
+void create_args_array() {
+    data_type *args = malloc(sizeof(data_type) * semantic_state->argument_count);
+    find_element(semantic_state->symtable_ptr, semantic_state->function_name)->args_array = args;
 }
 
 void set_return_type(syntax_abstract_tree_t *tree) {

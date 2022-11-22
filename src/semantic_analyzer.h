@@ -47,6 +47,11 @@ void process_assign(syntax_abstract_tree_t *tree);
 void process_function_declaration(syntax_abstract_tree_t *tree);
 
 /**
+ * Runs semantic analyzer on function call
+ * @param tree Abstract syntax tree
+ */
+void process_call(syntax_abstract_tree_t *tree);
+/**
  * Checks types of nodes and returns type of the node
  * @param tree Abstract syntax tree
  * @return Type of the node
@@ -122,6 +127,19 @@ void set_return_type(syntax_abstract_tree_t *tree);
  */
 void insert_arguments(syntax_abstract_tree_t *tree);
 
+/**
+ * Counts number of arguments in function declaration
+ * @param tree Abstract syntax tree
+ */
+int count_arguments(syntax_abstract_tree_t *tree);
+
+/**
+ * Creates an array of arguments from function declaration
+ */
+void create_args_array();
+
+
+void compare_arguments(syntax_abstract_tree_t *tree, data_type *arg_array_ptr, int counter);
 /**
  * Checks if symtable_ptr is in function scope
  * @return
