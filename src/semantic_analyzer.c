@@ -18,7 +18,7 @@ semantic_analyzer_t *init_semantic_state() {
     if (result == 0) {
         INTERNAL_ERROR("Malloc for semantic analyzer failed");
     }
-    result->FUNCTION_SCOPE=false;
+    result->FUNCTION_SCOPE = false;
     result->function_name = NULL;
     result->argument_count = 0;
     result->symtable_ptr = symtable;
@@ -84,7 +84,8 @@ void process_function_declaration(syntax_abstract_tree_t *tree) {
 
     insert_function(semantic_state->function_name);
     set_return_type(tree);
-    find_element(semantic_state->symtable_ptr, semantic_state->function_name)->argument_count = count_arguments(tree->middle); // set argument count to function
+    find_element(semantic_state->symtable_ptr, semantic_state->function_name)->argument_count = count_arguments(
+            tree->middle); // set argument count to function
     create_args_array();
     insert_arguments(tree->middle);
 

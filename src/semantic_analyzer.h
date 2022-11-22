@@ -51,6 +51,7 @@ void process_function_declaration(syntax_abstract_tree_t *tree);
  * @param tree Abstract syntax tree
  */
 void process_call(syntax_abstract_tree_t *tree);
+
 /**
  * Checks types of nodes and returns type of the node
  * @param tree Abstract syntax tree
@@ -81,6 +82,7 @@ void check_tree_for_string(syntax_abstract_tree_t *tree);
  * @param tree Abstract syntax tree
  */
 void replace_node_to_string(syntax_abstract_tree_t *tree);
+
 /**
  * Checks types of two nodes
  * @param type_1 Type of first node
