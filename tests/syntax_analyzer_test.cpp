@@ -153,6 +153,16 @@ namespace ifj {
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER});
 
+                IsSyntaxTreeCorrect("<?php if ($a === 2) $a = 3;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php if ($a !== 2) $a = 3;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_NOT_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
+
                 IsSyntaxTreeCorrect("<?php if (1 != 2) $a = 3;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_NOT_EQUAL, SYN_NODE_INTEGER,
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
@@ -371,6 +381,34 @@ namespace ifj {
                 EXPECT_EXIT(SyntaxTreeWithError("<?php f(==);"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected expression, got: ==");
+            }
+
+            TEST_F(SyntaxAnalyzerTest, ReturnStatement) {
+                IsSyntaxTreeCorrect("<?php return $a;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_KEYWORD_RETURN, SYN_NODE_IDENTIFIER});
+
+                IsSyntaxTreeCorrect("<?php"
+                                    "function a() {"
+                                    "  return 1;"
+                                    "}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_FUNCTION_DECLARATION,
+                                     SYN_NODE_SEQUENCE, SYN_NODE_KEYWORD_RETURN, SYN_NODE_INTEGER});
+
+                EXPECT_EXIT(SyntaxTreeWithError("<?php return"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: EOF");
+
+                EXPECT_EXIT(SyntaxTreeWithError("<?php return;"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
+
+                EXPECT_EXIT(SyntaxTreeWithError("<?php return 1 +"),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: EOF");
+
+                EXPECT_EXIT(SyntaxTreeWithError("<?php return ("),
+                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
+                            "\\[SYNTAX ERROR\\] Expected expression, got: EOF");
             }
 
             TEST_F(SyntaxAnalyzerTest, FunctionDeclaration) {

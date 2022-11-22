@@ -620,13 +620,15 @@ void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result)
         parse_expression(tree, NULL);
 
     if (tree->type != SYN_NODE_LESS && tree->type != SYN_NODE_LESS_EQUAL && tree->type != SYN_NODE_GREATER &&
-        tree->type != SYN_NODE_GREATER_EQUAL && tree->type != SYN_NODE_EQUAL && tree->type != SYN_NODE_NOT_EQUAL &&
-        tree->type != SYN_NODE_NOT && tree->type != SYN_NODE_AND && tree->type != SYN_NODE_OR)
+        tree->type != SYN_NODE_GREATER_EQUAL && tree->type != SYN_NODE_EQUAL && tree->type != SYN_NODE_TYPED_EQUAL &&
+        tree->type != SYN_NODE_NOT_EQUAL && tree->type != SYN_NODE_TYPED_NOT_EQUAL && tree->type != SYN_NODE_NOT &&
+        tree->type != SYN_NODE_AND && tree->type != SYN_NODE_OR)
         return;
 
     instructions_t instruction = tree->type == SYN_NODE_LESS ? CODE_GEN_LT_INSTRUCTION :
                                  tree->type == SYN_NODE_GREATER ? CODE_GEN_GT_INSTRUCTION :
-                                 tree->type == SYN_NODE_EQUAL ? CODE_GEN_EQ_INSTRUCTION :
+                                 (tree->type == SYN_NODE_EQUAL || tree->type == SYN_NODE_TYPED_EQUAL)
+                                 ? CODE_GEN_EQ_INSTRUCTION :
                                  tree->type == SYN_NODE_OR ? CODE_GEN_OR_INSTRUCTION :
                                  tree->type == SYN_NODE_AND ? CODE_GEN_AND_INSTRUCTION :
                                  tree->type == SYN_NODE_NOT ? CODE_GEN_NOT_INSTRUCTION :
@@ -673,7 +675,8 @@ void parse_assign(syntax_abstract_tree_t *tree) {
 
     bool is_relational = tree->right->type == SYN_NODE_LESS || tree->right->type == SYN_NODE_LESS_EQUAL ||
                          tree->right->type == SYN_NODE_GREATER || tree->right->type == SYN_NODE_GREATER_EQUAL ||
-                         tree->right->type == SYN_NODE_EQUAL || tree->right->type == SYN_NODE_NOT_EQUAL ||
+                         tree->right->type == SYN_NODE_EQUAL || tree->right->type == SYN_NODE_TYPED_EQUAL ||
+                         tree->right->type == SYN_NODE_NOT_EQUAL || tree->right->type == SYN_NODE_TYPED_NOT_EQUAL ||
                          tree->right->type == SYN_NODE_NOT || tree->right->type == SYN_NODE_AND ||
                          tree->right->type == SYN_NODE_OR;
 

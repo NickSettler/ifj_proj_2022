@@ -76,6 +76,7 @@ tree_node_t *create_node(char *key) {
     result->right = NULL;
     result->key = key;
     result->defined = false;
+    result->code_generator_defined = false;
     result->global = false;
     result->local = false;
     result->is_function = false;
