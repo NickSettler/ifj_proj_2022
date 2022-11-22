@@ -155,7 +155,7 @@ namespace ifj {
                                              (tree_node_t) {
                                                      .type = TYPE_STRING,
                                                      .defined = true,
-                                                     .key = "$f",
+                                                     .key = "$str",
                                              }
                                      }
                 );
@@ -167,7 +167,7 @@ namespace ifj {
                                              (tree_node_t) {
                                                      .type = TYPE_VOID,
                                                      .defined = true,
-                                                     .key = "$f",
+                                                     .key = "$c",
                                              }
                                      }
                 );
