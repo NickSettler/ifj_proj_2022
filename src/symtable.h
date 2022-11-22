@@ -28,12 +28,12 @@ typedef struct syntax_abstract_tree syntax_abstract_tree_t;
  * @var DATA_TYPE_STRING
  */
 typedef enum {
-    TYPE_VOID = 0,
-    TYPE_NULL = 1 << 0,
-    TYPE_INT = 1 << 1,
-    TYPE_FLOAT = 1 << 2,
-    TYPE_STRING = 1 << 3,
-    TYPE_ALL = TYPE_NULL | TYPE_INT | TYPE_FLOAT | TYPE_STRING,
+    TYPE_VOID = 1 << 0,
+    TYPE_NULL = 1 << 1,
+    TYPE_INT = 1 << 2,
+    TYPE_FLOAT = 1 << 3,
+    TYPE_STRING = 1 << 4,
+    TYPE_ALL = TYPE_VOID | TYPE_NULL | TYPE_INT | TYPE_FLOAT | TYPE_STRING,
 } data_type;
 
 /**
