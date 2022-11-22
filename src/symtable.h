@@ -32,6 +32,7 @@ typedef enum {
     TYPE_INT = 1 << 1,
     TYPE_FLOAT = 1 << 2,
     TYPE_STRING = 1 << 3,
+    TYPE_ALL = TYPE_NULL | TYPE_INT | TYPE_FLOAT | TYPE_STRING,
 } data_type;
 
 /**
