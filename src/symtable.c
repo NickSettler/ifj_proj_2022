@@ -213,8 +213,8 @@ void print_tree(tree_node_t *root, int level) {
         return;
     }
     printtabs(level);
-    printf("key = %s, defined = %d, global = %d, type = %d", root->key, root->defined, root->global,
-           root->type);
+    printf("key = %s, defined = %d, global = %d, type = %d args_count = %d\n", root->key, root->defined, root->global,
+           root->type, root->argument_count);
     printtabs(level);
     printf("left\n");
     print_tree(root->left, level + 1);
