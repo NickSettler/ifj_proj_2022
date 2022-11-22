@@ -336,7 +336,6 @@ void create_args_array() {
 
 void set_return_type(syntax_abstract_tree_t *tree) {
     if (tree == NULL) {
-        find_token(semantic_state->function_name)->type = TYPE_VOID;
         return;
     }
     switch (tree->attrs->token_type) {
@@ -350,9 +349,10 @@ void set_return_type(syntax_abstract_tree_t *tree) {
             find_token(semantic_state->function_name)->type = TYPE_STRING;
             break;
         case SYN_TOKEN_KEYWORD_VOID:
-//TODO: change function declaration attribute to SYN_TOKEN_KEYWORD_VOID when there is no retrn type
-        case SYN_TOKEN_EOF:
             find_token(semantic_state->function_name)->type = TYPE_VOID;
+            break;
+        case SYN_TOKEN_EOF:
+            find_token(semantic_state->function_name)->type = TYPE_ALL;
             break;
         default:
             break;
