@@ -373,9 +373,12 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             s2 = NULL;
             if (lexical_token->type == KEYWORD_ELSE) {
                 GET_NEXT_TOKEN(fd)
+                bool curly_braces = get_token_type(lexical_token->type) == SYN_TOKEN_LEFT_CURLY_BRACKETS;
                 s2 = stmt(fd);
 
-                if (s2 == NULL) {
+                bool is_empty_statement = curly_braces && s2 == NULL;
+
+                if (s2 == NULL && !is_empty_statement) {
                     SYNTAX_ERROR("Expected statement after else\n")
                 }
             }
@@ -393,12 +396,14 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
         case KEYWORD_WHILE: {
             GET_NEXT_TOKEN(fd)
             e = parenthesis_expression(fd);
+            bool curly_braces = get_token_type(lexical_token->type) == SYN_TOKEN_LEFT_CURLY_BRACKETS;
             s = stmt(fd);
+            bool is_empty_statement = curly_braces && s == NULL;
             tree = make_binary_node(SYN_NODE_KEYWORD_WHILE, e, s);
-            if (s == NULL) {
+            if (s == NULL && !is_empty_statement) {
                 SYNTAX_ERROR("Expected statement after while\n")
             }
-            if (s->type != SYN_NODE_SEQUENCE)
+            if (!s || s->type != SYN_NODE_SEQUENCE)
                 tree->right = make_binary_node(SYN_NODE_SEQUENCE, NULL, s);
             break;
         }
