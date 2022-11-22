@@ -22,16 +22,15 @@
  */
 FILE *fd;
 
-int tmp_var_counter;
-int loop_counter;
-
-static char *tmp_var_name = "$$__tmp_";
+static char *tmp_var_name = "$$__TMP_";
 static char *loop_label_name = "$$__LOOP_";
+static char *condition_label_name = "$$__COND_";
 
 /**
  * @brief structure with frames
  */
 typedef enum {
+    CODE_GENERATOR_NULL_CONSTANT,
     CODE_GENERATOR_INT_CONSTANT,
     CODE_GENERATOR_FLOAT_CONSTANT,
     CODE_GENERATOR_STRING_CONSTANT,
@@ -45,7 +44,7 @@ typedef enum {
  * @brief array of frames
  */
 static const char *frames[] = {
-        "int", "float", "string", "bool", "GF", "LF", "TF",
+        "nil", "int", "float", "string", "bool", "GF", "LF", "TF",
 };
 
 /**
@@ -81,21 +80,36 @@ typedef enum {
     CODE_GEN_FLOAT2INT_INSTRUCTION,
     CODE_GEN_INT2CHAR_INSTRUCTION,
     CODE_GEN_STRI2INT_INSTRUCTION,
+    CODE_GEN_READI_INSTRUCTION,
+    CODE_GEN_READF_INSTRUCTION,
+    CODE_GEN_READS_INSTRUCTION,
+    CODE_GEN_WRITE_INSTRUCTION,
     CODE_GEN_CONCAT_INSTRUCTION,
     CODE_GEN_STRLEN_INSTRUCTION,
     CODE_GEN_GETCHAR_INSTRUCTION,
     CODE_GEN_SETCHAR_INSTRUCTION,
+    CODE_GEN_JUMPIFEQS_INSTRUCTION,
+    CODE_GEN_JUMPIFNEQS_INSTRUCTION,
 } instructions_t;
 
 /**
  * @brief array of instructions
  */
 static const char *instructions[] = {
-        "ADD", "SUB", "MUL", "DIV", "IDIV", "ADDS", "SUBS", "MULS", "DIVS", "IDIVS",
-        "LT", "GT", "EQ", "LTS", "GTS", "EQS", "NOTLT", "NOTGT", "NOTEQ", "AND", "OR", "NOT",
-        "ANDS", "ORS", "NOTS", "INT2FLOAT", "FLOAT2INT", "INT2CHAR", "STRI2INT", "CONCAT", "STRLEN", "GETCHAR",
-        "SETCHAR",
+        "ADD", "SUB", "MUL", "DIV", "IDIV", "ADDS", "SUBS", "MULS", "DIVS", "IDIVS", "LT", "GT", "EQ", "LTS", "GTS",
+        "EQS", "NOTLT", "NOTGT", "NOTEQ", "AND", "OR", "NOT", "ANDS", "ORS", "NOTS", "INT2FLOAT", "FLOAT2INT",
+        "INT2CHAR", "STRI2INT", "READ", "READ", "READ", "WRITE", "CONCAT", "STRLEN", "GETCHAR", "SETCHAR", "JUMPIFEQS",
+        "JUMPIFNEQS",
 };
+
+typedef struct code_generator_parameters {
+    int tmp_var_counter;
+    int loop_counter;
+    int condition_counter;
+    instructions_t current_callee_instruction;
+} code_generator_parameters_t;
+
+static code_generator_parameters_t *code_generator_parameters;
 
 void set_code_gen_output(FILE *output_fd);
 
@@ -282,9 +296,14 @@ void generate_readf(frames_t frame);
 void generate_write();
 
 /**
- * @brief own substring function
+ * Generates internal substring function
  */
 void generate_substr();
+
+/**
+ * Generates internal character ordinal value function
+ */
+void generate_ord();
 
 /**
  * @brief generate end of code
@@ -324,12 +343,40 @@ void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result)
  */
 void parse_assign(syntax_abstract_tree_t *tree);
 
-void parse_function_call(syntax_abstract_tree_t *tree);
+/**
+ * Generates function arguments
+ * @param tree syntax tree function call argument node
+ */
+void parse_function_arg(syntax_abstract_tree_t *tree);
+
+/**
+ * Generates function call
+ * @param tree syntax tree function call node
+ */
+void parse_function_call(syntax_abstract_tree_t *tree, string_t *result);
+
+/**
+ * Generates while loop
+ * @param tree syntax tree while node
+ */
+void parse_loop(syntax_abstract_tree_t *tree);
+
+/**
+ * Generates if statement
+ * @param tree syntax tree if node
+ */
+void parse_condition(syntax_abstract_tree_t *tree);
 
 /**
  * Parses syntax tree
  * @param tree syntax tree node
  */
 void parse_tree(syntax_abstract_tree_t *tree);
+
+/**
+ * Initializes code generator
+ * @return code generator parameters
+ */
+void code_generator_init();
 
 #endif //IFJ_PROJ_2022_CODE_GENERATOR_H
