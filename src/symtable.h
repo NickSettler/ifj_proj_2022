@@ -58,6 +58,7 @@ typedef struct tree_node {
     data_type type;
     data_type argument_type;
     int argument_count;
+    data_type *args_array;
     bool defined;
     bool global;
     bool code_generator_defined;
