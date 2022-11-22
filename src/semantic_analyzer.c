@@ -94,22 +94,26 @@ void process_function_declaration(syntax_abstract_tree_t *tree) {
 }
 
 void process_call(syntax_abstract_tree_t *tree) {
-    data_type *arg_ptr =  find_element(semantic_state->symtable_ptr, semantic_state->function_name)->args_array;
-    int counter = 0;
+    tree_node_t *func = find_element(semantic_state->symtable_ptr, semantic_state->function_name);
+    data_type *arg_ptr = func->args_array;
+    int counter = func->argument_count - 1;
+    int arg_call_counter = count_arguments(tree->right);
+    if (arg_call_counter != func->argument_count) {
+        SEMANTIC_FUNC_ARG_ERROR("Wrong number of arguments");
+    }
     compare_arguments(tree->right, arg_ptr, counter);
 }
 
 void compare_arguments(syntax_abstract_tree_t *tree, data_type *arg_array_ptr, int counter) {
     if (tree == NULL)
         return;
-    if (arg_array_ptr[counter] == (data_type) - 1) {
-        compare_arguments(tree->right, arg_array_ptr, counter + 1);
-        return;
+    if (arg_array_ptr[counter] == TYPE_ALL) {
+        compare_arguments(tree->right, arg_array_ptr, counter - 1);
     }
     if (arg_array_ptr[counter] != get_data_type(tree->left)) {
-        SEMANTIC_FUNC_ARG_ERROR("Wrong type of argument");
+        SEMANTIC_FUNC_ARG_ERROR("Wrong type of argument with value %s", tree->left->value->value);
     }
-    compare_arguments(tree->right, arg_array_ptr, counter + 1);
+    compare_arguments(tree->right, arg_array_ptr, counter - 1);
 }
 
 void semantic_state_ptr() {
@@ -147,6 +151,9 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
         return (data_type) -1;
 
     switch (tree->type) {
+        case SYN_NODE_CALL:
+            process_call(tree);
+            return find_element(semantic_state->symtable_ptr, semantic_state->function_name)->type;
         case SYN_NODE_IDENTIFIER:
             check_tree_using(tree, check_defined);
             return find_element(semantic_state->symtable_ptr, tree->value->value)->type;
@@ -275,11 +282,10 @@ void insert_arguments(syntax_abstract_tree_t *tree) {
             arg->argument_type =
                     tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_INT ? TYPE_INT :
                     tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_FLOAT ? TYPE_FLOAT :
-                    tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_STRING ? TYPE_STRING
-                                                                              : (data_type) -1;
+                    tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_STRING ? TYPE_STRING : TYPE_ALL;
             find_token(semantic_state->function_name)->argument_count = semantic_state->argument_count;
 
-            data_type *arg_ptr =  find_element(semantic_state->symtable_ptr, semantic_state->function_name)->args_array;
+            data_type *arg_ptr = find_element(semantic_state->symtable_ptr, semantic_state->function_name)->args_array;
             arg_ptr[semantic_state->argument_count - 1] = arg->argument_type;
             break;
         }
@@ -296,7 +302,7 @@ int count_arguments(syntax_abstract_tree_t *tree) {
 }
 
 void create_args_array() {
-    data_type *args = malloc(sizeof(data_type) * semantic_state->argument_count);
+    data_type *args = (data_type *) malloc(sizeof(data_type) * semantic_state->argument_count);
     find_element(semantic_state->symtable_ptr, semantic_state->function_name)->args_array = args;
 }
 

@@ -138,8 +138,14 @@ int count_arguments(syntax_abstract_tree_t *tree);
  */
 void create_args_array();
 
-
+/**
+ * Checks if arguments in function call are the same as in function declaration
+ * @param tree Abstract syntax tree
+ * @param arg_array_ptr Array of function arguments
+ * @param counter Counter
+ */
 void compare_arguments(syntax_abstract_tree_t *tree, data_type *arg_array_ptr, int counter);
+
 /**
  * Checks if symtable_ptr is in function scope
  * @return
