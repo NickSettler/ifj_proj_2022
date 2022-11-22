@@ -146,6 +146,62 @@ namespace ifj {
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
             }
+
+            TEST_F(SemanticAnalysisTest, FunctionCall) {
+                CheckSymTableEntries("<?php function f(int $i, float $s): float {"
+                                     "  return $i + $f;"
+                                     "}"
+                                     "$a = f(1, 2.0);",
+                                     {
+                                             (tree_node_t) {
+                                                     .type = TYPE_FLOAT,
+                                                     .defined = true,
+                                                     .key = "$a",
+                                             }
+                                     }
+                );
+
+                CheckSymTableEntries("<?php function f(string $s): string {"
+                                     "  return $s;"
+                                     "}"
+                                     "$str = f(\"1\");", {});
+
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $f): float {"
+                                                 "  return $i + $f;"
+                                                 "}"
+                                                 "$a = f(\"1\", 2.0);", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $s): float {"
+                                                 "  return $i + $f;"
+                                                 "}"
+                                                 "f(\"1\", 2);", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $s): float {"
+                                                 "  return $i + $f;"
+                                                 "}"
+                                                 "$a = f(1, 2.0, 3);", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $s): float {"
+                                                 "  return $i + $f;"
+                                                 "}"
+                                                 "$a = f(1);", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php function f(string $s): string {"
+                                                 "  return $s;"
+                                                 "}"
+                                                 "$str = f(1);", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument");
+            }
         }
     }
 }
