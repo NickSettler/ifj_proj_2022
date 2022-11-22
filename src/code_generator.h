@@ -107,7 +107,6 @@ typedef struct code_generator_parameters {
     int loop_counter;
     int condition_counter;
     instructions_t current_callee_instruction;
-    syntax_abstract_tree_t *current_callee_result;
 } code_generator_parameters_t;
 
 static code_generator_parameters_t *code_generator_parameters;
