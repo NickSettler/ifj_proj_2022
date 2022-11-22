@@ -85,21 +85,6 @@ namespace ifj {
                                                      .key = "$v",
                                              },
                                      });
-                CheckSymTableEntries("<?php function f(int $v, string $g, int $c): float {"
-                                     "}", {
-                                             (tree_node_t) {
-                                                     .defined = true,
-                                                     .key = "f",
-                                             },
-                                     });
-                CheckSymTableEntries("<?php function fork(): int {"
-                                     "}", {
-                                             (tree_node_t) {
-                                                     .defined = true,
-                                                     .key = "fork",
-                                             },
-                                     });
-
             }
 
             TEST_F(SemanticAnalysisTest, VariableDefinition_UndefinedVariable) {
@@ -148,6 +133,21 @@ namespace ifj {
             }
 
             TEST_F(SemanticAnalysisTest, FunctionReturnType) {
+                CheckSymTableEntries("<?php function f(int $v, string $g, int $c): float {"
+                                     "}", {
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "f",
+                                             },
+                                     });
+                CheckSymTableEntries("<?php function fork(): int {"
+                                     "}", {
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "fork",
+                                             },
+                                     });
+
                 CheckSymTableEntries("<?php function f(string $s): string {"
                                      "  return $s;"
                                      "}"
@@ -162,36 +162,34 @@ namespace ifj {
 
                 CheckSymTableEntries("<?php function f(int $d) {"
                                      " $d = $d + 1;"
-                                     "}"
-                                     "$c = f(1);", {
+                                     "return ;"
+                                     "}", {
                                              (tree_node_t) {
                                                      .type = TYPE_VOID,
                                                      .defined = true,
-                                                     .key = "$c",
+                                                     .key = "f",
+
                                              }
                                      }
                 );
 
                 EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $f): float {"
                                                  "  return $i + $s;"
-                                                 "}"
-                                                 "$a = f(\"1\", 2.0);", {}),
+                                                 "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
 
                 EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $a, float $b): float {"
-                                                 "$a = $a + 1;"
-                                                 "}"
-                                                 "$c = f(1, 2.0);", {}),
+                                                 "  $a = $a + 1;"
+                                                 "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_RET_ERROR_CODE),
-                            "\\[SEMANTIC FUNC RET ERROR\\] Wrong or missing return value");
+                            "\\[SEMANTIC FUNC RET ERROR\\] Missing return value in function f");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $f) {"
+                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $f): float {"
                                                  "  return $i;"
-                                                 "}"
-                                                 "$a = f(1, 2.0);", {}),
+                                                 "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_RET_ERROR_CODE),
-                            "\\[SEMANTIC FUNC RET ERROR\\] Wrong or missing return value");
+                            "\\[SEMANTIC FUNC RET ERROR\\] Wrong return value in function f");
             }
 
             TEST_F(SemanticAnalysisTest, FunctionCall) {
