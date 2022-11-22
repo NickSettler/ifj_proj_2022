@@ -90,8 +90,32 @@ void process_function_declaration(syntax_abstract_tree_t *tree) {
     insert_arguments(tree->middle);
 
     semantic_state_ptr();
+    if (tree->right != NULL) {
+        process_tree(tree->right);
+    }
     process_tree(tree->right);
+    check_for_return_value(tree->right);
     semantic_state->symtable_ptr = symtable;
+}
+
+void check_for_return_value(syntax_abstract_tree_t *tree) {
+    // if there is no return stmt, but has return value or no return value but has return stmt
+    if (tree == NULL) {
+        return;
+    }
+    if ((tree->right->type != SYN_NODE_KEYWORD_RETURN ||
+         (tree->right->type == SYN_NODE_KEYWORD_RETURN && tree->right->right == NULL && tree->right->left == NULL)) &&
+        find_token(semantic_state->function_name)->type != TYPE_VOID ||
+        tree->right->type == SYN_NODE_KEYWORD_RETURN &&
+        find_token(semantic_state->function_name)->type == TYPE_VOID) {
+        SEMANTIC_FUNC_RET_ERROR("Wrong or missing return value");
+    }
+    if (tree->right->type == SYN_NODE_KEYWORD_RETURN) {
+        check_tree_using(tree->right->right, check_defined);
+        if (find_token(semantic_state->function_name)->type != get_data_type(tree->right->right)) {
+            SEMANTIC_FUNC_RET_ERROR("Wrong or missing return value");
+        }
+    }
 }
 
 void process_call(syntax_abstract_tree_t *tree) {
@@ -282,14 +306,14 @@ void insert_arguments(syntax_abstract_tree_t *tree) {
             char *arg_value = tree->left->value->value;
             tree_node_t *arg_node = find_token(semantic_state->function_name)->function_tree;
             tree_node_t *arg = find_element(arg_node, arg_value);
-            arg->argument_type =
+            arg->type =
                     tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_INT ? TYPE_INT :
                     tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_FLOAT ? TYPE_FLOAT :
                     tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_STRING ? TYPE_STRING : TYPE_ALL;
             find_token(semantic_state->function_name)->argument_count = semantic_state->argument_count;
-
+            arg->argument_type = arg->type;
             data_type *arg_ptr = find_element(semantic_state->symtable_ptr, semantic_state->function_name)->args_array;
-            arg_ptr[semantic_state->argument_count - 1] = arg->argument_type;
+            arg_ptr[semantic_state->argument_count - 1] = arg->type;
             break;
         }
         default:
@@ -311,6 +335,7 @@ void create_args_array() {
 
 void set_return_type(syntax_abstract_tree_t *tree) {
     if (tree == NULL) {
+        find_token(semantic_state->function_name)->type = TYPE_VOID;
         return;
     }
     switch (tree->attrs->token_type) {
@@ -322,6 +347,11 @@ void set_return_type(syntax_abstract_tree_t *tree) {
             break;
         case SYN_TOKEN_KEYWORD_STRING:
             find_token(semantic_state->function_name)->type = TYPE_STRING;
+            break;
+        case SYN_TOKEN_KEYWORD_VOID:
+//TODO: change function declaration attribute to SYN_TOKEN_KEYWORD_VOID when there is no retrn type
+        case SYN_TOKEN_EOF:
+            find_token(semantic_state->function_name)->type = TYPE_VOID;
             break;
         default:
             break;

@@ -47,6 +47,12 @@ void process_assign(syntax_abstract_tree_t *tree);
 void process_function_declaration(syntax_abstract_tree_t *tree);
 
 /**
+ * Checks if function return type is correct
+ * @param tree Abstract syntax tree
+ */
+void check_for_return_value(syntax_abstract_tree_t *tree);
+
+/**
  * Runs semantic analyzer on function call
  * @param tree Abstract syntax tree
  */
