@@ -450,6 +450,30 @@ syntax_abstract_tree_t *load_syntax_tree(FILE *fd) {
     expect_token("PHP Open bracket", SYN_TOKEN_PHP_OPEN);
     lexical_token = get_token(fd);
 
+    if (lexical_token->type == KEYWORD_DECLARE) {
+        GET_NEXT_TOKEN(fd)
+        expect_token("Left parenthesis", SYN_TOKEN_LEFT_PARENTHESIS);
+        GET_NEXT_TOKEN(fd)
+
+        if (lexical_token->type != KEYWORD_STRICT_TYPES) {
+            SYNTAX_ERROR("Expected strict types keyword\n")
+        }
+
+        GET_NEXT_TOKEN(fd)
+        expect_token("Assignment", SYN_TOKEN_ASSIGN);
+
+        GET_NEXT_TOKEN(fd)
+        expect_token("Integer", SYN_TOKEN_INTEGER);
+
+        // TODO: set other compiler variables depending on strict types value
+
+        GET_NEXT_TOKEN(fd)
+        expect_token("Right parenthesis", SYN_TOKEN_RIGHT_PARENTHESIS);
+        GET_NEXT_TOKEN(fd)
+        expect_token("Semicolon", SYN_TOKEN_SEMICOLON);
+        GET_NEXT_TOKEN(fd)
+    }
+
     syntax_abstract_tree_t *tree = NULL;
 
     while (lexical_token->type != END_OF_FILE && lexical_token->type != CLOSE_PHP_BRACKET) {
