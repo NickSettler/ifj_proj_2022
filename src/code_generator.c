@@ -692,7 +692,7 @@ void parse_assign(syntax_abstract_tree_t *tree) {
     } else {
         process_node_value(tree->right);
         if (tree->right->type == SYN_NODE_CALL) {
-            parse_function_call(tree->right, tree->left);
+            parse_function_call(tree->right, tree->left->value);
         } else {
             generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, get_node_frame(tree->right),
                           tree->right->value->value);
