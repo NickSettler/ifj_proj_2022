@@ -193,6 +193,8 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
             return TYPE_STRING;
         case SYN_NODE_KEYWORD_NULL:
             return TYPE_NULL;
+        case SYN_NODE_KEYWORD_VOID:
+            return TYPE_VOID;
         case SYN_NODE_ADD:
         case SYN_NODE_SUB:
         case SYN_NODE_MUL:
@@ -203,6 +205,7 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
         case SYN_NODE_GREATER_EQUAL:
         case SYN_NODE_NOT_EQUAL:
         case SYN_NODE_NEGATE:
+            check_tree_using(tree, check_defined);
             if (!check_tree_using(tree, is_only_numbers)) {
                 SEMANTIC_TYPE_COMPAT_ERROR("Cannot use string in arithmetic expression")
             }
