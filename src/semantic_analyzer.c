@@ -166,6 +166,8 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
             check_tree_for_string(tree);
         case SYN_NODE_STRING:
             return TYPE_STRING;
+        case SYN_NODE_KEYWORD_NULL:
+            return TYPE_NULL;
         case SYN_NODE_ADD:
         case SYN_NODE_SUB:
         case SYN_NODE_MUL:
