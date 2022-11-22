@@ -228,6 +228,8 @@ syntax_abstract_tree_t *f_dec_stats(FILE *fd) {
         }
         func->attrs->token_type = type;
         GET_NEXT_TOKEN(fd)
+    } else {
+        func->attrs->token_type = SYN_TOKEN_EOF;
     }
 
     expect_token("Left curly brackets", SYN_TOKEN_LEFT_CURLY_BRACKETS);
