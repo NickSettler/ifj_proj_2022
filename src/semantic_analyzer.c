@@ -99,21 +99,22 @@ void process_function_declaration(syntax_abstract_tree_t *tree) {
 }
 
 void check_for_return_value(syntax_abstract_tree_t *tree) {
-    // if there is no return stmt, but has return value or no return value but has return stmt
     if (tree == NULL) {
         return;
     }
-    if ((tree->right->type != SYN_NODE_KEYWORD_RETURN ||
-         (tree->right->type == SYN_NODE_KEYWORD_RETURN && tree->right->right == NULL && tree->right->left == NULL)) &&
-        find_token(semantic_state->function_name)->type != TYPE_VOID ||
-        tree->right->type == SYN_NODE_KEYWORD_RETURN &&
-        find_token(semantic_state->function_name)->type == TYPE_VOID) {
-        SEMANTIC_FUNC_RET_ERROR("Wrong or missing return value");
+
+    bool has_return = tree->right->type == SYN_NODE_KEYWORD_RETURN;
+    bool func_has_return_type = find_token(semantic_state->function_name)->type != TYPE_ALL;
+    bool type_match = find_token(semantic_state->function_name)->type & get_data_type(tree->right->right);
+
+    if (!has_return && func_has_return_type) {
+        SEMANTIC_FUNC_RET_ERROR("Missing return value in function %s", semantic_state->function_name);
     }
-    if (tree->right->type == SYN_NODE_KEYWORD_RETURN) {
+
+    if (has_return) {
         check_tree_using(tree->right->right, check_defined);
-        if (find_token(semantic_state->function_name)->type != get_data_type(tree->right->right)) {
-            SEMANTIC_FUNC_RET_ERROR("Wrong or missing return value");
+        if (!type_match) {
+            SEMANTIC_FUNC_RET_ERROR("Wrong return value in function %s", semantic_state->function_name);
         }
     }
 }
