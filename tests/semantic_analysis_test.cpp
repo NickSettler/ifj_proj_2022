@@ -223,6 +223,13 @@ namespace ifj {
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument");
 
+                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $f): float {"
+                                                 "  return $i + $f;"
+                                                 "}"
+                                                 "$a = f(2.0, 1);", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument");
+
                 EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $s): float {"
                                                  "  return $i + $s;"
                                                  "}"
