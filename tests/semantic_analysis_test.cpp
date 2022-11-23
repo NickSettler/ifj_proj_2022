@@ -140,6 +140,7 @@ namespace ifj {
                                                      .key = "f",
                                              },
                                      });
+
                 CheckSymTableEntries("<?php function fork(): int {"
                                      "}", {
                                              (tree_node_t) {
@@ -172,6 +173,15 @@ namespace ifj {
                                              }
                                      }
                 );
+
+                CheckSymTableEntries("<?php function fork(): float {"
+                                     "return 1 + 1.2;"
+                                     "}", {
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "fork",
+                                             },
+                                     });
 
                 EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $f): float {"
                                                  "  return $i + $s;"
