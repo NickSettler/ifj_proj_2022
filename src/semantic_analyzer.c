@@ -49,9 +49,15 @@ void process_tree(syntax_abstract_tree_t *tree) {
             semantic_state->symtable_ptr = symtable;
             break;
         }
-        case SYN_NODE_CALL:
+        case SYN_NODE_CALL: {
+            bool is_function_declared = check_tree_using(tree->left, is_defined);
+            if (!is_function_declared) {
+                SEMANTIC_FUNC_UNDEF_ERROR("Function is not declared");
+            }
+            semantic_state->function_name = tree->left->value->value;
             process_call(tree);
             break;
+        }
         default:
             break;
     }
@@ -177,9 +183,15 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
         return (data_type) -1;
 
     switch (tree->type) {
-        case SYN_NODE_CALL:
+        case SYN_NODE_CALL: {
+            bool is_function_declared = check_tree_using(tree->left, is_defined);
+            if (!is_function_declared) {
+                SEMANTIC_FUNC_UNDEF_ERROR("Function is not declared");
+            }
+            semantic_state->function_name = tree->left->value->value;
             process_call(tree);
             return find_element(semantic_state->symtable_ptr, semantic_state->function_name)->type;
+        }
         case SYN_NODE_IDENTIFIER:
             check_tree_using(tree, check_defined);
             return find_element(semantic_state->symtable_ptr, tree->value->value)->type;
