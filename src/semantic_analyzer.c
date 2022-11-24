@@ -338,7 +338,8 @@ void insert_arguments(syntax_abstract_tree_t *tree) {
                     tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_STRING ? TYPE_STRING : TYPE_ALL;
             find_token(semantic_state->function_name)->argument_count = semantic_state->argument_count;
             arg->argument_type = arg->type;
-            find_token(semantic_state->function_name)->argument_type = arg->type | arg_node->argument_type;
+            find_token(semantic_state->function_name)->argument_type = (data_type) (arg->type |
+                                                                                    arg_node->argument_type);
             data_type *arg_ptr = find_element(semantic_state->symtable_ptr, semantic_state->function_name)->args_array;
             arg_ptr[semantic_state->argument_count - 1] = arg->type;
             break;
