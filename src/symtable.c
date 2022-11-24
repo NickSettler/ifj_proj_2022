@@ -10,6 +10,7 @@
 
 #include "symtable.h"
 #include "syntax_analyzer.h"
+#include "semantic_analyzer.h"
 
 
 tree_node_t *symtable;
@@ -22,22 +23,53 @@ tree_node_t *init_symtable() {
 tree_node_t *init_tree() {
     insert_function("readi");
     insert_return_type("readi", (data_type) (TYPE_INT | TYPE_NULL));
+    find_token("readi")->argument_count = 0;
+
     insert_function("reads");
     insert_return_type("reads", (data_type) (TYPE_STRING | TYPE_NULL));
+    find_token("reads")->argument_count = 0;
+
     insert_function("readf");
     insert_return_type("readf", (data_type) (TYPE_FLOAT | TYPE_NULL));
+    find_token("readf")->argument_count = 0;
+
+    data_type *type_array = (data_type *) malloc(sizeof(data_type) * 4);
+    type_array[0] = TYPE_ALL;
     insert_function("write");
-    insert_args("write", (data_type) (TYPE_FLOAT | TYPE_INT | TYPE_STRING | TYPE_NULL));
-    insert_function("substring");
-    insert_args("substring", (data_type) (TYPE_STRING | TYPE_INT));
-    insert_return_type("substring", (data_type) (TYPE_STRING | TYPE_NULL));
+    find_token("write")->argument_count = -1;
+    insert_args("write", 1, type_array);
+    find_token("write")->argument_type = TYPE_ALL;
+
     insert_function("strlen");
     insert_return_type("strlen", TYPE_INT);
+    find_token("strlen")->argument_count = 1;
+    type_array[0] = TYPE_STRING;
+    insert_args("strlen", 1, type_array);
+    find_token("strlen")->argument_type = TYPE_STRING;
+
     insert_function("ord");
-    insert_args("ord", (data_type) (TYPE_STRING | TYPE_INT));
+    insert_return_type("ord", TYPE_INT);
+    find_token("ord")->argument_count = 1;
+    type_array[0] = TYPE_STRING;
+    insert_args("ord", 1, type_array);
+    find_token("ord")->argument_type = TYPE_STRING;
+
     insert_function("chr");
-    insert_args("chr", TYPE_INT);
     insert_return_type("chr", TYPE_STRING);
+    find_token("chr")->argument_count = 1;
+    type_array[0] = TYPE_INT;
+    insert_args("chr", 1, type_array);
+    find_token("chr")->argument_type = TYPE_INT;
+
+    insert_function("substring");
+    insert_return_type("substring", (data_type) (TYPE_STRING | TYPE_NULL));
+    find_token("substring")->argument_count = 3;
+    type_array[0] = TYPE_STRING;
+    type_array[1] = TYPE_INT;
+    type_array[2] = TYPE_INT;
+    insert_args("substring", 3, type_array);
+    find_token("substring")->argument_type = TYPE_STRING;
+
     return symtable;
 }
 
@@ -58,12 +90,13 @@ void insert_return_type(char *key, data_type type) {
     }
 }
 
-void insert_args(char *key, data_type type) {
+void insert_args(char *key, int arg_count, data_type *type_array) {
     tree_node_t *function_ptr = find_element(symtable, key);
-    if (function_ptr->argument_type == 0) {
-        function_ptr->argument_type = type;
-    } else {
-        function_ptr->argument_type = (data_type) (function_ptr->argument_type | type);
+    data_type *args = (data_type *) malloc(sizeof(data_type) * arg_count);
+    find_element(symtable, key)->args_array = args;
+    data_type *arg_ptr = find_element(symtable, function_ptr->key)->args_array;
+    for (int i = 0; i < arg_count; i++) {
+        arg_ptr[i] = type_array[i];
     }
 }
 
@@ -213,8 +246,8 @@ void print_tree(tree_node_t *root, int level) {
         return;
     }
     printtabs(level);
-    printf("key = %s, defined = %d, global = %d, type = %d", root->key, root->defined, root->global,
-           root->type);
+    printf("key = %s, defined = %d, global = %d, type = %d args_count = %d\n", root->key, root->defined, root->global,
+           root->type, root->argument_count);
     printtabs(level);
     printf("left\n");
     print_tree(root->left, level + 1);

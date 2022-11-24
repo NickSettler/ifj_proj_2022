@@ -398,10 +398,6 @@ namespace ifj {
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected expression, got: EOF");
 
-                EXPECT_EXIT(SyntaxTreeWithError("<?php return;"),
-                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
-
                 EXPECT_EXIT(SyntaxTreeWithError("<?php return 1 +"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected expression, got: EOF");

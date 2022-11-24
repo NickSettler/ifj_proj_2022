@@ -47,6 +47,18 @@ void process_assign(syntax_abstract_tree_t *tree);
 void process_function_declaration(syntax_abstract_tree_t *tree);
 
 /**
+ * Checks if function return type is correct
+ * @param tree Abstract syntax tree
+ */
+void check_for_return_value(syntax_abstract_tree_t *tree);
+
+/**
+ * Runs semantic analyzer on function call
+ * @param tree Abstract syntax tree
+ */
+void process_call(syntax_abstract_tree_t *tree);
+
+/**
  * Checks types of nodes and returns type of the node
  * @param tree Abstract syntax tree
  * @return Type of the node
@@ -76,6 +88,7 @@ void check_tree_for_string(syntax_abstract_tree_t *tree);
  * @param tree Abstract syntax tree
  */
 void replace_node_to_string(syntax_abstract_tree_t *tree);
+
 /**
  * Checks types of two nodes
  * @param type_1 Type of first node
@@ -121,6 +134,25 @@ void set_return_type(syntax_abstract_tree_t *tree);
  * @param tree Abstract syntax tree
  */
 void insert_arguments(syntax_abstract_tree_t *tree);
+
+/**
+ * Counts number of arguments in function declaration
+ * @param tree Abstract syntax tree
+ */
+int count_arguments(syntax_abstract_tree_t *tree);
+
+/**
+ * Creates an array of arguments from function declaration
+ */
+void create_args_array();
+
+/**
+ * Checks if arguments in function call are the same as in function declaration
+ * @param tree Abstract syntax tree
+ * @param arg_array_ptr Array of function arguments
+ * @param counter Counter
+ */
+void compare_arguments(syntax_abstract_tree_t *tree, data_type *arg_array_ptr, int counter);
 
 /**
  * Checks if symtable_ptr is in function scope

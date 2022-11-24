@@ -18,7 +18,7 @@ semantic_analyzer_t *init_semantic_state() {
     if (result == 0) {
         INTERNAL_ERROR("Malloc for semantic analyzer failed");
     }
-    result->FUNCTION_SCOPE=false;
+    result->FUNCTION_SCOPE = false;
     result->function_name = NULL;
     result->argument_count = 0;
     result->symtable_ptr = symtable;
@@ -49,6 +49,15 @@ void process_tree(syntax_abstract_tree_t *tree) {
             semantic_state->symtable_ptr = symtable;
             break;
         }
+        case SYN_NODE_CALL: {
+            bool is_function_declared = check_tree_using(tree->left, is_defined);
+            if (!is_function_declared) {
+                SEMANTIC_FUNC_UNDEF_ERROR("Function is not declared");
+            }
+            semantic_state->function_name = tree->left->value->value;
+            process_call(tree);
+            break;
+        }
         default:
             break;
     }
@@ -77,20 +86,81 @@ void process_if_while(syntax_abstract_tree_t *tree) {
 void process_function_declaration(syntax_abstract_tree_t *tree) {
     syntax_abstract_tree_t *id_node = tree->left;
     semantic_state->function_name = id_node->value->value;
+    semantic_state->argument_count = 0; // reset argument count
 
     insert_function(semantic_state->function_name);
     set_return_type(tree);
+    find_element(semantic_state->symtable_ptr, semantic_state->function_name)->argument_count = count_arguments(
+            tree->middle); // set argument count to function
+    create_args_array();
     insert_arguments(tree->middle);
 
     semantic_state_ptr();
+    if (tree->right != NULL) {
+        process_tree(tree->right);
+    }
     process_tree(tree->right);
+    check_for_return_value(tree->right);
     semantic_state->symtable_ptr = symtable;
+}
+
+void check_for_return_value(syntax_abstract_tree_t *tree) {
+    if (tree == NULL) {
+        return;
+    }
+
+    bool has_return = tree->right->type == SYN_NODE_KEYWORD_RETURN;
+    bool func_has_return_type = find_token(semantic_state->function_name)->type != TYPE_ALL;
+    bool type_match = find_token(semantic_state->function_name)->type & get_data_type(tree->right->right);
+
+    if (!has_return && func_has_return_type) {
+        SEMANTIC_FUNC_RET_ERROR("Missing return value in function %s", semantic_state->function_name);
+    }
+
+    if (has_return) {
+        check_tree_using(tree->right->right, check_defined);
+        if (!type_match) {
+            SEMANTIC_FUNC_RET_ERROR("Wrong return value in function %s", semantic_state->function_name);
+        }
+    }
+}
+
+void process_call(syntax_abstract_tree_t *tree) {
+    tree_node_t *func = find_element(semantic_state->symtable_ptr, semantic_state->function_name);
+    data_type *arg_ptr = func->args_array;
+    int counter = func->argument_count - 1;
+    int arg_call_counter = count_arguments(tree->right);
+
+    if (strcmp(semantic_state->function_name, "write")) {
+        if (arg_call_counter != func->argument_count) {
+            SEMANTIC_FUNC_ARG_ERROR("Wrong number of arguments");
+        }
+    }
+    compare_arguments(tree->right, arg_ptr, counter);
+}
+
+void compare_arguments(syntax_abstract_tree_t *tree, data_type *arg_array_ptr, int counter) {
+    if (tree == NULL)
+        return;
+
+    // only for write function call
+    if (counter < 0) {
+        get_data_type(tree->left);
+        compare_arguments(tree->right, arg_array_ptr, counter);
+        return;
+    }
+
+    if (arg_array_ptr[counter] == TYPE_ALL) {
+        compare_arguments(tree->right, arg_array_ptr, counter - 1);
+    } else if (arg_array_ptr[counter] != get_data_type(tree->left)) {
+        SEMANTIC_FUNC_ARG_ERROR("Wrong type of argument with value %s", tree->left->value->value);
+    }
+    compare_arguments(tree->right, arg_array_ptr, counter - 1);
 }
 
 void semantic_state_ptr() {
     tree_node_t *function_node = find_token(semantic_state->function_name);
     semantic_state->symtable_ptr = function_node->function_tree;
-    return;
 }
 
 bool check_defined(syntax_abstract_tree_t *tree) {
@@ -118,12 +188,20 @@ bool is_defined(syntax_abstract_tree_t *tree) {
     return true;
 }
 
-
 data_type get_data_type(syntax_abstract_tree_t *tree) {
     if (tree == NULL)
         return (data_type) -1;
 
     switch (tree->type) {
+        case SYN_NODE_CALL: {
+            bool is_function_declared = check_tree_using(tree->left, is_defined);
+            if (!is_function_declared) {
+                SEMANTIC_FUNC_UNDEF_ERROR("Function is not declared");
+            }
+            semantic_state->function_name = tree->left->value->value;
+            process_call(tree);
+            return find_element(semantic_state->symtable_ptr, semantic_state->function_name)->type;
+        }
         case SYN_NODE_IDENTIFIER:
             check_tree_using(tree, check_defined);
             return find_element(semantic_state->symtable_ptr, tree->value->value)->type;
@@ -135,10 +213,21 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
             check_tree_for_string(tree);
         case SYN_NODE_STRING:
             return TYPE_STRING;
+        case SYN_NODE_KEYWORD_NULL:
+            return TYPE_NULL;
+        case SYN_NODE_KEYWORD_VOID:
+            return TYPE_VOID;
         case SYN_NODE_ADD:
         case SYN_NODE_SUB:
         case SYN_NODE_MUL:
+        case SYN_NODE_EQUAL:
+        case SYN_NODE_LESS:
+        case SYN_NODE_GREATER:
+        case SYN_NODE_LESS_EQUAL:
+        case SYN_NODE_GREATER_EQUAL:
+        case SYN_NODE_NOT_EQUAL:
         case SYN_NODE_NEGATE:
+            check_tree_using(tree, check_defined);
             if (!check_tree_using(tree, is_only_numbers)) {
                 SEMANTIC_TYPE_COMPAT_ERROR("Cannot use string in arithmetic expression")
             }
@@ -155,7 +244,6 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
     get_data_type(tree->left);
     get_data_type(tree->right);
 }
-
 
 void check_tree_for_float(syntax_abstract_tree_t *tree) {
     if (!check_tree_using(tree, is_node_an_int)) {
@@ -244,18 +332,33 @@ void insert_arguments(syntax_abstract_tree_t *tree) {
             char *arg_value = tree->left->value->value;
             tree_node_t *arg_node = find_token(semantic_state->function_name)->function_tree;
             tree_node_t *arg = find_element(arg_node, arg_value);
-            arg->argument_type =
+            arg->type =
                     tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_INT ? TYPE_INT :
                     tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_FLOAT ? TYPE_FLOAT :
-                    tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_STRING ? TYPE_STRING
-                                                                              : (data_type) -1;
+                    tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_STRING ? TYPE_STRING : TYPE_ALL;
             find_token(semantic_state->function_name)->argument_count = semantic_state->argument_count;
+            arg->argument_type = arg->type;
+            find_token(semantic_state->function_name)->argument_type = (data_type) (arg->type |
+                                                                                    arg_node->argument_type);
+            data_type *arg_ptr = find_element(semantic_state->symtable_ptr, semantic_state->function_name)->args_array;
+            arg_ptr[semantic_state->argument_count - 1] = arg->type;
             break;
         }
         default:
             break;
     }
     insert_arguments(tree->right);
+}
+
+int count_arguments(syntax_abstract_tree_t *tree) {
+    if (tree == NULL)
+        return 0;
+    return 1 + count_arguments(tree->right);
+}
+
+void create_args_array() {
+    data_type *args = (data_type *) malloc(sizeof(data_type) * semantic_state->argument_count);
+    find_element(semantic_state->symtable_ptr, semantic_state->function_name)->args_array = args;
 }
 
 void set_return_type(syntax_abstract_tree_t *tree) {
@@ -271,6 +374,12 @@ void set_return_type(syntax_abstract_tree_t *tree) {
             break;
         case SYN_TOKEN_KEYWORD_STRING:
             find_token(semantic_state->function_name)->type = TYPE_STRING;
+            break;
+        case SYN_TOKEN_KEYWORD_VOID:
+            find_token(semantic_state->function_name)->type = TYPE_VOID;
+            break;
+        case SYN_TOKEN_EOF:
+            find_token(semantic_state->function_name)->type = TYPE_ALL;
             break;
         default:
             break;

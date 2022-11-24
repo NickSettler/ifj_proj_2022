@@ -105,8 +105,9 @@ typedef enum {
     SYN_NODE_KEYWORD_WHILE = 1 << 26,
     SYN_NODE_KEYWORD_RETURN = 1 << 27,
     SYN_NODE_KEYWORD_NULL = 1 << 28,
-    SYN_NODE_FUNCTION_DECLARATION = 1 << 29,
-    SYN_NODE_FUNCTION_ARG = 1 << 30,
+    SYN_NODE_KEYWORD_VOID = 1 << 29,
+    SYN_NODE_FUNCTION_DECLARATION = 1 << 30,
+    SYN_NODE_FUNCTION_ARG = 1 << 31,
 } syntax_tree_node_type;
 
 typedef enum {

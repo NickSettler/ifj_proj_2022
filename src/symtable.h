@@ -28,10 +28,12 @@ typedef struct syntax_abstract_tree syntax_abstract_tree_t;
  * @var DATA_TYPE_STRING
  */
 typedef enum {
-    TYPE_NULL = 1 << 0,
-    TYPE_INT = 1 << 1,
-    TYPE_FLOAT = 1 << 2,
-    TYPE_STRING = 1 << 3,
+    TYPE_VOID = 1 << 0,
+    TYPE_NULL = 1 << 1,
+    TYPE_INT = 1 << 2,
+    TYPE_FLOAT = 1 << 3,
+    TYPE_STRING = 1 << 4,
+    TYPE_ALL = TYPE_VOID | TYPE_NULL | TYPE_INT | TYPE_FLOAT | TYPE_STRING,
 } data_type;
 
 /**
@@ -58,6 +60,7 @@ typedef struct tree_node {
     data_type type;
     data_type argument_type;
     int argument_count;
+    data_type *args_array;
     bool defined;
     bool global;
     bool code_generator_defined;
@@ -96,10 +99,11 @@ void insert_return_type(char *key, data_type type);
 
 /**
  * @brief insert function args into symtable
- * @param key
- * @param type
+ * @param key function name
+ * @param arg_count number of arguments
+ * @param args_array array of argument types
  */
-void insert_args(char *key, data_type type);
+void insert_args(char *key, int arg_count, data_type *type_array);
 
 /**
  * Creates tree node with key
