@@ -13,6 +13,7 @@
 #define IFJ_PROJ_2022_CODE_GENERATOR_H
 
 #include <stdio.h>
+#include <ctype.h>
 #include "str.h"
 #include "syntax_analyzer.h"
 #include "symtable.h"
@@ -366,6 +367,8 @@ void parse_loop(syntax_abstract_tree_t *tree);
  * @param tree syntax tree if node
  */
 void parse_condition(syntax_abstract_tree_t *tree);
+
+void parse_func_dec(syntax_abstract_tree_t *tree);
 
 /**
  * Parses syntax tree
