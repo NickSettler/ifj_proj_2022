@@ -130,8 +130,11 @@ void process_call(syntax_abstract_tree_t *tree) {
     data_type *arg_ptr = func->args_array;
     int counter = func->argument_count - 1;
     int arg_call_counter = count_arguments(tree->right);
-    if (arg_call_counter != func->argument_count) {
-        SEMANTIC_FUNC_ARG_ERROR("Wrong number of arguments");
+
+    if (strcmp(semantic_state->function_name, "write")) {
+        if (arg_call_counter != func->argument_count) {
+            SEMANTIC_FUNC_ARG_ERROR("Wrong number of arguments");
+        }
     }
     compare_arguments(tree->right, arg_ptr, counter);
 }
@@ -139,10 +142,17 @@ void process_call(syntax_abstract_tree_t *tree) {
 void compare_arguments(syntax_abstract_tree_t *tree, data_type *arg_array_ptr, int counter) {
     if (tree == NULL)
         return;
+
+    // only for write function call
+    if (counter < 0) {
+        get_data_type(tree->left);
+        compare_arguments(tree->right, arg_array_ptr, counter);
+        return;
+    }
+
     if (arg_array_ptr[counter] == TYPE_ALL) {
         compare_arguments(tree->right, arg_array_ptr, counter - 1);
-    }
-    if (arg_array_ptr[counter] != get_data_type(tree->left)) {
+    } else if (arg_array_ptr[counter] != get_data_type(tree->left)) {
         SEMANTIC_FUNC_ARG_ERROR("Wrong type of argument with value %s", tree->left->value->value);
     }
     compare_arguments(tree->right, arg_array_ptr, counter - 1);
@@ -328,6 +338,7 @@ void insert_arguments(syntax_abstract_tree_t *tree) {
                     tree->left->attrs->token_type == SYN_TOKEN_KEYWORD_STRING ? TYPE_STRING : TYPE_ALL;
             find_token(semantic_state->function_name)->argument_count = semantic_state->argument_count;
             arg->argument_type = arg->type;
+            find_token(semantic_state->function_name)->argument_type = arg->type | arg_node->argument_type;
             data_type *arg_ptr = find_element(semantic_state->symtable_ptr, semantic_state->function_name)->args_array;
             arg_ptr[semantic_state->argument_count - 1] = arg->type;
             break;
