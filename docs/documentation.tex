@@ -4,7 +4,7 @@
 % Author: Nikita Pasynkov <xpasyn0034@stud.fit.vutbr.cz>
 
 
-\documentclass[a4paper, 12pt]{article}
+\documentclass[a4paper, 11pt]{article}
 
 
 \usepackage[czech]{babel}
@@ -15,6 +15,8 @@
 \usepackage{enumitem}
 \usepackage{graphicx} % insert picture
 \usepackage[unicode]{hyperref}
+\usepackage[table,xcdraw]{xcolor}
+\documentclass[xcolor=table]{beamer}
 \hypersetup{
 	colorlinks = false,
 	hypertexnames = false,
@@ -111,14 +113,15 @@
 	chyby jsou detekovány až v průběhu sémantické analýzy. Po vytvoření abstraktního syntaktického stromu
 	syntaktický analyzátor přejde do další fáze sémantické analýzy.
 
-	Například výraz \texttt{\$a = 1;} \texttt{\$b = 2;}
-	bude reprezentován v abstraktním syntaktickém stromu jako na obrázku~\ref{figure:ast}.
+	Príklad stromu pro syntaktickou analýzu je uveden na obrázku~\ref{figure:ast_example}.
+
+	\newpage
 
 	\begin{figure}[!ht]
 		\centering
 		\includegraphics[width=1\linewidth]{ast.pdf}
-		\caption{Abstraktní syntaktický strom}
-		\label{figure:ast}
+		\caption{Abstraktní syntaktický strom přirážení proměnných}
+		\label{figure:ast_example}
 	\end{figure}
 
 	\subsection{Sémantická analýza}
@@ -130,13 +133,13 @@
 	kontrolu, vymaže alokovanou paměť a zobrazí chybovou hlášku na standartní chybový vstup. Po dokončení
 	sémantické analýzy se překladač přesune do fáze generování kódu.
 
-	Příklad stromu pro syntetickou analýzu je na obrázku~\ref{figure:symtable}.
+	Příklad stromu pro sémantickou analýzu je uveden na obrázku~\ref{figure:sem_anal_example}.
 
 	\begin{figure}[!ht]
 		\centering
-		\includegraphics[width=0.8\linewidth]{symtable.pdf}
-		\caption{Symtable}
-		\label{figure:symtable}
+		\includegraphics[width=1\linewidth]{sem_anal.pdf}
+		\caption{Derivační strom pro sémantickou analýzu}
+		\label{figure:sem_anal_example}
 	\end{figure}
 
 
@@ -152,19 +155,26 @@
 	stanovený kompletní plán rozdělení práce. Na dílčích částech projektu pracovali většinou
 	dvojice členů týmu.
 
-	\subsubsection{Verzovací systém}
+	\subsubsection{Vývoj}
 
-	Pro správu souborů projektu jsme používali verzovací systém Git. Jako vzdálený repositář jsme používali \mbox{GitHub}.
+	Veškerá naše práce byla rozdělena do sprintů, každý trval týden. Během sprintu musel každý jednotlivý člen týmu
+	splnit určitý objem úkolu.
 
-	Git nám umožnil pracovat na více úkolech na projektu současně v~tzv. větvích. Většinu úkolů jsme nejdříve připravili
-	do větve a~až po otestování a~schválení úprav ostatními členy týmu jsme tyto úpravy začlenili do hlavní
-	vývojové větve.
+	Pro správu souborů projektu jsme používali verzovací systém Git. Jako vzdálený repositář jsme použivali
+	\href{https://github.com/NickSettler/ifj_proj_2022}{\textit{repozitář na GitHubu}}.
+
+	Git nám umožnil pracovat na více úkolech na projektu současně v~tzv. větvích. Většinu úkolů jsme nejdříve
+	připravili do větve a~až po otestování a~schválení úprav ostatními členy týmu jsme tyto úpravy začlenili do
+	hlavní vývojové větve.
+
+	Pro testování jsme použili knihovnu pro testování jednotek \href{https://github.com/google/googletest}{\textit{googletest}}.
 
 	\subsubsection{Komunikace}
 
 	Komunikace mezi členy týmů probíhala převážně osobně nebo prostřednictvím aplikace Telegram.
 
-	V~průběhu řešení projektu jsme měli i~osobní setkání každý týden, kde jsme probírali a~řešili problémy týkající se různých částí projektu. Pro plánování úkolů jsme použili webovou aplikaci Notion.
+	V~průběhu řešení projektu jsme měli i~osobní setkání každý týden, kde jsme probírali a~řešili problémy
+	týkající se různých částí projektu. Pro plánování úkolů jsme použili webovou aplikaci \href{https://www.notion.so/378b8a4e4c564637be15b61858153ba3?v=438ac593c40b4649974738e0dc0ae2a3}{\textit{Notion}}.
 
 	\subsection{Rozdělení práce mezi členy týmu}
 
@@ -179,7 +189,7 @@
 			Člen týmu & Přidělená práce \\ \hline
 			\textbf{Nikita Moiseev} & \begin{tabular}{l} vedení týmu, organizace práce, dohlížení na provádění práce,
 				konzultace, \\ kontrola, lexikální analýza, syntaktická analýza \end{tabular} \\
-			Maksim Kalutski & \begin{tabular}{l} generování cílového kódu, testování \end{tabular} \\
+			Maksim Kalutski & \begin{tabular}{l} generování cílového kódu, testování, dokumentace \end{tabular} \\
 			Elena Marochkina & \begin{tabular}{l} implementace tabulky symbolů, syntaktická analýza, testování, dokumentace \end{tabular} \\
 			Nikita Pasynkov & \begin{tabular}{l} lexikální analýza, syntaktická analýza, testování, dokumentace \end{tabular} \\ \hline
 		\end{tabular}
@@ -287,11 +297,37 @@
     \newpage
 	\section{Precedenční tabulka}
 	\begin{table}[!ht]
-		\centering
-		\includegraphics[width=0.7\linewidth]{precedence_table.pdf}
-		\caption{Precedenční tabulka použitá při precedenční syntaktické analýze výrazů}
-		\label{table:prec_table}
-	\end{table}
+		\begin{center}
+		\scalebox{1.1}{
+		\begin{tabular}{|
+				>{\columncolor[HTML]{FAD9D5}}c |c|c|c|c|c|c|c|}
+			\hline
+			& \cellcolor[HTML]{FAD9D5}+ -           & \cellcolor[HTML]{FAD9D5}* /           & \cellcolor[HTML]{FAD9D5}\textless{}\textgreater{} & \cellcolor[HTML]{FAD9D5}(          & \cellcolor[HTML]{FAD9D5})             & \cellcolor[HTML]{FAD9D5}id         & \cellcolor[HTML]{FAD9D5}\$            \\ \hline
+			{\color[HTML]{333333} + -}                       & {\color[HTML]{333333} \textgreater{}} & {\color[HTML]{333333} \textless{}}    & {\color[HTML]{333333} \textgreater{}}             & {\color[HTML]{333333} \textless{}} & {\color[HTML]{333333} \textgreater{}} & {\color[HTML]{333333} \textless{}} & {\color[HTML]{333333} \textgreater{}} \\ \hline
+			{\color[HTML]{333333} * /}                       & {\color[HTML]{333333} \textgreater{}} & {\color[HTML]{333333} \textgreater{}} & {\color[HTML]{333333} \textgreater{}}             & {\color[HTML]{333333} \textless{}} & {\color[HTML]{333333} \textgreater{}} & {\color[HTML]{333333} \textless{}} & {\color[HTML]{333333} \textgreater{}} \\ \hline
+			{\color[HTML]{333333} \textless{}\textgreater{}} & {\color[HTML]{333333} \textless{}}    & {\color[HTML]{333333} \textless{}}    & {\color[HTML]{333333} 0}                          & {\color[HTML]{333333} \textless{}} & {\color[HTML]{333333} \textgreater{}} & {\color[HTML]{333333} \textless{}} & {\color[HTML]{333333} \textgreater{}} \\ \hline
+			{\color[HTML]{333333} (}                         & {\color[HTML]{333333} \textless{}}    & {\color[HTML]{333333} \textless{}}    & {\color[HTML]{333333} \textless{}}                & {\color[HTML]{333333} \textless{}} & {\color[HTML]{333333} =}              & {\color[HTML]{333333} \textless{}} & {\color[HTML]{333333} 0}              \\ \hline
+			{\color[HTML]{333333} )}                         & {\color[HTML]{333333} \textgreater{}} & {\color[HTML]{333333} \textgreater{}} & {\color[HTML]{333333} \textgreater{}}             & {\color[HTML]{333333} 0}           & {\color[HTML]{333333} \textgreater{}} & {\color[HTML]{333333} 0}           & {\color[HTML]{333333} \textgreater{}} \\ \hline
+			{\color[HTML]{333333} id}                        & {\color[HTML]{333333} \textgreater{}} & {\color[HTML]{333333} \textgreater{}} & {\color[HTML]{333333} \textgreater{}}             & {\color[HTML]{333333} 0}           & {\color[HTML]{333333} \textgreater{}} & {\color[HTML]{333333} 0}           & {\color[HTML]{333333} \textgreater{}} \\ \hline
+			{\color[HTML]{333333} \$}                        & {\color[HTML]{333333} \textless{}}    & {\color[HTML]{333333} \textless{}}    & {\color[HTML]{333333} \textless{}}                & {\color[HTML]{333333} \textless{}} & {\color[HTML]{333333} 0}              & {\color[HTML]{333333} \textless{}} & {\color[HTML]{333333} End}            \\ \hline
+		\end{tabular}}
+		\end{center}
+		\\\hspace{0.12\textwidth}+ - – aritmetické operátory + a -
 
+		\\\hspace{0.12\textwidth}* / – aritmetické operátory * a /
+
+		\\\hspace{0.12\textwidth}\textless{}\textgreater{} – relační operátory ==, !=, \textless{}, \textgreater{}, \textless{}=, \textgreater{}=
+
+		\\\hspace{0.12\textwidth}( – levá závorka
+
+		\\\hspace{0.12\textwidth})  – pravá závorka
+
+		\\\hspace{0.12\textwidth}id – identifikátor
+
+		\\\hspace{0.12\textwidth}\$  – konec vstupu
+
+		\caption{Precedenční tabulka použitá při syntaktické analýze}
+		\label{table:precedence_table}
+	\end{table}
 
 \end{document}
