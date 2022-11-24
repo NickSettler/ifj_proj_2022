@@ -681,14 +681,6 @@ namespace ifj {
                         SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
                         SYN_NODE_ASSIGN, SYN_NODE_INTEGER
                 });
-
-                EXPECT_EXIT(SyntaxTreeWithError("<?php $a = 1 &&"),
-                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expected expression, got: EOF");
-
-                EXPECT_EXIT(SyntaxTreeWithError("<?php $a = 1 &&;"),
-                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expected expression, got: ;");
             }
         }
     }
