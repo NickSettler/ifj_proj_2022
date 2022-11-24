@@ -54,8 +54,10 @@ void process_tree(syntax_abstract_tree_t *tree) {
             if (!is_function_declared) {
                 SEMANTIC_FUNC_UNDEF_ERROR("Function is not declared");
             }
+            char *temp_function_name = semantic_state->function_name;
             semantic_state->function_name = tree->left->value->value;
             process_call(tree);
+            semantic_state->function_name = temp_function_name;
             break;
         }
         default:
@@ -126,7 +128,8 @@ void check_for_return_value(syntax_abstract_tree_t *tree) {
 }
 
 void process_call(syntax_abstract_tree_t *tree) {
-    tree_node_t *func = find_element(semantic_state->symtable_ptr, semantic_state->function_name);
+    bool is_var = tree->left->value->value[0] == '$';
+    tree_node_t *func = find_element(is_var ? semantic_state->symtable_ptr : symtable, semantic_state->function_name);
     data_type *arg_ptr = func->args_array;
     int counter = func->argument_count - 1;
     int arg_call_counter = count_arguments(tree->right);
@@ -179,7 +182,8 @@ bool check_defined(syntax_abstract_tree_t *tree) {
 
 bool is_defined(syntax_abstract_tree_t *tree) {
     if (tree->type == SYN_NODE_IDENTIFIER) {
-        tree_node_t *node = find_element(semantic_state->symtable_ptr, tree->value->value);
+        bool is_var = tree->value->value[0] == '$';
+        tree_node_t *node = find_element(is_var ? semantic_state->symtable_ptr : symtable, tree->value->value);
         if (!node) return false;
 
         return node->defined == true;

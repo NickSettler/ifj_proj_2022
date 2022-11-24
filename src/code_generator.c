@@ -444,7 +444,7 @@ void generate_end() {
 }
 
 void generate_variable_inline_cast(syntax_abstract_tree_t *tree, data_type cast_to) {
-    if (cast_to | TYPE_STRING) return;
+    if (cast_to & TYPE_STRING) return;
 
     string_t *casted_string_name = string_init("");
     string_append_string(casted_string_name, "__%s_%s", tree->value->value,
@@ -476,8 +476,65 @@ void process_node_value(syntax_abstract_tree_t *tree) {
         string_replace(tree->value, var_tmp);
     } else if (tree->type == SYN_NODE_STRING) {
         string_t *new_str = string_init("");
-        for (int i = 1; i < tree->value->length - 1; i++) {
-            char c = tree->value->value[i];
+        string_t *current_str = tree->value;
+
+        bool contains_quotation = current_str->value[0] == '\"' || current_str->value[0] == '\'';
+        int start_end_index = contains_quotation ? 1 : 0;
+
+        bool is_backslash = false;
+
+        for (int i = start_end_index; i < tree->value->length - start_end_index; i++) {
+            char c = current_str->value[i];
+
+            if (is_backslash) {
+                switch (current_str->value[i]) {
+                    case 'a':
+                        c = '\a';
+                        break;
+                    case 'b':
+                        c = '\b';
+                        break;
+                    case 'f':
+                        c = '\f';
+                        break;
+                    case 'n':
+                        c = '\n';
+                        break;
+                    case 'r':
+                        c = '\r';
+                        break;
+                    case 't':
+                        c = '\t';
+                        break;
+                    case 'v':
+                        c = '\v';
+                        break;
+                    case '\\':
+                        c = '\\';
+                        break;
+                    case '\'':
+                        c = '\'';
+                        break;
+                    case '\"':
+                        c = '\"';
+                        break;
+                    case '?':
+                        c = '\?';
+                        break;
+                    case '0':
+                        c = '\0';
+                        break;
+                    default:
+                        i++;
+                        c = current_str->value[i];
+                        break;
+                }
+
+                is_backslash = false;
+            } else if (c == '\\') {
+                is_backslash = true;
+                continue;
+            }
 
             if (c >= 0 && c <= 32 || c == 35 || c == 92)
                 string_append_string(new_str, "\\%03d", c);
@@ -485,7 +542,7 @@ void process_node_value(syntax_abstract_tree_t *tree) {
                 string_append_char(new_str, c);
         }
 
-        string_free(tree->value);
+        string_free(current_str);
         tree->value = new_str;
     } else if (tree->type & SYN_NODE_KEYWORD_NULL) {
         if (tree->value == NULL)
@@ -581,8 +638,8 @@ void parse_expression(syntax_abstract_tree_t *tree, string_t *result) {
     operation_var->defined = true;
     operation_var->type = get_data_type(tree);
 
-    data_type left_type = get_data_type(tree->left);
-    data_type right_type = get_data_type(tree->right);
+    data_type left_type = get_data_type(tree->left) & ~TYPE_NULL;
+    data_type right_type = get_data_type(tree->right) & ~TYPE_NULL;
 
     data_type cast_type_to = type_check(left_type, right_type) & ~TYPE_NULL;
 
@@ -810,6 +867,19 @@ void parse_loop(syntax_abstract_tree_t *tree) {
     string_t *loop_end_label = string_init(loop_label->value);
     string_append_string(loop_end_label, "_end");
 
+    syntax_abstract_tree_t *body_tree = tree->right;
+    while (body_tree != NULL) {
+        if (body_tree->right->type == SYN_NODE_ASSIGN) {
+            if (!find_token(body_tree->right->left->value->value)) {
+                insert_token(body_tree->right->left->value->value);
+            } else if (find_token(body_tree->right->left->value->value)->code_generator_defined == false) {
+                generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, body_tree->right->left->value->value);
+                find_token(body_tree->right->left->value->value)->code_generator_defined = true;
+            }
+        }
+        body_tree = body_tree->left;
+    }
+
     syntax_tree_node_type loop_type = tree->left->type;
 
     generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, loop_cond_var->value);
@@ -873,6 +943,34 @@ void parse_condition(syntax_abstract_tree_t *tree) {
     generate_label(condition_end_label->value);
 }
 
+void parse_return(syntax_abstract_tree_t *tree) {
+    if (tree->type != SYN_NODE_KEYWORD_RETURN) return;
+
+    if (tree->right->type == SYN_NODE_KEYWORD_VOID) return;
+
+    process_node_value(tree->right);
+
+    frames_t frame = get_node_frame(tree->right);
+
+    generate_add_on_top(frame, tree->right->value->value);
+}
+
+void parse_func_dec(syntax_abstract_tree_t *tree) {
+    if (tree->left) parse_func_dec(tree->left);
+
+    if (tree->right->type != SYN_NODE_FUNCTION_DECLARATION) return;
+
+    string_t *function_label = string_init(tree->right->left->value->value);
+
+    generate_label(function_label->value);
+    generate_create_frame();
+    generate_push_frame();
+
+    parse_tree(tree->right->right);
+
+    generate_end();
+}
+
 void parse_tree(syntax_abstract_tree_t *tree) {
     if (tree->left) parse_tree(tree->left);
 
@@ -891,6 +989,9 @@ void parse_tree(syntax_abstract_tree_t *tree) {
                 break;
             case SYN_NODE_KEYWORD_IF:
                 parse_condition(tree->right);
+                break;
+            case SYN_NODE_KEYWORD_RETURN:
+                parse_return(tree->right);
                 break;
             default:
                 break;
