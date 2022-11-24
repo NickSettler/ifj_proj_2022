@@ -206,6 +206,27 @@ namespace ifj {
                 CheckSymTableEntries("<?php function f(int $i, float $s): float {"
                                      "return $i + $s;"
                                      "}"
+                                     "function foo(int $i) {"
+                                     "return $i;"
+                                     "}"
+                                     "$a = f(1, 2.0);"
+                                     "$a = foo(4);",
+                                     {
+                                             (tree_node_t) {
+                                                     .type = TYPE_FLOAT,
+                                                     .defined = true,
+                                                     .key = "$a",
+                                             }
+                                     }
+                );
+
+                CheckSymTableEntries("<?php function f(int $i, float $s): float {"
+                                     "return $i + $s;"
+                                     "}"
+                                     "function foo(int $i) {"
+                                     "return $i;"
+                                     "}"
+                                     "$a = foo(4);"
                                      "$a = f(1, 2.0);",
                                      {
                                              (tree_node_t) {
@@ -215,6 +236,82 @@ namespace ifj {
                                              }
                                      }
                 );
+
+                CheckSymTableEntries("<?php write(\"Hello world!\");",
+                                     {
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "write",
+                                             }
+                                     }
+                );
+
+                CheckSymTableEntries("<?php substring(\"Hello world!\", 1, 3);",
+                                     {
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "substring",
+                                             }
+                                     }
+                );
+
+                CheckSymTableEntries("<?php write(\"a\", \"b\", \"c\");",
+                                     {
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "write",
+                                             }
+                                     }
+                );
+
+                CheckSymTableEntries("<?php reads();",
+                                     {
+                                             (tree_node_t) {
+                                                     .defined = true,
+                                                     .key = "reads",
+                                             }
+                                     }
+                );
+
+                CheckSymTableEntries("<?php strlen(\"abc\");",
+                                     {
+                                             (tree_node_t) {
+                                                     .type = TYPE_INT,
+                                                     .defined = true,
+                                                     .key = "strlen",
+                                             }
+                                     }
+                );
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php strlen(\"a\", 2);", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php strlen(2);", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument with value 2");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php reads(2);", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $s): float {"
+                                                 "return $i + $s;"
+                                                 "}"
+                                                 "function foo(int $i) {"
+                                                 "return $i;"
+                                                 "}"
+                                                 "$a = f(1);"
+                                                 "$a = foo(4);",
+                                                 {
+                                                         (tree_node_t) {
+                                                                 .type = TYPE_FLOAT,
+                                                                 .defined = true,
+                                                                 .key = "$a",
+                                                         }
+                                                 }
+                ), ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
 
                 EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $f): float {"
                                                  "  return $i + $f;"
