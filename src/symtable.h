@@ -99,10 +99,11 @@ void insert_return_type(char *key, data_type type);
 
 /**
  * @brief insert function args into symtable
- * @param key
- * @param type
+ * @param key function name
+ * @param arg_count number of arguments
+ * @param args_array array of argument types
  */
-void insert_args(char *key, data_type type);
+void insert_args(char *key, int arg_count, data_type *type_array);
 
 /**
  * Creates tree node with key
