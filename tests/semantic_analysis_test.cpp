@@ -427,40 +427,40 @@ namespace ifj {
             }
 
             TEST_F(SemanticAnalysisTest, ExternalTests) {
-                EXPECT_EXIT(CheckSymTableEntries("<?php\n"
-                                                 "declare(strict_types=1);\n"
-                                                 "function readi() : int {\n"
-                                                 "  return 5;\n"
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "function readi() : int {"
+                                                 "  return 5;"
                                                  "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_UNDEF_ERROR_CODE),
                             "\\[SEMANTIC UNDEF FUNC ERROR\\] Function is already declared");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php\n"
-                                                 "declare(strict_types=1);\n"
-                                                 "function hello() : int {\n"
-                                                 "  return 5;\n"
-                                                 "}\n"
-                                                 "\n"
-                                                 "function hello() : int {\n"
-                                                 "    return 6;\n"
-                                                 "  }\n", {}),
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "function hello() : int {"
+                                                 "  return 5;"
+                                                 "}"
+                                                 ""
+                                                 "function hello() : int {"
+                                                 "    return 6;"
+                                                 "  }", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_UNDEF_ERROR_CODE),
                             "\\[SEMANTIC UNDEF FUNC ERROR\\] Function is already declared");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php\n"
-                                                 "declare(strict_types=1);\n"
-                                                 "function f(int $x) : void {\n"
-                                                 "    write($x, \"\\n\");\n"
-                                                 "}\n"
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "function f(int $x) : void {"
+                                                 "    write($x, \"\n\");"
+                                                 "}"
                                                  "f(\"1\");", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument");
 
-                CheckSymTableEntries("<?php\n"
-                                     "declare(strict_types=1);\n"
-                                     "function f(int $x) : void {\n"
-                                     "    write($x, \"\\n\");\n"
-                                     "}\n"
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "function f(int $x) : void {"
+                                     "    write($x, \"\n\");"
+                                     "}"
                                      "f(1);", {
                                              (tree_node_t) {
                                                      .type = TYPE_VOID,
@@ -470,23 +470,72 @@ namespace ifj {
                                              }
                                      });
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php\n"
-                                                 "declare(strict_types=1);\n"
-                                                 "function f(int $x) : void {\n"
-                                                 "    write($x, \"\\n\");\n"
-                                                 "}\n"
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "function f(int $x) : void {"
+                                                 "    write($x, \"\n\");"
+                                                 "}"
                                                  "f();", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php\n"
-                                                 "declare(strict_types=1);\n"
-                                                 "function f(int $x) : void {\n"
-                                                 "    write($x, \"\\n\");\n"
-                                                 "}\n"
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "function f(int $x) : void {"
+                                                 "    write($x, \"\n\");"
+                                                 "}"
                                                  "f(1, 2);", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "write($x);", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$x used before declaration");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "$x;", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$x used before declaration");
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "while(0 === 1) {"
+                                     "    write(\"BAD\n\");"
+                                     "}"
+                                     "write(\"GOOD\n\");", {});
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "while(\"\") {"
+                                     "    write(\"BAD\n\");"
+                                     "}"
+                                     "write(\"GOOD\n\");", {});
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "while(0.0) {"
+                                     "    write(\"BAD\n\");"
+                                     "}"
+                                     "write(\"GOOD\n\");", {});
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "$i = 0;"
+                                     "while($i < 3) {"
+                                     "    write($i, \"\n\");"
+                                     "    $i = $i + 1;"
+                                     "}"
+                                     "write(\"GOOD\n\");", {});
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "while(null) {"
+                                     "    write(\"BAD\n\");"
+                                     "}"
+                                     "write(\"GOOD\n\");", {});
             }
         }
     }

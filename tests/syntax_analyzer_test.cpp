@@ -593,13 +593,6 @@ namespace ifj {
                                     "while(1===0){}",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
                                      SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE});
-
-//                IsSyntaxTreeCorrect("<?php\n"
-//                                    "declare(strict_types=1);\n"
-//                                    "if(0 === 1) {\n"
-//                                    "  $x = 5;\n"
-//                                    "} else {}\n"
-//                                    "write($x);");
             }
         }
     }
