@@ -182,10 +182,11 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     ungetc(current_char, fd);
 
                     if (!strcmp(token->value, "=")) return ASSIGN;
-                    else if (!strcmp(token->value, "==")) return EQUAL;
-                    else if (!strcmp(token->value, "!=")) return NOT_EQUAL;
                     else if (!strcmp(token->value, "===")) return TYPED_EQUAL;
                     else if (!strcmp(token->value, "!==")) return TYPED_NOT_EQUAL;
+                    else {
+                        LEXICAL_ERROR("Invalid operator: %s", token->value);
+                    }
                 }
                 break;
             case ARITHMETIC_STATE:
