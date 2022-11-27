@@ -111,12 +111,16 @@ void process_function_declaration(syntax_abstract_tree_t *tree) {
 }
 
 void check_for_return_value(syntax_abstract_tree_t *tree) {
+    bool func_has_return_type = find_token(semantic_state->function_name)->type != TYPE_ALL;
+
     if (tree == NULL) {
+        if (func_has_return_type) {
+            SEMANTIC_FUNC_RET_ERROR("Function has no return");
+        }
         return;
     }
 
     bool has_return = tree->right->type == SYN_NODE_KEYWORD_RETURN;
-    bool func_has_return_type = find_token(semantic_state->function_name)->type != TYPE_ALL;
     bool type_match = find_token(semantic_state->function_name)->type & get_data_type(tree->right->right);
 
     if (!has_return && func_has_return_type) {
