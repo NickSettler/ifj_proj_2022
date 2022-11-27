@@ -354,7 +354,21 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
             v = make_binary_leaf(SYN_NODE_IDENTIFIER, string_init(lexical_token->value));
             bool is_variable = lexical_token->value[0] == '$';
             GET_NEXT_TOKEN(fd)
-            expect_token("Assignment", is_variable ? SYN_TOKEN_ASSIGN : SYN_TOKEN_LEFT_PARENTHESIS);
+            if (is_variable) {
+                syntax_tree_token_type current_token_type = get_token_type(lexical_token->type);
+                if (current_token_type != SYN_TOKEN_ASSIGN && current_token_type != SYN_TOKEN_SEMICOLON) {
+                    SYNTAX_ERROR("Expected assignment or semicolon, got: %s\n",
+                                 get_readable_error_char(lexical_token->value))
+                }
+
+                if (current_token_type == SYN_TOKEN_SEMICOLON) {
+                    tree = make_binary_node(SYN_NODE_ASSIGN, v, v);
+                    GET_NEXT_TOKEN(fd)
+                    break;
+                }
+            } else {
+                expect_token("Left parenthesis", SYN_TOKEN_LEFT_PARENTHESIS);
+            }
             GET_NEXT_TOKEN(fd)
             e = is_variable ? expression(fd, 0) : args(fd);
             tree = make_binary_node(is_variable ? SYN_NODE_ASSIGN : SYN_NODE_CALL, v, e);
