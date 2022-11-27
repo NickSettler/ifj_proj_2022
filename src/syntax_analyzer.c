@@ -460,7 +460,7 @@ syntax_abstract_tree_t *load_syntax_tree(FILE *fd) {
         expect_token("Left parenthesis", SYN_TOKEN_LEFT_PARENTHESIS);
         GET_NEXT_TOKEN(fd)
 
-        if (lexical_token->type != KEYWORD_STRICT_TYPES) {
+        if (lexical_token->type != IDENTIFIER && strcmp(lexical_token->value, "strict_types") != 0) {
             SYNTAX_ERROR("Expected strict types keyword\n")
         }
 

@@ -868,7 +868,7 @@ void parse_loop(syntax_abstract_tree_t *tree) {
     string_append_string(loop_end_label, "_end");
 
     syntax_abstract_tree_t *body_tree = tree->right;
-    while (body_tree != NULL) {
+    while (body_tree != NULL && body_tree->left != NULL) {
         if (body_tree->right->type == SYN_NODE_ASSIGN) {
             if (!find_token(body_tree->right->left->value->value)) {
                 insert_token(body_tree->right->left->value->value);
@@ -956,6 +956,8 @@ void parse_return(syntax_abstract_tree_t *tree) {
 }
 
 void parse_func_dec(syntax_abstract_tree_t *tree) {
+    if (!tree) return;
+
     if (tree->left) parse_func_dec(tree->left);
 
     if (tree->right->type != SYN_NODE_FUNCTION_DECLARATION) return;
@@ -972,6 +974,8 @@ void parse_func_dec(syntax_abstract_tree_t *tree) {
 }
 
 void parse_tree(syntax_abstract_tree_t *tree) {
+    if (!tree) return;
+
     if (tree->left) parse_tree(tree->left);
 
     if (tree->type != SYN_NODE_SEQUENCE) return;
