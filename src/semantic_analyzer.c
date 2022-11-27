@@ -86,6 +86,10 @@ void process_if_while(syntax_abstract_tree_t *tree) {
 }
 
 void process_function_declaration(syntax_abstract_tree_t *tree) {
+    if (check_tree_using(tree->left, is_defined)) {
+        SEMANTIC_FUNC_UNDEF_ERROR("Function is already declared");
+    }
+
     syntax_abstract_tree_t *id_node = tree->left;
     semantic_state->function_name = id_node->value->value;
     semantic_state->argument_count = 0; // reset argument count
