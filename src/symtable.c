@@ -68,7 +68,7 @@ tree_node_t *init_tree() {
     type_array[1] = TYPE_INT;
     type_array[2] = TYPE_INT;
     insert_args("substring", 3, type_array);
-    find_token("substring")->argument_type = TYPE_STRING;
+    find_token("substring")->argument_type = (data_type) (TYPE_STRING | TYPE_INT);
 
     return symtable;
 }
@@ -113,7 +113,7 @@ tree_node_t *create_node(char *key) {
     result->global = false;
     result->local = false;
     result->is_function = false;
-    result->type = TYPE_NULL;
+    result->type = (data_type) 0;
     result->argument_type = TYPE_NULL;
     result->argument_count = 0;
     result->function_tree = NULL;
