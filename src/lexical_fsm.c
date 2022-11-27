@@ -26,6 +26,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 switch (current_char) {
                     case ' ':
                     case '\n':
+                    case '\t':
                         break;
                     case '\0':
                     case EOF:
