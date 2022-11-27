@@ -371,7 +371,10 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
         case KEYWORD_IF: {
             GET_NEXT_TOKEN(fd)
             e = parenthesis_expression(fd);
+            bool exists_if_body = get_token_type(lexical_token->type) == SYN_TOKEN_LEFT_CURLY_BRACKETS;
             s = stmt(fd);
+            if (s == NULL && exists_if_body)
+                s = make_binary_leaf(SYN_NODE_SEQUENCE, NULL);
             s2 = NULL;
             if (lexical_token->type == KEYWORD_ELSE) {
                 GET_NEXT_TOKEN(fd)

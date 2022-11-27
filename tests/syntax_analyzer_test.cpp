@@ -218,9 +218,6 @@ namespace ifj {
                 EXPECT_EXIT(SyntaxTreeWithError("<?php if($a) }"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected statement, got: }");
 
-                EXPECT_EXIT(SyntaxTreeWithError("<?php if($a) {}"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Incorrect if statement");
-
                 EXPECT_EXIT(SyntaxTreeWithError("<?php if($a) {$a}"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Assignment Expecting =, found: }");
             }
@@ -526,6 +523,86 @@ namespace ifj {
                 EXPECT_EXIT(IsSyntaxTreeCorrect("<?php $a = 1; ?>;", {}),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected end of file, got: ;");
+            }
+
+            TEST_F(SyntaxAnalyzerTest, ExternalTests) {
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "5;", {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "$x = 5;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "reads();\n"
+                                    "readi();\n"
+                                    "readf();\n"
+                                    "write(5);\n"
+                                    "write(\"hello world\", 99);",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL, SYN_NODE_SEQUENCE,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_CALL, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_CALL, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL,
+                                     SYN_NODE_INTEGER, SYN_NODE_ARGS, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_CALL, SYN_NODE_INTEGER, SYN_NODE_ARGS, SYN_NODE_STRING, SYN_NODE_ARGS});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "if(1===1){}else{}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "if(1===1) {\n"
+                                    "    $x = 5;\n"
+                                    "    $y = 7;\n"
+                                    "} else {\n"
+                                    "    $x = 6;\n"
+                                    "    $y = 8;\n"
+                                    "}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "if(1===1) {\n"
+                                    "    $x = 5;\n"
+                                    "} else {\n"
+                                    "    $x = 6;\n"
+                                    "}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "return;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_KEYWORD_RETURN, SYN_NODE_KEYWORD_VOID});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "return 0;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_KEYWORD_RETURN, SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "return 1+2;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_KEYWORD_RETURN, SYN_NODE_INTEGER, SYN_NODE_ADD,
+                                     SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "while(1===0){}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE});
             }
         }
     }

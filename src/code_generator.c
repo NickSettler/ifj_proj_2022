@@ -803,23 +803,25 @@ void parse_function_call(syntax_abstract_tree_t *tree, string_t *result) {
             case CODE_GEN_READI_INSTRUCTION:
             case CODE_GEN_READF_INSTRUCTION:
             case CODE_GEN_READS_INSTRUCTION: {
-                if (find_token(result->value)->code_generator_defined == false)
+                if (result != NULL && find_token(result->value)->code_generator_defined == false) {
                     generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, result->value);
-                find_token(result->value)->code_generator_defined = true;
+                    find_token(result->value)->code_generator_defined = true;
+                }
 
-                generate_operation(internal_func, CODE_GENERATOR_GLOBAL_FRAME, result->value, (frames_t) -1,
-                                   NULL, (frames_t) -1, NULL);
+                if (result)
+                    generate_operation(internal_func, CODE_GENERATOR_GLOBAL_FRAME, result->value, (frames_t) -1, NULL,
+                                       (frames_t) -1, NULL);
                 break;
             }
             case CODE_GEN_INT2CHAR_INSTRUCTION:
             case CODE_GEN_STRLEN_INSTRUCTION: {
-                if (!find_token(result->value)) {
+                if (result != NULL && !find_token(result->value)) {
                     insert_token(result->value);
                     find_token(result->value)->defined = true;
                     find_token(result->value)->type = get_data_type(tree->left);
                 }
 
-                if (find_token(result->value)->code_generator_defined == false)
+                if (result != NULL && find_token(result->value)->code_generator_defined == false)
                     generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, result->value);
                 find_token(result->value)->code_generator_defined = true;
 
