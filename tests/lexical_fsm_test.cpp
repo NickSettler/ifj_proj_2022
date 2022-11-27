@@ -172,22 +172,10 @@ namespace ifj {
             }
 
             TEST_F(LexicalAnalyzerTest, EqualOperators) {
-                IsStackCorrect("$a == $b;", 4,
-                               (lexical_token_t) {IDENTIFIER, "$a"},
-                               (lexical_token_t) {EQUAL, "=="},
-                               (lexical_token_t) {IDENTIFIER, "$b"},
-                               (lexical_token_t) {SEMICOLON, ";"}
-                );
                 IsStackCorrect("$a=== 2;", 4,
                                (lexical_token_t) {IDENTIFIER, "$a"},
                                (lexical_token_t) {TYPED_EQUAL, "==="},
                                (lexical_token_t) {INTEGER, "2"},
-                               (lexical_token_t) {SEMICOLON, ";"}
-                );
-                IsStackCorrect("$a != 4;", 4,
-                               (lexical_token_t) {IDENTIFIER, "$a"},
-                               (lexical_token_t) {NOT_EQUAL, "!="},
-                               (lexical_token_t) {INTEGER, "4"},
                                (lexical_token_t) {SEMICOLON, ";"}
                 );
                 IsStackCorrect("$a !== \"abc\";", 4,
@@ -196,6 +184,22 @@ namespace ifj {
                                (lexical_token_t) {STRING, "\"abc\""},
                                (lexical_token_t) {SEMICOLON, ";"}
                 );
+
+                EXPECT_EXIT(IsStackCorrect("$a == $b;", 4,
+                                           (lexical_token_t) {IDENTIFIER, "$a"},
+                                           (lexical_token_t) {EQUAL, "=="},
+                                           (lexical_token_t) {IDENTIFIER, "$b"},
+                                           (lexical_token_t) {SEMICOLON, ";"}),
+                            ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid operator: ==");
+
+                EXPECT_EXIT(IsStackCorrect("$a != $b;", 4,
+                                           (lexical_token_t) {IDENTIFIER, "$a"},
+                                           (lexical_token_t) {NOT_EQUAL, "!="},
+                                           (lexical_token_t) {IDENTIFIER, "$b"},
+                                           (lexical_token_t) {SEMICOLON, ";"}),
+                            ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid operator: !=");
             }
 
             TEST_F(LexicalAnalyzerTest, LogicalOperators) {
@@ -256,12 +260,12 @@ namespace ifj {
                                (lexical_token_t) {FLOAT, "3.25"},
                                (lexical_token_t) {SEMICOLON, ";"}
                 );
-                IsStackCorrect("( \"a\" * 4 == \"aaaa\")&& (2 + $b===7.5 );", 16,
+                IsStackCorrect("( \"a\" * 4 === \"aaaa\")&& (2 + $b===7.5 );", 16,
                                (lexical_token_t) {LEFT_PARENTHESIS, "("},
                                (lexical_token_t) {STRING, "\"a\""},
                                (lexical_token_t) {MULTIPLY, "*"},
                                (lexical_token_t) {INTEGER, "4"},
-                               (lexical_token_t) {EQUAL, "=="},
+                               (lexical_token_t) {TYPED_EQUAL, "==="},
                                (lexical_token_t) {STRING, "\"aaaa\""},
                                (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
                                (lexical_token_t) {LOGICAL_AND, "&&"},
@@ -293,7 +297,7 @@ namespace ifj {
                                (lexical_token_t) {SEMICOLON, ";"},
                                (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
                 );
-                IsStackCorrect("$cond= $a ==4 &&$c===\"123\";"
+                IsStackCorrect("$cond= $a ===4 &&$c===\"123\";"
                                "if ($cond) {"
                                "   $b = 5;"
                                "}else if ($a === 2.13) {"
@@ -304,7 +308,7 @@ namespace ifj {
                                (lexical_token_t) {IDENTIFIER, "$cond"},
                                (lexical_token_t) {ASSIGN, "="},
                                (lexical_token_t) {IDENTIFIER, "$a"},
-                               (lexical_token_t) {EQUAL, "=="},
+                               (lexical_token_t) {TYPED_EQUAL, "==="},
                                (lexical_token_t) {INTEGER, "4"},
                                (lexical_token_t) {LOGICAL_AND, "&&"},
                                (lexical_token_t) {IDENTIFIER, "$c"},
@@ -394,7 +398,7 @@ namespace ifj {
             TEST_F(LexicalAnalyzerTest, CaseSensitiveKeywords) {
                 IsStackCorrect("Function foo(int $a){"
                                "    $a = NuLl;"
-                               "    IF ($a == NULL) {"
+                               "    IF ($a === NULL) {"
                                "    $a = 5;}", 23,
                                (lexical_token_t) {KEYWORD_FUNCTION, "function"},
                                (lexical_token_t) {IDENTIFIER, "foo"},
@@ -410,7 +414,7 @@ namespace ifj {
                                (lexical_token_t) {KEYWORD_IF, "if"},
                                (lexical_token_t) {LEFT_PARENTHESIS, "("},
                                (lexical_token_t) {IDENTIFIER, "$a"},
-                               (lexical_token_t) {EQUAL, "=="},
+                               (lexical_token_t) {TYPED_EQUAL, "==="},
                                (lexical_token_t) {KEYWORD_NULL, "null"},
                                (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
                                (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
@@ -701,6 +705,39 @@ namespace ifj {
                                (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
                 );
 
+                EXPECT_EXIT(IsStackCorrect("<?php\n"
+                                           "declare(strict_types=1);\n"
+                                           "while(1!=1){}", 0),
+                            ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid operator: !=");
+
+                IsStackCorrect("<?php\n"
+                               "declare(strict_types=1);\n"
+                               "while(1===1){}", 16,
+                               (lexical_token_t) {OPEN_PHP_BRACKET, "<?php"},
+                               (lexical_token_t) {KEYWORD_DECLARE, "declare"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {IDENTIFIER, "strict_types"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "1"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {KEYWORD_WHILE, "while"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {INTEGER, "1"},
+                               (lexical_token_t) {TYPED_EQUAL, "==="},
+                               (lexical_token_t) {INTEGER, "1"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
+                               (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
+                );
+
+                EXPECT_EXIT(IsStackCorrect("<?php\n"
+                                           "declare(strict_types=1);\n"
+                                           "while(1==0){}", 0),
+                            ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid operator: ==");
+
                 IsStackCorrect("<?php//this is opening tag, it is needed for ever php script\n"
                                "/* this is something that is needed for compability with IFJ code */declare(/*some parameter here*//*aaaaaaa*/strict_types=/*:)*/1);//bye",
                                8,
@@ -771,6 +808,24 @@ namespace ifj {
                                            "@", 0),
                             ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
                             "\\[LEXICAL ERROR\\] Unexpected character: @");
+
+                IsStackCorrect("<?php\n"
+                               "declare(strict_types=1);\n"
+                               "$return = 5;", 12,
+                               (lexical_token_t) {OPEN_PHP_BRACKET, "<?php"},
+                               (lexical_token_t) {KEYWORD_DECLARE, "declare"},
+                               (lexical_token_t) {LEFT_PARENTHESIS, "("},
+                               (lexical_token_t) {IDENTIFIER, "strict_types"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "1"},
+                               (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
+                               (lexical_token_t) {SEMICOLON, ";"},
+                               (lexical_token_t) {IDENTIFIER, "$return"},
+                               (lexical_token_t) {ASSIGN, "="},
+                               (lexical_token_t) {INTEGER, "5"},
+                               (lexical_token_t) {SEMICOLON, ";"}
+
+                );
             }
         }
     }
