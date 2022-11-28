@@ -700,9 +700,10 @@ void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result)
     bool is_left_const = tree->left->type == SYN_NODE_INTEGER || tree->left->type == SYN_NODE_FLOAT ||
                          tree->left->type == SYN_NODE_STRING || tree->left->type == SYN_NODE_IDENTIFIER ||
                          tree->left->type == SYN_NODE_KEYWORD_NULL;
-    bool is_right_const = tree->right->type == SYN_NODE_INTEGER || tree->right->type == SYN_NODE_FLOAT ||
-                          tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER ||
-                          tree->right->type == SYN_NODE_KEYWORD_NULL;
+    bool is_right_const = tree->right ? tree->right->type == SYN_NODE_INTEGER || tree->right->type == SYN_NODE_FLOAT ||
+                                        tree->right->type == SYN_NODE_STRING ||
+                                        tree->right->type == SYN_NODE_IDENTIFIER ||
+                                        tree->right->type == SYN_NODE_KEYWORD_NULL : true;
 
     if (is_left_const && is_right_const) {
         string_t *operation_var_name = result ? result : string_init(tmp_var_name);
@@ -722,6 +723,17 @@ void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result)
 
         process_node_value(tree->left);
         process_node_value(tree->right);
+
+        if (instruction == CODE_GEN_NOT_INSTRUCTION) {
+            generate_operation(instruction,
+                               CODE_GENERATOR_GLOBAL_FRAME,
+                               operation_var_name->value,
+                               left_frame,
+                               tree->left->value->value,
+                               (frames_t) -1,
+                               NULL);
+            return;
+        }
 
         generate_operation(instruction,
                            CODE_GENERATOR_GLOBAL_FRAME,
