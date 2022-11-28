@@ -1,3 +1,15 @@
+/**
+ * Implementace překladače imperativního jazyka IFJ22.
+ * @authors
+ *   xmoise01, Nikita Moiseev
+ *   xpasyn00, Nikita Pasynkov
+ *   xmaroc00, Elena Marochkina
+ *
+ * @file semantic_analyzer.c
+ * @brief Semantic analyzer
+ * @date 05.10.2022
+ */
+
 #include "semantic_analyzer.h"
 #include "syntax_analyzer.h"
 
@@ -22,7 +34,12 @@ semantic_analyzer_t *init_semantic_state() {
     result->function_name = NULL;
     result->argument_count = 0;
     result->symtable_ptr = symtable;
+    result->used_functions = (semantic_internal_functions) 0;
     return result;
+}
+
+semantic_analyzer_t *get_semantic_state() {
+    return semantic_state;
 }
 
 void process_tree(syntax_abstract_tree_t *tree) {
@@ -52,7 +69,7 @@ void process_tree(syntax_abstract_tree_t *tree) {
         case SYN_NODE_CALL: {
             bool is_function_declared = check_tree_using(tree->left, is_defined);
             if (!is_function_declared) {
-                SEMANTIC_FUNC_UNDEF_ERROR("Function is not declared");
+                SEMANTIC_FUNC_UNDEF_ERROR("Function is not declared")
             }
             char *temp_function_name = semantic_state->function_name;
             semantic_state->function_name = tree->left->value->value;
@@ -148,6 +165,36 @@ void process_call(syntax_abstract_tree_t *tree) {
     data_type *arg_ptr = func->args_array;
     int counter = func->argument_count - 1;
     int arg_call_counter = count_arguments(tree->right);
+
+
+    if (!strcmp(tree->left->value->value, "readi"))
+        semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
+                                                                        SEMANTIC_READI);
+    else if (!strcmp(tree->left->value->value, "readf"))
+        semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
+                                                                        SEMANTIC_READF);
+    else if (!strcmp(tree->left->value->value, "reads"))
+        semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
+                                                                        SEMANTIC_READS);
+    else if (!strcmp(tree->left->value->value, "write"))
+        semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
+                                                                        SEMANTIC_WRITE);
+    else if (!strcmp(tree->left->value->value, "strlen"))
+        semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
+                                                                        SEMANTIC_STRLEN);
+    else if (!strcmp(tree->left->value->value, "ord"))
+        semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions | SEMANTIC_ORD);
+    else if (!strcmp(tree->left->value->value, "chr"))
+        semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions | SEMANTIC_CHR);
+    else if (!strcmp(tree->left->value->value, "substring"))
+        semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
+                                                                        SEMANTIC_SUBSTRING);
+    else if (!strcmp(tree->left->value->value, "intval"))
+        semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
+                                                                        SEMANTIC_INTVAL);
+    else if (!strcmp(tree->left->value->value, "floatval"))
+        semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
+                                                                        SEMANTIC_FLOATVAL);
 
     if (strcmp(semantic_state->function_name, "write")) {
         if (arg_call_counter != func->argument_count) {

@@ -29,9 +29,15 @@ int main(int argc, char **argv) {
     generate_exit(0);
 
     parse_func_dec(tree);
-    generate_number_conversion_functions();
-    generate_substr();
-    generate_ord();
+
+    semantic_analyzer_t *current_semantic_state = get_semantic_state();
+
+    if (current_semantic_state->used_functions & (SEMANTIC_INTVAL | SEMANTIC_FLOATVAL))
+        generate_number_conversion_functions();
+    if (current_semantic_state->used_functions & SEMANTIC_SUBSTRING)
+        generate_substr();
+    if (current_semantic_state->used_functions & SEMANTIC_ORD)
+        generate_ord();
 
     dispose_symtable();
 //    free_syntax_tree(tree);
