@@ -14,7 +14,9 @@
 void replace_variable_usage_internal(syntax_abstract_tree_t *tree) {
     if (!tree) return;
 
-    if (tree->type & (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV)) {
+    if (tree->type &
+        (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV | SYN_NODE_TYPED_EQUAL | SYN_NODE_TYPED_NOT_EQUAL |
+         SYN_NODE_LESS | SYN_NODE_LESS_EQUAL | SYN_NODE_GREATER | SYN_NODE_GREATER_EQUAL)) {
         if (tree->left->type == SYN_NODE_IDENTIFIER &&
             !strcmp(tree->left->value->value, optimiser_params->current_replaced_variable_name->value)) {
             tree->left = tree_copy(optimiser_params->current_replaced_variable_tree);
@@ -22,6 +24,13 @@ void replace_variable_usage_internal(syntax_abstract_tree_t *tree) {
         if (tree->right->type == SYN_NODE_IDENTIFIER &&
             !strcmp(tree->right->value->value, optimiser_params->current_replaced_variable_name->value)) {
             tree->right = tree_copy(optimiser_params->current_replaced_variable_tree);
+        }
+    }
+
+    if (tree->type & SYN_NODE_ARGS) {
+        if (tree->left->type == SYN_NODE_IDENTIFIER &&
+            !strcmp(tree->left->value->value, optimiser_params->current_replaced_variable_name->value)) {
+            tree->left = tree_copy(optimiser_params->current_replaced_variable_tree);
         }
     }
 }
@@ -165,7 +174,28 @@ void optimize_node(syntax_abstract_tree_t *tree, optimise_type_t optimise_type) 
                 optimiser_params->current_replaced_variable_tree = tree->right->right;
                 replace_variable_usage(optimiser_params->root_tree, tree->right);
             }
+
+            if (optimise_type == OPTIMISE_UNUSED_VARIABLES) {
+                optimiser_params->current_unused_variable = tree->right->left->value;
+                optimize_unused_variables(optimiser_params->root_tree, tree->right);
+            }
             break;
+        }
+        case SYN_NODE_KEYWORD_IF: {
+            if (optimise_type == OPTIMISE_EXPRESSION) {
+                process_tree_using(tree->right, optimize_expression, POSTORDER);
+                optimiser_params->current_replaced_variable_name = tree->right->left->value;
+                optimiser_params->current_replaced_variable_tree = tree->right->right;
+                replace_variable_usage(optimiser_params->root_tree, tree->right);
+            }
+        }
+        case SYN_NODE_CALL: {
+            if (optimise_type == OPTIMISE_EXPRESSION) {
+                process_tree_using(tree->right, optimize_expression, POSTORDER);
+                optimiser_params->current_replaced_variable_name = tree->right->left->value;
+                optimiser_params->current_replaced_variable_tree = tree->right->right;
+                replace_variable_usage(optimiser_params->root_tree, tree->right);
+            }
         }
         default:
             break;
