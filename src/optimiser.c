@@ -121,6 +121,8 @@ void replace_variable_usage(syntax_abstract_tree_t *tree, syntax_abstract_tree_t
             }
         }
 
+        if (current->right->type == SYN_NODE_KEYWORD_WHILE) continue;
+
         process_tree_using(current->right, replace_variable_usage_internal, POSTORDER);
     }
 }
