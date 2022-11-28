@@ -664,10 +664,13 @@ void parse_expression(syntax_abstract_tree_t *tree, string_t *result) {
     process_node_value(tree->left);
     process_node_value(tree->right);
 
+    frames_t operation_result_frame = code_generator_parameters->is_in_function ? CODE_GENERATOR_LOCAL_FRAME
+                                                                                : CODE_GENERATOR_GLOBAL_FRAME;
+
     if (!result)
-        generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, operation_var_name->value);
+        generate_declaration(operation_result_frame, operation_var_name->value);
     generate_operation(instruction,
-                       CODE_GENERATOR_GLOBAL_FRAME,
+                       operation_result_frame,
                        operation_var_name->value,
                        left_frame,
                        tree->left->value->value,
@@ -750,8 +753,10 @@ void parse_assign(syntax_abstract_tree_t *tree) {
         find_token(tree->left->value->value)->type = get_data_type(tree->left);
     }
 
+    frames_t assign_frame = get_node_frame(tree->left);
+
     if (find_token(tree->left->value->value)->code_generator_defined == false)
-        generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
+        generate_declaration(assign_frame, tree->left->value->value);
 
     find_token(tree->left->value->value)->code_generator_defined = true;
 
@@ -763,7 +768,7 @@ void parse_assign(syntax_abstract_tree_t *tree) {
         if (tree->right->type == SYN_NODE_CALL) {
             parse_function_call(tree->right, tree->left->value);
         } else {
-            generate_move(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value, get_node_frame(tree->right),
+            generate_move(assign_frame, tree->left->value->value, get_node_frame(tree->right),
                           tree->right->value->value);
         }
     }
@@ -983,7 +988,18 @@ void parse_func_dec(syntax_abstract_tree_t *tree) {
     generate_create_frame();
     generate_push_frame();
 
+    syntax_abstract_tree_t *param_tree = tree->right->middle;
+    while (param_tree != NULL) {
+        generate_declaration(CODE_GENERATOR_LOCAL_FRAME, param_tree->left->value->value);
+        generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, param_tree->left->value->value);
+        param_tree = param_tree->right;
+    }
+
+    get_semantic_state()->function_name = tree->right->left->value->value;
+    semantic_state_ptr();
+    code_generator_parameters->is_in_function = true;
     parse_tree(tree->right->right);
+    code_generator_parameters->is_in_function = false;
 
     generate_end();
 }
@@ -1025,4 +1041,5 @@ void code_generator_init() {
     code_generator_parameters->condition_counter = 0;
     code_generator_parameters->loop_counter = 0;
     code_generator_parameters->current_callee_instruction = (instructions_t) -1;
+    code_generator_parameters->is_in_function = false;
 }
