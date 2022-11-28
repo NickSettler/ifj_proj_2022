@@ -1,7 +1,9 @@
 /**
  * Implementace překladače imperativního jazyka IFJ22.
  * @authors
+ *   xmoise01, Nikita Moiseev
  *   xmaroc00, Elena Marochkina
+ *   xpasyn00, Nikita Pasynkov
  *
  * @file symtable.h
  * @brief Binary search tree

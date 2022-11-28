@@ -1,7 +1,9 @@
 /**
  * Implementace překladače imperativního jazyka IFJ22.
  * @authors
+ *   xmoise01, Nikita Moiseev
  *   xmaroc00, Elena Marochkina
+ *   xpasyn00, Nikita Pasynkov
  *
  * @file bvs.c
  * @brief Binary search tree
@@ -21,54 +23,79 @@ tree_node_t *init_symtable() {
 }
 
 tree_node_t *init_tree() {
-    insert_function("readi");
-    insert_return_type("readi", (data_type) (TYPE_INT | TYPE_NULL));
-    find_token("readi")->argument_count = 0;
+    char *readi_func_name = "readi";
+    insert_function(readi_func_name);
+    insert_return_type(readi_func_name, (data_type) (TYPE_INT | TYPE_NULL));
+    find_token(readi_func_name)->argument_count = 0;
 
-    insert_function("reads");
-    insert_return_type("reads", (data_type) (TYPE_STRING | TYPE_NULL));
-    find_token("reads")->argument_count = 0;
+    char *reads_func_name = "reads";
+    insert_function(reads_func_name);
+    insert_return_type(reads_func_name, (data_type) (TYPE_STRING | TYPE_NULL));
+    find_token(reads_func_name)->argument_count = 0;
 
-    insert_function("readf");
-    insert_return_type("readf", (data_type) (TYPE_FLOAT | TYPE_NULL));
-    find_token("readf")->argument_count = 0;
+    char *readf_func_name = "readf";
+    insert_function(readf_func_name);
+    insert_return_type(readf_func_name, (data_type) (TYPE_FLOAT | TYPE_NULL));
+    find_token(readf_func_name)->argument_count = 0;
 
     data_type *type_array = (data_type *) malloc(sizeof(data_type) * 4);
+
+    char *write_func_name = "write";
     type_array[0] = TYPE_ALL;
-    insert_function("write");
-    find_token("write")->argument_count = -1;
-    insert_args("write", 1, type_array);
-    find_token("write")->argument_type = TYPE_ALL;
+    insert_function(write_func_name);
+    find_token(write_func_name)->argument_count = -1;
+    insert_args(write_func_name, 1, type_array);
+    find_token(write_func_name)->argument_type = TYPE_ALL;
 
-    insert_function("strlen");
-    insert_return_type("strlen", TYPE_INT);
-    find_token("strlen")->argument_count = 1;
+    char *strlen_func_name = "strlen";
+    insert_function(strlen_func_name);
+    insert_return_type(strlen_func_name, TYPE_INT);
+    find_token(strlen_func_name)->argument_count = 1;
     type_array[0] = TYPE_STRING;
-    insert_args("strlen", 1, type_array);
-    find_token("strlen")->argument_type = TYPE_STRING;
+    insert_args(strlen_func_name, 1, type_array);
+    find_token(strlen_func_name)->argument_type = TYPE_STRING;
 
-    insert_function("ord");
-    insert_return_type("ord", TYPE_INT);
-    find_token("ord")->argument_count = 1;
+    char *ord_func_name = "ord";
+    insert_function(ord_func_name);
+    insert_return_type(ord_func_name, TYPE_INT);
+    find_token(ord_func_name)->argument_count = 1;
     type_array[0] = TYPE_STRING;
-    insert_args("ord", 1, type_array);
-    find_token("ord")->argument_type = TYPE_STRING;
+    insert_args(ord_func_name, 1, type_array);
+    find_token(ord_func_name)->argument_type = TYPE_STRING;
 
-    insert_function("chr");
-    insert_return_type("chr", TYPE_STRING);
-    find_token("chr")->argument_count = 1;
+    char *chr_func_name = "chr";
+    insert_function(chr_func_name);
+    insert_return_type(chr_func_name, TYPE_STRING);
+    find_token(chr_func_name)->argument_count = 1;
     type_array[0] = TYPE_INT;
-    insert_args("chr", 1, type_array);
-    find_token("chr")->argument_type = TYPE_INT;
+    insert_args(chr_func_name, 1, type_array);
+    find_token(chr_func_name)->argument_type = TYPE_INT;
 
-    insert_function("substring");
-    insert_return_type("substring", (data_type) (TYPE_STRING | TYPE_NULL));
-    find_token("substring")->argument_count = 3;
+    char *substring_func_name = "substring";
+    insert_function(substring_func_name);
+    insert_return_type(substring_func_name, (data_type) (TYPE_STRING | TYPE_NULL));
+    find_token(substring_func_name)->argument_count = 3;
     type_array[0] = TYPE_STRING;
     type_array[1] = TYPE_INT;
     type_array[2] = TYPE_INT;
-    insert_args("substring", 3, type_array);
-    find_token("substring")->argument_type = (data_type) (TYPE_STRING | TYPE_INT);
+    insert_args(substring_func_name, 3, type_array);
+    find_token(substring_func_name)->argument_type = (data_type) (TYPE_STRING | TYPE_INT);
+
+    char *intval_func_name = "intval";
+    insert_function(intval_func_name);
+    insert_return_type(intval_func_name, TYPE_INT);
+    find_token(intval_func_name)->argument_count = 1;
+    type_array[0] = TYPE_ALL;
+    insert_args(intval_func_name, 1, type_array);
+    find_token(intval_func_name)->argument_type = TYPE_ALL;
+
+    char *floatval_func_name = "floatval";
+    insert_function(floatval_func_name);
+    insert_return_type(floatval_func_name, TYPE_INT);
+    find_token(floatval_func_name)->argument_count = 1;
+    type_array[0] = TYPE_ALL;
+    insert_args(floatval_func_name, 1, type_array);
+    find_token(floatval_func_name)->argument_type = TYPE_ALL;
 
     return symtable;
 }
