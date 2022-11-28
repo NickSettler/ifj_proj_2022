@@ -29,8 +29,8 @@
     sprintf(result_str, "%.10f", result); \
     bool is_float = tree->left->type == SYN_NODE_FLOAT || tree->right->type == SYN_NODE_FLOAT || tree->type == SYN_NODE_DIV;
 
-#define REPLACE_TREE_VALUE(str, dec) \
-    tree->type = is_float ? SYN_NODE_FLOAT : SYN_NODE_INTEGER; \
+#define REPLACE_TREE_VALUE(str, t) \
+    tree->type = t; \
     tree->value = string_init(str); \
     free_syntax_tree(tree->left); \
     free_syntax_tree(tree->right); \
@@ -39,10 +39,55 @@
 
 #include "syntax_analyzer.h"
 
+typedef struct optimiser_parameters {
+    syntax_abstract_tree_t *root_tree;
+    string_t *current_unused_variable;
+    string_t *current_replaced_variable_name;
+    syntax_abstract_tree_t *current_replaced_variable_tree;
+} optimiser_parameters_t;
+
+typedef enum {
+    OPTIMISE_EXPRESSION = 1 << 0,
+    OPTIMISE_UNUSED_VARIABLES = 1 << 1,
+} optimise_type_t;
+
+optimiser_parameters_t *optimiser_params;
+
+/**
+ * Internal function of variables replacement
+ * @param tree tree to replace in
+ */
+void replace_variable_usage_internal(syntax_abstract_tree_t *tree);
+
+/**
+ * Replaces variable usage in tree
+ * @param tree tree to replace in
+ * @param current_tree current tree with replacing variable
+ */
+void replace_variable_usage(syntax_abstract_tree_t *tree, syntax_abstract_tree_t *current_tree);
+
+/**
+ * Optimise math expression
+ * @param tree tree to optimise
+ */
 void optimize_expression(syntax_abstract_tree_t *tree);
 
-void optimize_node(syntax_abstract_tree_t *tree);
+/**
+ * Optimize SYN_NODE_SEQUENCE node
+ * @param tree node to optimize
+ * @param optimise_type type of optimisation
+ */
+void optimize_node(syntax_abstract_tree_t *tree, optimise_type_t optimise_type);
 
+/**
+ * Optimize syntax tree
+ * @param tree syntax tree
+ */
 void optimize_tree(syntax_abstract_tree_t *tree);
+
+/**
+ * Initialize optimiser options
+ */
+void init_optimiser();
 
 #endif //IFJ_PROJ_OPTIMISER_H
