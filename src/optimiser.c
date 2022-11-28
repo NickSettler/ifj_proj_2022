@@ -11,6 +11,62 @@
 #include <stdlib.h>
 #include "optimiser.h"
 
+bool can_detect_bool(syntax_abstract_tree_t *tree) {
+    if (!tree) return true;
+
+    if (tree->type != SYN_NODE_INTEGER) {
+        return false;
+    }
+
+    return true;
+}
+
+bool is_true(syntax_abstract_tree_t *tree) {
+    if (!tree) return true;
+
+    if (tree->type == SYN_NODE_INTEGER) {
+        if (!strcmp(tree->value->value, "0")) return false;
+
+        return true;
+    }
+
+    return true;
+}
+
+void optimise_unreachable_if(syntax_abstract_tree_t *tree) {
+    if (!tree || !tree->right) return;
+
+    if (tree->right->type != SYN_NODE_KEYWORD_IF) return;
+
+    if (!check_tree_using(tree->right->left, can_detect_bool)) return;
+
+    bool is_expr_true = check_tree_using(tree->right->left, is_true);
+
+    free_syntax_tree(tree->right->left);
+    tree->right->left = NULL;
+
+    bool has_else = tree->right->right != NULL;
+
+    if (is_expr_true) {
+        if (has_else) {
+            free_syntax_tree(tree->right->right);
+            tree->right->right = NULL;
+        }
+
+        tree->right = tree->right->middle;
+    } else {
+        if (has_else) {
+            tree->right = tree->right->right;
+        } else {
+            free_syntax_tree(tree->right);
+            tree->right = NULL;
+        }
+
+        free_syntax_tree(tree->middle);
+        tree->middle = NULL;
+    }
+}
+
 void replace_variable_usage_internal(syntax_abstract_tree_t *tree) {
     if (!tree) return;
 
@@ -183,6 +239,9 @@ void optimize_node(syntax_abstract_tree_t *tree, optimise_type_t optimise_type) 
                 optimiser_params->current_replaced_variable_tree = tree->right->right;
                 replace_variable_usage(optimiser_params->root_tree, tree->right);
             }
+            if (optimise_type == OPTIMISE_UNREACHABLE_CODE) {
+                optimise_unreachable_if(tree);
+            }
         }
         case SYN_NODE_CALL: {
             if (optimise_type == OPTIMISE_EXPRESSION) {
@@ -204,6 +263,7 @@ void optimize_tree(syntax_abstract_tree_t *tree) {
     optimiser_params->root_tree = tree;
 
     optimize_node(tree, OPTIMISE_EXPRESSION);
+    optimize_node(tree, OPTIMISE_UNREACHABLE_CODE);
 //    optimize_node(tree, OPTIMISE_UNUSED_VARIABLES);
 }
 

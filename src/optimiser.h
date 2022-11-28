@@ -49,9 +49,30 @@ typedef struct optimiser_parameters {
 typedef enum {
     OPTIMISE_EXPRESSION = 1 << 0,
     OPTIMISE_UNUSED_VARIABLES = 1 << 1,
+    OPTIMISE_UNREACHABLE_CODE = 1 << 2,
 } optimise_type_t;
 
 optimiser_parameters_t *optimiser_params;
+
+/**
+ * Checks if optimiser can determine if the expression is true or false
+ * @param tree abstract syntax tree
+ * @return true if it can determine, false otherwise
+ */
+bool can_detect_bool(syntax_abstract_tree_t *tree);
+
+/**
+ * Checks if the expression is true
+ * @param tree abstract syntax tree
+ * @return true if it is true, false otherwise
+ */
+bool is_true(syntax_abstract_tree_t *tree);
+
+/**
+ * Optimises unreachable if statement
+ * @param tree abstract syntax tree
+ */
+void optimise_unreachable_if(syntax_abstract_tree_t *tree);
 
 /**
  * Internal function of variables replacement
