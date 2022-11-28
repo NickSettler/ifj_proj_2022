@@ -263,6 +263,12 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
             node = expression(fd, attributes[SYN_TOKEN_NEGATE].precedence);
             x = (op == SYN_TOKEN_SUB) ? make_binary_node(SYN_NODE_NEGATE, node, NULL) : node;
             break;
+        case LOGICAL_NOT: {
+            GET_NEXT_TOKEN(fd)
+            node = expression(fd, attributes[SYN_TOKEN_NOT].precedence);
+            x = make_binary_node(SYN_NODE_NOT, node, NULL);
+            break;
+        }
         case IDENTIFIER: {
             bool is_variable = lexical_token->value[0] == '$';
             if (is_variable) {
