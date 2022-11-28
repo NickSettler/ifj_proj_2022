@@ -10,6 +10,7 @@
 #include "symtable.h"
 #include "syntax_analyzer.h"
 #include "semantic_analyzer.h"
+#include "optimiser.h"
 #include "code_generator.h"
 
 int main(int argc, char **argv) {
@@ -18,6 +19,8 @@ int main(int argc, char **argv) {
     syntax_abstract_tree_t *tree = load_syntax_tree(input);
 
     semantic_tree_check(tree);
+
+    optimize_tree(tree);
 
     set_code_gen_output(stdout);
     code_generator_init();
