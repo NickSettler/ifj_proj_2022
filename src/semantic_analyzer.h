@@ -1,3 +1,15 @@
+/**
+ * Implementace překladače imperativního jazyka IFJ22.
+ * @authors
+ *   xmoise01, Nikita Moiseev
+ *   xpasyn00, Nikita Pasynkov
+ *   xmaroc00, Elena Marochkina
+ *
+ * @file semantic_analyzer.h
+ * @brief Semantic analyzer
+ * @date 05.10.2022
+ */
+
 #ifndef IFJ_PROJ_SEMANTIC_ANALYZER_H
 #define IFJ_PROJ_SEMANTIC_ANALYZER_H
 
@@ -5,14 +17,34 @@
 #include "str.h"
 #include "symtable.h"
 
+typedef enum {
+    SEMANTIC_READI = 1 << 0,
+    SEMANTIC_READF = 1 << 1,
+    SEMANTIC_READS = 1 << 2,
+    SEMANTIC_WRITE = 1 << 3,
+    SEMANTIC_STRLEN = 1 << 4,
+    SEMANTIC_ORD = 1 << 5,
+    SEMANTIC_CHR = 1 << 6,
+    SEMANTIC_SUBSTRING = 1 << 7,
+    SEMANTIC_INTVAL = 1 << 8,
+    SEMANTIC_FLOATVAL = 1 << 9,
+} semantic_internal_functions;
+
 typedef struct semantic_analyzer {
     bool FUNCTION_SCOPE;
     char *function_name;
     int argument_count;
     tree_node_t *symtable_ptr;
+    semantic_internal_functions used_functions;
 } semantic_analyzer_t;
 
 typedef struct syntax_abstract_tree syntax_abstract_tree_t;
+
+/**
+ * Runs semantic analyzer on a tree
+ * @param tree syntax abstract tree
+ */
+void semantic_tree_check_internal(syntax_abstract_tree_t *tree);
 
 /**
  * Runs semantic analyzer on a tree
@@ -25,6 +57,12 @@ void semantic_tree_check(syntax_abstract_tree_t *tree);
  * @return Pointer to semantic analyzer
  */
 semantic_analyzer_t *init_semantic_state();
+
+/**
+ * Return semantic state
+ * @return semantic state
+ */
+semantic_analyzer_t *get_semantic_state();
 
 /**
  * Runs semantic analyzer on all nodes in the syntax tree
@@ -44,6 +82,16 @@ void process_if_while(syntax_abstract_tree_t *tree);
  */
 void process_assign(syntax_abstract_tree_t *tree);
 
+/**
+ * Predefine all functions
+ * @param tree abstract syntax tree
+ */
+void process_function_definitions(syntax_abstract_tree_t *tree);
+
+/**
+ * Process semantic analyzer on function declaration
+ * @param tree
+ */
 void process_function_declaration(syntax_abstract_tree_t *tree);
 
 /**

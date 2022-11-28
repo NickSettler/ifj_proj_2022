@@ -10,7 +10,6 @@
  * @date 05.10.2022
  */
 
-
 #include "lexical_fsm.h"
 #include "symtable.h"
 

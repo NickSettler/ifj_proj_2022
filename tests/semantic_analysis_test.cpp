@@ -157,13 +157,13 @@ namespace ifj {
                                                                  .key = "f",
                                                          },
                                                  }),
-                            ::testing::ExitedWithCode(SEMANTIC_FUNC_RET_ERROR_CODE),
-                            "\\[SEMANTIC FUNC RET ERROR\\] Function has no return");
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Function has no return");
 
                 EXPECT_EXIT(CheckSymTableEntries("<?php function fork(): int {"
                                                  "}", {}),
-                            ::testing::ExitedWithCode(SEMANTIC_FUNC_RET_ERROR_CODE),
-                            "\\[SEMANTIC FUNC RET ERROR\\] Function has no return");
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Function has no return");
 
                 CheckSymTableEntries("<?php function f(string $s): string {"
                                      "  return $s;"
@@ -223,8 +223,8 @@ namespace ifj {
                 EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $f): float {"
                                                  "  return $i;"
                                                  "}", {}),
-                            ::testing::ExitedWithCode(SEMANTIC_FUNC_RET_ERROR_CODE),
-                            "\\[SEMANTIC FUNC RET ERROR\\] Wrong return value in function f");
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Missing return value in function f");
             }
 
             TEST_F(SemanticAnalysisTest, FunctionCall) {
@@ -536,6 +536,14 @@ namespace ifj {
                                      "    write(\"BAD\n\");"
                                      "}"
                                      "write(\"GOOD\n\");", {});
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php\n"
+                                                 "declare(strict_types=1);\n"
+                                                 "function f() : int {\n"
+                                                 "}\n"
+                                                 "f();", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Function has no return");
             }
         }
     }
