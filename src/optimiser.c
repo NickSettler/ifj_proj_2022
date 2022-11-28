@@ -57,6 +57,10 @@ void optimise_unreachable_if(syntax_abstract_tree_t *tree) {
     } else {
         if (has_else) {
             tree->right = tree->right->right;
+
+            if (tree->right->type == SYN_NODE_KEYWORD_IF) {
+                optimise_unreachable_if(tree);
+            }
         } else {
             free_syntax_tree(tree->right);
             tree->right = NULL;
