@@ -24,10 +24,12 @@ void semantic_tree_check_internal(syntax_abstract_tree_t *tree) {
 }
 
 void semantic_tree_check(syntax_abstract_tree_t *tree) {
-    if (tree == NULL)
-        return;
     init_symtable();
     semantic_state = init_semantic_state();
+
+    if (tree == NULL)
+        return;
+
     process_tree_using(tree, process_function_definitions, PREORDER);
 
     semantic_tree_check_internal(tree);
@@ -158,17 +160,24 @@ void process_function_declaration(syntax_abstract_tree_t *tree) {
 }
 
 void check_for_return_value(syntax_abstract_tree_t *tree) {
-    bool func_has_return_type = find_token(semantic_state->function_name)->type != TYPE_ALL;
+    data_type needed_return_type = find_token(semantic_state->function_name)->type;
+    bool func_has_return_type = needed_return_type != TYPE_ALL;
 
     if (tree == NULL) {
-        if (func_has_return_type) {
-            SEMANTIC_FUNC_RET_ERROR("Function has no return")
+        if (func_has_return_type && needed_return_type != TYPE_VOID) {
+            SEMANTIC_FUNC_ARG_ERROR("Function has no return")
         }
         return;
     }
 
+    if (tree->right->type == SYN_NODE_KEYWORD_IF) {
+        check_for_return_value(tree->right->middle);
+        check_for_return_value(tree->right->right);
+        return;
+    }
+
     bool has_return = tree->right->type == SYN_NODE_KEYWORD_RETURN;
-    bool type_match = find_token(semantic_state->function_name)->type & get_data_type(tree->right->right);
+    bool type_match = needed_return_type & get_data_type(tree->right->right);
 
     if (has_return && !func_has_return_type) {
         data_type type_from_return_expression = get_data_type(tree->right->right);
@@ -176,15 +185,19 @@ void check_for_return_value(syntax_abstract_tree_t *tree) {
     }
 
     if (!has_return && func_has_return_type) {
-        if (find_token(semantic_state->function_name)->type != TYPE_VOID) {
+        if (needed_return_type != TYPE_VOID) {
             SEMANTIC_FUNC_RET_ERROR("Missing return value in function %s", semantic_state->function_name)
         }
     }
 
     if (has_return) {
-        check_tree_using(tree->right->right, check_defined);
+        data_type type_from_return_expression = get_data_type(tree->right->right);
         if (!type_match) {
-            SEMANTIC_FUNC_RET_ERROR("Wrong return value in function %s", semantic_state->function_name)
+            if (needed_return_type == TYPE_VOID || type_from_return_expression == TYPE_VOID) {
+                SEMANTIC_FUNC_RET_ERROR("Redundant return in function %s", semantic_state->function_name)
+            } else {
+                SEMANTIC_FUNC_ARG_ERROR("Missing return value in function %s", semantic_state->function_name)
+            }
         }
     }
 }
@@ -296,7 +309,8 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
             }
             semantic_state->function_name = tree->left->value->value;
             process_call(tree);
-            return find_element(semantic_state->symtable_ptr, semantic_state->function_name)->type;
+            bool is_var = tree->left->value->value[0] == '$';
+            return find_element(is_var ? semantic_state->symtable_ptr : symtable, semantic_state->function_name)->type;
         }
         case SYN_NODE_IDENTIFIER:
             check_tree_using(tree, check_defined);
@@ -395,11 +409,14 @@ bool is_node_an_int(syntax_abstract_tree_t *tree) {
         case SYN_NODE_FLOAT:
         case SYN_NODE_DIV:
             return false;
-        case SYN_NODE_IDENTIFIER:
-            if (find_element(semantic_state->symtable_ptr, tree->value->value)->type == TYPE_FLOAT) {
+        case SYN_NODE_IDENTIFIER: {
+            bool is_var = tree->value->value[0] == '$';
+            if (find_element(is_var ? semantic_state->symtable_ptr : symtable, tree->value->value)->type ==
+                TYPE_FLOAT) {
                 return false;
             }
             return true;
+        }
         default:
             return true;
     }

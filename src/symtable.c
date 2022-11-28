@@ -91,11 +91,19 @@ tree_node_t *init_tree() {
 
     char *floatval_func_name = "floatval";
     insert_function(floatval_func_name);
-    insert_return_type(floatval_func_name, TYPE_INT);
+    insert_return_type(floatval_func_name, TYPE_FLOAT);
     find_token(floatval_func_name)->argument_count = 1;
     type_array[0] = TYPE_ALL;
     insert_args(floatval_func_name, 1, type_array);
     find_token(floatval_func_name)->argument_type = TYPE_ALL;
+
+    char *strval_func_name = "strval";
+    insert_function(strval_func_name);
+    insert_return_type(strval_func_name, TYPE_STRING);
+    find_token(strval_func_name)->argument_count = 1;
+    type_array[0] = TYPE_ALL;
+    insert_args(strval_func_name, 1, type_array);
+    find_token(strval_func_name)->argument_type = TYPE_ALL;
 
     return symtable;
 }

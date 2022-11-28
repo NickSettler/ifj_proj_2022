@@ -576,16 +576,19 @@ frames_t get_node_frame(syntax_abstract_tree_t *tree) {
 }
 
 void parse_expression(syntax_abstract_tree_t *tree, string_t *result) {
-    if (!tree || (tree->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING | SYN_NODE_IDENTIFIER))) return;
+    if (!tree || (tree->type &
+                  (SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING | SYN_NODE_IDENTIFIER | SYN_NODE_KEYWORD_NULL)))
+        return;
 
     bool is_simple = check_tree_using(tree, is_simple_expression);
 
     bool is_left_const = tree->left &&
                          (tree->left->type &
-                          (SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING | SYN_NODE_IDENTIFIER));
+                          (SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING | SYN_NODE_IDENTIFIER |
+                           SYN_NODE_KEYWORD_NULL));
     bool is_right_const = tree->right &&
                           (tree->right->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING |
-                                                SYN_NODE_IDENTIFIER));
+                                                SYN_NODE_IDENTIFIER | SYN_NODE_KEYWORD_NULL));
 
     bool is_left_simple = check_tree_using(tree->left, is_simple_expression);
     bool is_right_simple = check_tree_using(tree->right, is_simple_expression);
@@ -740,6 +743,12 @@ void parse_assign(syntax_abstract_tree_t *tree) {
     bool is_constant = tree->right->type == SYN_NODE_INTEGER || tree->right->type == SYN_NODE_FLOAT ||
                        tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER ||
                        tree->right->type == SYN_NODE_CALL;
+
+    if (!find_token(tree->left->value->value)) {
+        insert_token(tree->left->value->value);
+        find_token(tree->left->value->value)->defined = true;
+        find_token(tree->left->value->value)->type = get_data_type(tree->left);
+    }
 
     if (find_token(tree->left->value->value)->code_generator_defined == false)
         generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value);
