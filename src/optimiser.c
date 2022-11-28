@@ -128,7 +128,8 @@ void replace_variable_usage(syntax_abstract_tree_t *tree, syntax_abstract_tree_t
 void optimize_expression(syntax_abstract_tree_t *tree) {
     if ((tree->type &
          (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV | SYN_NODE_TYPED_EQUAL | SYN_NODE_TYPED_NOT_EQUAL |
-          SYN_NODE_LESS | SYN_NODE_LESS_EQUAL | SYN_NODE_GREATER | SYN_NODE_GREATER_EQUAL)) == 0)
+          SYN_NODE_LESS | SYN_NODE_LESS_EQUAL | SYN_NODE_GREATER | SYN_NODE_GREATER_EQUAL | SYN_NODE_AND | SYN_NODE_OR |
+          SYN_NODE_NOT)) == 0)
         return;
 
     switch (tree->type) {
@@ -212,6 +213,30 @@ void optimize_expression(syntax_abstract_tree_t *tree) {
             GET_NODE_NUMBERS
 
             bool result = left_number >= right_number;
+
+            REPLACE_TREE_VALUE(result ? "1" : "0", SYN_NODE_INTEGER)
+            break;
+        }
+        case SYN_NODE_AND: {
+            GET_NODE_NUMBERS
+
+            bool result = left_number && right_number;
+
+            REPLACE_TREE_VALUE(result ? "1" : "0", SYN_NODE_INTEGER)
+            break;
+        }
+        case SYN_NODE_OR: {
+            GET_NODE_NUMBERS
+
+            bool result = left_number || right_number;
+
+            REPLACE_TREE_VALUE(result ? "1" : "0", SYN_NODE_INTEGER)
+            break;
+        }
+        case SYN_NODE_NOT: {
+            GET_NODE_NUMBER(left)
+
+            bool result = !left_number;
 
             REPLACE_TREE_VALUE(result ? "1" : "0", SYN_NODE_INTEGER)
             break;

@@ -11,13 +11,16 @@
 #ifndef IFJ_PROJ_OPTIMISER_H
 #define IFJ_PROJ_OPTIMISER_H
 
-#define GET_NODE_NUMBERS \
-    if ((tree->left->type & (SYN_NODE_FLOAT | SYN_NODE_INTEGER)) == 0 || \
-        (tree->right->type & (SYN_NODE_FLOAT | SYN_NODE_INTEGER)) == 0) \
+static char *numbers_buffer;
+
+#define GET_NODE_NUMBER(child) \
+    if ((tree->child->type & (SYN_NODE_FLOAT | SYN_NODE_INTEGER)) == 0) \
         break; \
-    char *buffer; \
-    double left_number = strtod(tree->left->value->value, &buffer); \
-    double right_number = strtod(tree->right->value->value, &buffer);
+    double child##_number = strtod(tree->child->value->value, &numbers_buffer);
+
+#define GET_NODE_NUMBERS \
+    GET_NODE_NUMBER(left)\
+    GET_NODE_NUMBER(right)
 
 #define PROCESS_DECIMAL(result) \
     int result_int = (int) result;\
