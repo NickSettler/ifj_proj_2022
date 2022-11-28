@@ -268,6 +268,8 @@ void *process_tree_using(syntax_abstract_tree_t *tree, void (*process)(syntax_ab
  */
 bool is_simple_expression(syntax_abstract_tree_t *tree);
 
+syntax_abstract_tree_t *tree_copy(syntax_abstract_tree_t *tree);
+
 void free_syntax_tree(syntax_abstract_tree_t *tree);
 
 #endif //IFJ_PROJ_SYNTAX_ANALYZER_H

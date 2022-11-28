@@ -46,19 +46,13 @@ namespace ifj {
 
                     EXPECT_STREQ(expected_str.c_str(), actual) << "Input: " << input;
                 }
-
-                void SyntaxTreeWithError(const std::string &input) {
-                    syntax_abstract_tree_t *tree = load_syntax_tree(test_lex_input((char *) input.c_str()));
-                    optimize_tree(tree);
-                    EXPECT_EQ(tree, nullptr);
-                }
             };
 
             TEST_F(OptimiserTest, Arithmetic) {
                 CheckOptimisedTree("<?php"
                                    "$a = 1 + 2;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
-                
+
                 CheckOptimisedTree("<?php"
                                    "$a = 1 * 2 + 3;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
@@ -66,6 +60,14 @@ namespace ifj {
                 CheckOptimisedTree("<?php"
                                    "$a = 1 * 2 + 4 / 2;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_FLOAT});
+            }
+
+            TEST_F(OptimiserTest, VariablesReplace) {
+                CheckOptimisedTree("<?php"
+                                   "$a = 1;"
+                                   "$b = $a + 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                    SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
             }
         }
     }

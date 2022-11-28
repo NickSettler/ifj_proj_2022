@@ -653,6 +653,19 @@ bool is_simple_expression(syntax_abstract_tree_t *tree) {
     return true;
 }
 
+syntax_abstract_tree_t *tree_copy(syntax_abstract_tree_t *tree) {
+    if (!tree) return NULL;
+
+    syntax_abstract_tree_t *new_tree = (syntax_abstract_tree_t *) malloc(sizeof(syntax_abstract_tree_t));
+    new_tree->type = tree->type;
+    new_tree->value = tree->value != NULL ? string_init(tree->value->value) : NULL;
+    new_tree->left = tree_copy(tree->left);
+    new_tree->middle = tree_copy(tree->middle);
+    new_tree->right = tree_copy(tree->right);
+
+    return new_tree;
+}
+
 void free_syntax_tree(syntax_abstract_tree_t *tree) {
     if (!tree) return;
 
