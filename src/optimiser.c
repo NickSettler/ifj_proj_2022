@@ -174,11 +174,6 @@ void optimize_node(syntax_abstract_tree_t *tree, optimise_type_t optimise_type) 
                 optimiser_params->current_replaced_variable_tree = tree->right->right;
                 replace_variable_usage(optimiser_params->root_tree, tree->right);
             }
-
-            if (optimise_type == OPTIMISE_UNUSED_VARIABLES) {
-                optimiser_params->current_unused_variable = tree->right->left->value;
-                optimize_unused_variables(optimiser_params->root_tree, tree->right);
-            }
             break;
         }
         case SYN_NODE_KEYWORD_IF: {
