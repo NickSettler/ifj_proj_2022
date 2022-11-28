@@ -42,6 +42,12 @@ typedef struct syntax_abstract_tree syntax_abstract_tree_t;
 
 /**
  * Runs semantic analyzer on a tree
+ * @param tree syntax abstract tree
+ */
+void semantic_tree_check_internal(syntax_abstract_tree_t *tree);
+
+/**
+ * Runs semantic analyzer on a tree
  * @param tree Abstract syntax tree
  */
 void semantic_tree_check(syntax_abstract_tree_t *tree);
@@ -76,6 +82,16 @@ void process_if_while(syntax_abstract_tree_t *tree);
  */
 void process_assign(syntax_abstract_tree_t *tree);
 
+/**
+ * Predefine all functions
+ * @param tree abstract syntax tree
+ */
+void process_function_definitions(syntax_abstract_tree_t *tree);
+
+/**
+ * Process semantic analyzer on function declaration
+ * @param tree
+ */
 void process_function_declaration(syntax_abstract_tree_t *tree);
 
 /**

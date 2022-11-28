@@ -16,19 +16,27 @@
 semantic_analyzer_t *semantic_state;
 extern tree_node_t *symtable;
 
+void semantic_tree_check_internal(syntax_abstract_tree_t *tree) {
+    if (!tree) return;
+
+    semantic_tree_check_internal(tree->left);
+    process_tree(tree->right);
+}
+
 void semantic_tree_check(syntax_abstract_tree_t *tree) {
     if (tree == NULL)
         return;
     init_symtable();
     semantic_state = init_semantic_state();
-    semantic_tree_check(tree->left);
-    process_tree(tree->right);
+    process_tree_using(tree, process_function_definitions, PREORDER);
+
+    semantic_tree_check_internal(tree);
 }
 
 semantic_analyzer_t *init_semantic_state() {
     semantic_analyzer_t *result = (semantic_analyzer_t *) malloc(sizeof(semantic_analyzer_t));
     if (result == 0) {
-        INTERNAL_ERROR("Malloc for semantic analyzer failed");
+        INTERNAL_ERROR("Malloc for semantic analyzer failed")
     }
     result->FUNCTION_SCOPE = false;
     result->function_name = NULL;
@@ -102,21 +110,43 @@ void process_if_while(syntax_abstract_tree_t *tree) {
     process_tree(tree->middle);
 }
 
-void process_function_declaration(syntax_abstract_tree_t *tree) {
+void process_function_definitions(syntax_abstract_tree_t *tree) {
+    if (!tree) return;
+
+    if (tree->type != SYN_NODE_FUNCTION_DECLARATION) return;
+
     if (check_tree_using(tree->left, is_defined)) {
-        SEMANTIC_FUNC_UNDEF_ERROR("Function is already declared");
+        SEMANTIC_FUNC_UNDEF_ERROR("Function is already declared")
     }
 
     syntax_abstract_tree_t *id_node = tree->left;
     semantic_state->function_name = id_node->value->value;
-    semantic_state->argument_count = 0; // reset argument count
+    semantic_state->argument_count = 0;
+    semantic_state->FUNCTION_SCOPE = true;
+//    semantic_state_ptr();
 
     insert_function(semantic_state->function_name);
     set_return_type(tree);
-    find_element(semantic_state->symtable_ptr, semantic_state->function_name)->argument_count = count_arguments(
-            tree->middle); // set argument count to function
+    find_element(semantic_state->symtable_ptr, semantic_state->function_name)->argument_count =
+            count_arguments(tree->middle);
     create_args_array();
     insert_arguments(tree->middle);
+
+    semantic_state->FUNCTION_SCOPE = false;
+    semantic_state->symtable_ptr = symtable;
+}
+
+void process_function_declaration(syntax_abstract_tree_t *tree) {
+    syntax_abstract_tree_t *id_node = tree->left;
+    semantic_state->function_name = id_node->value->value;
+    semantic_state->argument_count = 0; // reset argument count
+
+//    insert_function(semantic_state->function_name);
+//    set_return_type(tree);
+//    find_element(semantic_state->symtable_ptr, semantic_state->function_name)->argument_count = count_arguments(
+//            tree->middle); // set argument count to function
+//    create_args_array();
+//    insert_arguments(tree->middle);
 
     semantic_state_ptr();
     if (tree->right != NULL) {
@@ -132,7 +162,7 @@ void check_for_return_value(syntax_abstract_tree_t *tree) {
 
     if (tree == NULL) {
         if (func_has_return_type) {
-            SEMANTIC_FUNC_RET_ERROR("Function has no return");
+            SEMANTIC_FUNC_RET_ERROR("Function has no return")
         }
         return;
     }
@@ -154,7 +184,7 @@ void check_for_return_value(syntax_abstract_tree_t *tree) {
     if (has_return) {
         check_tree_using(tree->right->right, check_defined);
         if (!type_match) {
-            SEMANTIC_FUNC_RET_ERROR("Wrong return value in function %s", semantic_state->function_name);
+            SEMANTIC_FUNC_RET_ERROR("Wrong return value in function %s", semantic_state->function_name)
         }
     }
 }
@@ -196,9 +226,9 @@ void process_call(syntax_abstract_tree_t *tree) {
         semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
                                                                         SEMANTIC_FLOATVAL);
 
-    if (strcmp(semantic_state->function_name, "write")) {
+    if (strcmp(semantic_state->function_name, "write") != 0) {
         if (arg_call_counter != func->argument_count) {
-            SEMANTIC_FUNC_ARG_ERROR("Wrong number of arguments");
+            SEMANTIC_FUNC_ARG_ERROR("Wrong number of arguments")
         }
     }
     compare_arguments(tree->right, arg_ptr, counter);
@@ -217,8 +247,8 @@ void compare_arguments(syntax_abstract_tree_t *tree, data_type *arg_array_ptr, i
 
     if (arg_array_ptr[counter] == TYPE_ALL) {
         compare_arguments(tree->right, arg_array_ptr, counter - 1);
-    } else if (arg_array_ptr[counter] != get_data_type(tree->left)) {
-        SEMANTIC_FUNC_ARG_ERROR("Wrong type of argument with value %s", tree->left->value->value);
+    } else if ((arg_array_ptr[counter] & get_data_type(tree->left)) == 0) {
+        SEMANTIC_FUNC_ARG_ERROR("Wrong type of argument with value %s", tree->left->value->value)
     }
     compare_arguments(tree->right, arg_array_ptr, counter - 1);
 }
@@ -233,7 +263,7 @@ bool check_defined(syntax_abstract_tree_t *tree) {
         return true;
     if (tree->type == SYN_NODE_IDENTIFIER) {
         if (check_tree_using(tree, is_defined) == 0) {
-            SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", tree->value->value);
+            SEMANTIC_UNDEF_VAR_ERROR("Variable %s used before declaration", tree->value->value)
         } else {
             return true;
         }
@@ -262,7 +292,7 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
         case SYN_NODE_CALL: {
             bool is_function_declared = check_tree_using(tree->left, is_defined);
             if (!is_function_declared) {
-                SEMANTIC_FUNC_UNDEF_ERROR("Function is not declared");
+                SEMANTIC_FUNC_UNDEF_ERROR("Function is not declared")
             }
             semantic_state->function_name = tree->left->value->value;
             process_call(tree);
