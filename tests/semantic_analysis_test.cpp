@@ -50,8 +50,25 @@ namespace ifj {
                         tree_node_t *token = find_token(node.key);
                         EXPECT_EQ(token->defined, node.defined)
                                             << "Token " << node.key << ". Expected defined " << node.defined
-                                            << ", got " << token->defined;
-                        EXPECT_NE(token, nullptr) << "Token " << node.key << " not found in symtable";
+                                            << ", got " << token->defined << std::endl << input;
+                        if (node.type)
+                            EXPECT_EQ(token->type, node.type) << "Token " << node.key << ". Expected type " << node.type
+                                                              << ", got " << token->type << std::endl << input;
+
+                        if (node.argument_type)
+                            EXPECT_EQ(token->argument_type, node.argument_type)
+                                                << "Token " << node.key << ". Expected argument type "
+                                                << node.argument_type << ", got " << token->argument_type << std::endl
+                                                << input;
+
+                        if (node.argument_count)
+                            EXPECT_EQ(token->argument_count, node.argument_count)
+                                                << "Token " << node.key << ". Expected argument count "
+                                                << node.argument_count << ", got " << token->argument_count << std::endl
+                                                << input;
+
+                        EXPECT_NE(token, nullptr)
+                                            << "Token " << node.key << " not found in symtable" << std::endl << input;
                     }
                     dispose_symtable();
                 }
@@ -95,7 +112,7 @@ namespace ifj {
                 EXPECT_EXIT(CheckSymTableEntries("<?php $a = $a + 1;", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("<?php if ($b == 2) "
+                EXPECT_EXIT(CheckSymTableEntries("<?php if ($b === 2) "
                                                  "{"
                                                  " $a = 3.4;"
                                                  "} else {"
@@ -104,7 +121,7 @@ namespace ifj {
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
                 EXPECT_EXIT(CheckSymTableEntries("<?php $b = 1;"
-                                                 "if ($b == 2) "
+                                                 "if ($b === 2) "
                                                  "{"
                                                  " $b = 4;"
                                                  "} else {"
@@ -113,7 +130,7 @@ namespace ifj {
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
                 EXPECT_EXIT(CheckSymTableEntries("<?php $b = 1;"
-                                                 "if ($b == 2) "
+                                                 "if ($b === 2) "
                                                  "{"
                                                  " $b = $c;"
                                                  "} else {"
@@ -133,21 +150,20 @@ namespace ifj {
             }
 
             TEST_F(SemanticAnalysisTest, FunctionReturnType) {
-                CheckSymTableEntries("<?php function f(int $v, string $g, int $c): float {"
-                                     "}", {
-                                             (tree_node_t) {
-                                                     .defined = true,
-                                                     .key = "f",
-                                             },
-                                     });
+                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $v, string $g, int $c): float {"
+                                                 "}", {
+                                                         (tree_node_t) {
+                                                                 .defined = true,
+                                                                 .key = "f",
+                                                         },
+                                                 }),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_RET_ERROR_CODE),
+                            "\\[SEMANTIC FUNC RET ERROR\\] Function has no return");
 
-                CheckSymTableEntries("<?php function fork(): int {"
-                                     "}", {
-                                             (tree_node_t) {
-                                                     .defined = true,
-                                                     .key = "fork",
-                                             },
-                                     });
+                EXPECT_EXIT(CheckSymTableEntries("<?php function fork(): int {"
+                                                 "}", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_RET_ERROR_CODE),
+                            "\\[SEMANTIC FUNC RET ERROR\\] Function has no return");
 
                 CheckSymTableEntries("<?php function f(string $s): string {"
                                      "  return $s;"
@@ -155,9 +171,16 @@ namespace ifj {
                                      "$str = f(\"1\");", {
                                              (tree_node_t) {
                                                      .type = TYPE_STRING,
+                                                     .argument_type = TYPE_STRING,
+                                                     .argument_count = 1,
+                                                     .defined = true,
+                                                     .key = "f",
+                                             },
+                                             (tree_node_t) {
+                                                     .type = TYPE_STRING,
                                                      .defined = true,
                                                      .key = "$str",
-                                             }
+                                             },
                                      }
                 );
 
@@ -167,6 +190,8 @@ namespace ifj {
                                      "}", {
                                              (tree_node_t) {
                                                      .type = TYPE_VOID,
+                                                     .argument_type = TYPE_INT,
+                                                     .argument_count = 1,
                                                      .defined = true,
                                                      .key = "f",
 
@@ -214,6 +239,20 @@ namespace ifj {
                                      {
                                              (tree_node_t) {
                                                      .type = TYPE_FLOAT,
+                                                     .argument_type = (data_type) (TYPE_INT | TYPE_FLOAT),
+                                                     .argument_count = 2,
+                                                     .defined = true,
+                                                     .key = "f",
+                                             },
+                                             (tree_node_t) {
+                                                     .type = TYPE_INT,
+                                                     .argument_type = TYPE_INT,
+                                                     .argument_count = 1,
+                                                     .defined = true,
+                                                     .key = "foo",
+                                             },
+                                             (tree_node_t) {
+                                                     .type = TYPE_INT,
                                                      .defined = true,
                                                      .key = "$a",
                                              }
@@ -229,6 +268,20 @@ namespace ifj {
                                      "$a = foo(4);"
                                      "$a = f(1, 2.0);",
                                      {
+                                             (tree_node_t) {
+                                                     .type = TYPE_FLOAT,
+                                                     .argument_type = (data_type) (TYPE_INT | TYPE_FLOAT),
+                                                     .argument_count = 2,
+                                                     .defined = true,
+                                                     .key = "f",
+                                             },
+                                             (tree_node_t) {
+                                                     .type = TYPE_INT,
+                                                     .argument_type = TYPE_INT,
+                                                     .argument_count = 1,
+                                                     .defined = true,
+                                                     .key = "foo",
+                                             },
                                              (tree_node_t) {
                                                      .type = TYPE_FLOAT,
                                                      .defined = true,
@@ -249,6 +302,9 @@ namespace ifj {
                 CheckSymTableEntries("<?php substring(\"Hello world!\", 1, 3);",
                                      {
                                              (tree_node_t) {
+                                                     .type = (data_type) (TYPE_STRING | TYPE_NULL),
+                                                     .argument_type = (data_type) (TYPE_STRING | TYPE_INT),
+                                                     .argument_count = 3,
                                                      .defined = true,
                                                      .key = "substring",
                                              }
@@ -258,6 +314,7 @@ namespace ifj {
                 CheckSymTableEntries("<?php write(\"a\", \"b\", \"c\");",
                                      {
                                              (tree_node_t) {
+                                                     .argument_count = 0,
                                                      .defined = true,
                                                      .key = "write",
                                              }
@@ -267,6 +324,7 @@ namespace ifj {
                 CheckSymTableEntries("<?php reads();",
                                      {
                                              (tree_node_t) {
+                                                     .type = (data_type) (TYPE_STRING | TYPE_NULL),
                                                      .defined = true,
                                                      .key = "reads",
                                              }
@@ -306,9 +364,21 @@ namespace ifj {
                                                  {
                                                          (tree_node_t) {
                                                                  .type = TYPE_FLOAT,
+                                                                 .argument_type = (data_type) (TYPE_INT | TYPE_FLOAT),
+                                                                 .defined = true,
+                                                                 .key = "f",
+                                                         },
+                                                         (tree_node_t) {
+                                                                 .type = TYPE_INT,
+                                                                 .argument_type = TYPE_INT,
+                                                                 .defined = true,
+                                                                 .key = "f00",
+                                                         },
+                                                         (tree_node_t) {
+                                                                 .type = TYPE_FLOAT,
                                                                  .defined = true,
                                                                  .key = "$a",
-                                                         }
+                                                         },
                                                  }
                 ), ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
@@ -354,6 +424,118 @@ namespace ifj {
                                                  "$str = f(1);", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument");
+            }
+
+            TEST_F(SemanticAnalysisTest, ExternalTests) {
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "function readi() : int {"
+                                                 "  return 5;"
+                                                 "}", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_UNDEF_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF FUNC ERROR\\] Function is already declared");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "function hello() : int {"
+                                                 "  return 5;"
+                                                 "}"
+                                                 ""
+                                                 "function hello() : int {"
+                                                 "    return 6;"
+                                                 "  }", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_UNDEF_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF FUNC ERROR\\] Function is already declared");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "function f(int $x) : void {"
+                                                 "    write($x, \"\n\");"
+                                                 "}"
+                                                 "f(\"1\");", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument");
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "function f(int $x) : void {"
+                                     "    write($x, \"\n\");"
+                                     "}"
+                                     "f(1);", {
+                                             (tree_node_t) {
+                                                     .type = TYPE_VOID,
+                                                     .argument_type = TYPE_INT,
+                                                     .defined = true,
+                                                     .key = "f",
+                                             }
+                                     });
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "function f(int $x) : void {"
+                                                 "    write($x, \"\n\");"
+                                                 "}"
+                                                 "f();", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "function f(int $x) : void {"
+                                                 "    write($x, \"\n\");"
+                                                 "}"
+                                                 "f(1, 2);", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
+                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "write($x);", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$x used before declaration");
+
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
+                                                 "declare(strict_types=1);"
+                                                 "$x;", {}),
+                            ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$x used before declaration");
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "while(0 === 1) {"
+                                     "    write(\"BAD\n\");"
+                                     "}"
+                                     "write(\"GOOD\n\");", {});
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "while(\"\") {"
+                                     "    write(\"BAD\n\");"
+                                     "}"
+                                     "write(\"GOOD\n\");", {});
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "while(0.0) {"
+                                     "    write(\"BAD\n\");"
+                                     "}"
+                                     "write(\"GOOD\n\");", {});
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "$i = 0;"
+                                     "while($i < 3) {"
+                                     "    write($i, \"\n\");"
+                                     "    $i = $i + 1;"
+                                     "}"
+                                     "write(\"GOOD\n\");", {});
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "while(null) {"
+                                     "    write(\"BAD\n\");"
+                                     "}"
+                                     "write(\"GOOD\n\");", {});
             }
         }
     }

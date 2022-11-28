@@ -23,9 +23,10 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
     while (true) {
         switch (state) {
             case START:
-
                 switch (current_char) {
                     case ' ':
+                    case '\n':
+                    case '\t':
                         break;
                     case '\0':
                     case EOF:
@@ -108,8 +109,9 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                             state = INTEGER_STATE;
                             string_append_char(token, current_char);
                             break;
+                        } else {
+                            LEXICAL_ERROR("Unexpected character: %c", current_char);
                         }
-                        break;
                 }
                 break;
             case KEYWORD_STATE:
@@ -134,7 +136,7 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     else if (!strcmp(token->value, "?>")) keyword = CLOSE_PHP_BRACKET;
 
                     if (keyword != -1) {
-                        state = keyword == KEYWORD_DECLARE ? STRICT_TYPES_STATE : START;
+                        state = START;
                     } else {
                         state = IDENTIFIER_STATE;
                     }
@@ -173,24 +175,6 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     return OPEN_PHP_BRACKET;
                 }
                 break;
-            case STRICT_TYPES_STATE:
-                if (current_char == '(') {
-                    string_append_char(token, current_char);
-                    return LEFT_PARENTHESIS;
-                }
-                if (current_char == 's' || current_char == 't' || current_char == 'r' ||
-                    current_char == 'c' || current_char == 'e' ||
-                    current_char == 'y' || current_char == 'p' || current_char == 'i' || current_char == '_') {
-                    string_append_char(token, current_char);
-                } else {
-                    if (strcmp(token->value, "strict_types")) {
-                        LEXICAL_ERROR("Invalid strict_types declaration");
-                    }
-                    state = START;
-                    ungetc(current_char, fd);
-                    return KEYWORD_STRICT_TYPES;
-                }
-                break;
             case EQUAL_STATE:
                 if (current_char == '=')
                     string_append_char(token, current_char);
@@ -199,10 +183,11 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                     ungetc(current_char, fd);
 
                     if (!strcmp(token->value, "=")) return ASSIGN;
-                    else if (!strcmp(token->value, "==")) return EQUAL;
-                    else if (!strcmp(token->value, "!=")) return NOT_EQUAL;
                     else if (!strcmp(token->value, "===")) return TYPED_EQUAL;
                     else if (!strcmp(token->value, "!==")) return TYPED_NOT_EQUAL;
+                    else {
+                        LEXICAL_ERROR("Invalid operator: %s", token->value);
+                    }
                 }
                 break;
             case ARITHMETIC_STATE:
@@ -324,6 +309,10 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                 } else {
                     state = STRING_STATE;
                     string_append_char(token, current_char);
+
+                    if (current_char < 0) {
+                        LEXICAL_ERROR("Invalid string format");
+                    }
                 }
                 break;
             case STRING_ESCAPE_STATE:
@@ -344,6 +333,8 @@ LEXICAL_FSM_TOKENS get_next_token(FILE *fd, string_t *token) {
                         state = START;
                     } else
                         ungetc(current_char, fd);
+                } else if (current_char < 0) {
+                    LEXICAL_ERROR("Unexpected end of file");
                 }
                 break;
             default:

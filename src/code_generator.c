@@ -803,23 +803,25 @@ void parse_function_call(syntax_abstract_tree_t *tree, string_t *result) {
             case CODE_GEN_READI_INSTRUCTION:
             case CODE_GEN_READF_INSTRUCTION:
             case CODE_GEN_READS_INSTRUCTION: {
-                if (find_token(result->value)->code_generator_defined == false)
+                if (result != NULL && find_token(result->value)->code_generator_defined == false) {
                     generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, result->value);
-                find_token(result->value)->code_generator_defined = true;
+                    find_token(result->value)->code_generator_defined = true;
+                }
 
-                generate_operation(internal_func, CODE_GENERATOR_GLOBAL_FRAME, result->value, (frames_t) -1,
-                                   NULL, (frames_t) -1, NULL);
+                if (result)
+                    generate_operation(internal_func, CODE_GENERATOR_GLOBAL_FRAME, result->value, (frames_t) -1, NULL,
+                                       (frames_t) -1, NULL);
                 break;
             }
             case CODE_GEN_INT2CHAR_INSTRUCTION:
             case CODE_GEN_STRLEN_INSTRUCTION: {
-                if (!find_token(result->value)) {
+                if (result != NULL && !find_token(result->value)) {
                     insert_token(result->value);
                     find_token(result->value)->defined = true;
                     find_token(result->value)->type = get_data_type(tree->left);
                 }
 
-                if (find_token(result->value)->code_generator_defined == false)
+                if (result != NULL && find_token(result->value)->code_generator_defined == false)
                     generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, result->value);
                 find_token(result->value)->code_generator_defined = true;
 
@@ -867,8 +869,14 @@ void parse_loop(syntax_abstract_tree_t *tree) {
     string_t *loop_end_label = string_init(loop_label->value);
     string_append_string(loop_end_label, "_end");
 
+    parse_relational_expression(tree->left, loop_cond_var);
+
+    bool is_expression_false = tree->left->type == SYN_NODE_KEYWORD_NULL;
+
+    if (is_expression_false) return;
+
     syntax_abstract_tree_t *body_tree = tree->right;
-    while (body_tree != NULL) {
+    while (body_tree != NULL && body_tree->left != NULL) {
         if (body_tree->right->type == SYN_NODE_ASSIGN) {
             if (!find_token(body_tree->right->left->value->value)) {
                 insert_token(body_tree->right->left->value->value);
@@ -883,8 +891,6 @@ void parse_loop(syntax_abstract_tree_t *tree) {
     syntax_tree_node_type loop_type = tree->left->type;
 
     generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, loop_cond_var->value);
-
-    parse_relational_expression(tree->left, loop_cond_var);
 
     generate_label(loop_start_label->value);
     generate_conditional_jump(true, loop_end_label->value, CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value,
@@ -956,6 +962,8 @@ void parse_return(syntax_abstract_tree_t *tree) {
 }
 
 void parse_func_dec(syntax_abstract_tree_t *tree) {
+    if (!tree) return;
+
     if (tree->left) parse_func_dec(tree->left);
 
     if (tree->right->type != SYN_NODE_FUNCTION_DECLARATION) return;
@@ -972,6 +980,8 @@ void parse_func_dec(syntax_abstract_tree_t *tree) {
 }
 
 void parse_tree(syntax_abstract_tree_t *tree) {
+    if (!tree) return;
+
     if (tree->left) parse_tree(tree->left);
 
     if (tree->type != SYN_NODE_SEQUENCE) return;

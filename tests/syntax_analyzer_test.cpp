@@ -148,11 +148,6 @@ namespace ifj {
             }
 
             TEST_F(SyntaxAnalyzerTest, IfConditions) {
-                IsSyntaxTreeCorrect("<?php if ($a == 2) $a = 3;",
-                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
-                                     SYN_NODE_INTEGER});
-
                 IsSyntaxTreeCorrect("<?php if ($a === 2) $a = 3;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
@@ -160,11 +155,6 @@ namespace ifj {
 
                 IsSyntaxTreeCorrect("<?php if ($a !== 2) $a = 3;",
                                     {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_NOT_EQUAL, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
-                                     SYN_NODE_INTEGER});
-
-                IsSyntaxTreeCorrect("<?php if (1 != 2) $a = 3;",
-                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_NOT_EQUAL, SYN_NODE_INTEGER,
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER});
 
@@ -188,17 +178,17 @@ namespace ifj {
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER});
 
-                IsSyntaxTreeCorrect("<?php if ($a == 3) if ($b != 2) $c = 4;",
-                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
-                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_NOT_EQUAL,
-                                     SYN_NODE_INTEGER, SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
-                                     SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+                IsSyntaxTreeCorrect("<?php if ($a === 3) if ($b !== 2) $c = 4;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_TYPED_NOT_EQUAL, SYN_NODE_INTEGER, SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
 
-                IsSyntaxTreeCorrect("<?php if ($a == 4) {"
+                IsSyntaxTreeCorrect("<?php if ($a === 4) {"
                                     "  $b = 1;"
                                     "  $c = 2;"
                                     "}",
-                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER});
@@ -218,35 +208,32 @@ namespace ifj {
                 EXPECT_EXIT(SyntaxTreeWithError("<?php if($a) }"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected statement, got: }");
 
-                EXPECT_EXIT(SyntaxTreeWithError("<?php if($a) {}"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Incorrect if statement");
-
                 EXPECT_EXIT(SyntaxTreeWithError("<?php if($a) {$a}"), ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Assignment Expecting =, found: }");
+                            "\\[SYNTAX ERROR\\] Expected assignment or semicolon, got: }");
             }
 
             TEST_F(SyntaxAnalyzerTest, IfElseConditions) {
-                IsSyntaxTreeCorrect("<?php if ($a == 2) $a = 3; else $a = 4;",
-                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                IsSyntaxTreeCorrect("<?php if ($a === 2) $a = 3; else $a = 4;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER});
 
-                IsSyntaxTreeCorrect("<?php if ($a == 2) {"
+                IsSyntaxTreeCorrect("<?php if ($a === 2) {"
                                     " $a = 3;"
-                                    "} else if ($a == 1) {"
+                                    "} else if ($a === 1) {"
                                     " $a = 4;"
                                     "} else {"
                                     " $a = 5;"
                                     "}",
-                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
-                                     SYN_NODE_INTEGER, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_INTEGER, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER});
 
-                IsSyntaxTreeCorrect("<?php if ($a == 2) "
+                IsSyntaxTreeCorrect("<?php if ($a === 2) "
                                     "{"
                                     " $a = 3.4;"
                                     " $b = 4;"
@@ -254,7 +241,7 @@ namespace ifj {
                                     " $a = 4;"
                                     " $b = $b - 1;"
                                     "}",
-                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_EQUAL, SYN_NODE_INTEGER,
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
                                      SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_FLOAT, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                      SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
@@ -273,11 +260,11 @@ namespace ifj {
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected statement, got: else");
 
-                EXPECT_EXIT(SyntaxTreeWithError("<?php if($a) { $a = 1; } else if ($a == 2 $a = 1; else $a = 2;"),
+                EXPECT_EXIT(SyntaxTreeWithError("<?php if($a) { $a = 1; } else if ($a === 2 $a = 1; else $a = 2;"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Right parenthesis Expecting ), found: ID");
 
-                EXPECT_EXIT(SyntaxTreeWithError("<?php if($a) { $a = 1; } else if ($a == 2) $a = 1; else"),
+                EXPECT_EXIT(SyntaxTreeWithError("<?php if($a) { $a = 1; } else if ($a === 2) $a = 1; else"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected statement after else");
             }
@@ -303,7 +290,7 @@ namespace ifj {
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected expression, got: )");
 
-                EXPECT_EXIT(SyntaxTreeWithError("<?php while(1 == 1)"),
+                EXPECT_EXIT(SyntaxTreeWithError("<?php while(1 === 1)"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected statement after while");
 
@@ -378,9 +365,9 @@ namespace ifj {
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected expression, got: )");
 
-                EXPECT_EXIT(SyntaxTreeWithError("<?php f(==);"),
+                EXPECT_EXIT(SyntaxTreeWithError("<?php f(===);"),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expected expression, got: ==");
+                            "\\[SYNTAX ERROR\\] Expected expression, got: ===");
             }
 
             TEST_F(SyntaxAnalyzerTest, ReturnStatement) {
@@ -526,6 +513,86 @@ namespace ifj {
                 EXPECT_EXIT(IsSyntaxTreeCorrect("<?php $a = 1; ?>;", {}),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] Expected end of file, got: ;");
+            }
+
+            TEST_F(SyntaxAnalyzerTest, ExternalTests) {
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "5;", {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "$x = 5;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "reads();\n"
+                                    "readi();\n"
+                                    "readf();\n"
+                                    "write(5);\n"
+                                    "write(\"hello world\", 99);",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL, SYN_NODE_SEQUENCE,
+                                     SYN_NODE_IDENTIFIER, SYN_NODE_CALL, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_CALL, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL,
+                                     SYN_NODE_INTEGER, SYN_NODE_ARGS, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
+                                     SYN_NODE_CALL, SYN_NODE_INTEGER, SYN_NODE_ARGS, SYN_NODE_STRING, SYN_NODE_ARGS});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "if(1===1){}else{}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "if(1===1) {\n"
+                                    "    $x = 5;\n"
+                                    "    $y = 7;\n"
+                                    "} else {\n"
+                                    "    $x = 6;\n"
+                                    "    $y = 8;\n"
+                                    "}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "if(1===1) {\n"
+                                    "    $x = 5;\n"
+                                    "} else {\n"
+                                    "    $x = 6;\n"
+                                    "}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                     SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "return;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_KEYWORD_RETURN, SYN_NODE_KEYWORD_VOID});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "return 0;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_KEYWORD_RETURN, SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "return 1+2;",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_KEYWORD_RETURN, SYN_NODE_INTEGER, SYN_NODE_ADD,
+                                     SYN_NODE_INTEGER});
+
+                IsSyntaxTreeCorrect("<?php\n"
+                                    "declare(strict_types=1);\n"
+                                    "while(1===0){}",
+                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
+                                     SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE});
             }
         }
     }
