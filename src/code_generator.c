@@ -980,7 +980,7 @@ void parse_func_dec(syntax_abstract_tree_t *tree) {
 
     if (tree->left) parse_func_dec(tree->left);
 
-    if (tree->right->type != SYN_NODE_FUNCTION_DECLARATION) return;
+    if (!tree->right || tree->right->type != SYN_NODE_FUNCTION_DECLARATION) return;
 
     string_t *function_label = string_init(tree->right->left->value->value);
 
@@ -1013,21 +1013,30 @@ void parse_tree(syntax_abstract_tree_t *tree) {
 
     if (tree->right) {
         switch (tree->right->type) {
-            case SYN_NODE_ASSIGN:
+            case SYN_NODE_SEQUENCE: {
+                parse_tree(tree->right);
+                break;
+            }
+            case SYN_NODE_ASSIGN: {
                 parse_assign(tree->right);
                 break;
-            case SYN_NODE_CALL:
+            }
+            case SYN_NODE_CALL: {
                 parse_function_call(tree->right, NULL);
                 break;
-            case SYN_NODE_KEYWORD_WHILE:
+            }
+            case SYN_NODE_KEYWORD_WHILE: {
                 parse_loop(tree->right);
                 break;
-            case SYN_NODE_KEYWORD_IF:
+            }
+            case SYN_NODE_KEYWORD_IF: {
                 parse_condition(tree->right);
                 break;
-            case SYN_NODE_KEYWORD_RETURN:
+            }
+            case SYN_NODE_KEYWORD_RETURN: {
                 parse_return(tree->right);
                 break;
+            }
             default:
                 break;
         }
