@@ -45,8 +45,6 @@ namespace ifj {
                     fread(actual, expected_str.length() + 1, 1, output_fd);
 
                     EXPECT_STREQ(expected_str.c_str(), actual) << "Input: " << input.c_str();
-
-                    free_syntax_tree(tree);
                 }
             };
 
