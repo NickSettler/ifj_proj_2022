@@ -14,7 +14,7 @@
 bool can_detect_bool(syntax_abstract_tree_t *tree) {
     if (!tree) return true;
 
-    if (tree->type != SYN_NODE_INTEGER) {
+    if ((tree->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT)) == 0) {
         return false;
     }
 
@@ -28,6 +28,11 @@ bool is_true(syntax_abstract_tree_t *tree) {
         if (!strcmp(tree->value->value, "0")) return false;
 
         return true;
+    } else if (tree->type == SYN_NODE_FLOAT) {
+        double tree_number = strtod(tree->value->value, &numbers_buffer);
+        double int_value = (int) tree_number;
+        
+        return int_value != 0;
     }
 
     return true;
