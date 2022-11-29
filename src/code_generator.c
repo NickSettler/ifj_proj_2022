@@ -189,12 +189,28 @@ void generate_number_conversion_functions() {
         string_t *conversion_label = string_init(current_function->value);
         string_append_string(conversion_label, "_%s", conversion_type);
 
+        string_t *null_conv_label = string_init(current_function->value);
+        string_append_string(null_conv_label, "_null_conv");
+
         generate_conversion_base(current_function->value, process_variable, type_variable);
 
         generate_conditional_jump(true, end_label->value, CODE_GENERATOR_LOCAL_FRAME, type_variable,
                                   CODE_GENERATOR_STRING_CONSTANT, current_type);
         generate_conditional_jump(true, conversion_label->value, CODE_GENERATOR_LOCAL_FRAME, type_variable,
                                   CODE_GENERATOR_STRING_CONSTANT, conversion_type);
+        generate_conditional_jump(true, null_conv_label->value, CODE_GENERATOR_LOCAL_FRAME, type_variable,
+                                  CODE_GENERATOR_STRING_CONSTANT, "nil");
+        generate_jump(end_label->value);
+
+        generate_label(null_conv_label->value);
+        string_t *zero_value = string_init("");
+        string_append_string(zero_value, i == 0 ? "%a" : "%d", 0);
+        generate_move(
+                CODE_GENERATOR_LOCAL_FRAME,
+                process_variable,
+                i == 0 ? CODE_GENERATOR_FLOAT_CONSTANT : CODE_GENERATOR_INT_CONSTANT,
+                zero_value->value
+        );
         generate_jump(end_label->value);
 
         generate_label(conversion_label->value);
