@@ -1068,6 +1068,10 @@ namespace ifj {
                                      "1       )\n"
                                      ";", {});
 
+                CheckSymTableEntries("<?php\n"
+                                     "declare(strict_types=1);\n"
+                                     "$x = 04534.1543210e+5655;", {});
+
             }
         }
     }

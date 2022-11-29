@@ -540,8 +540,18 @@ namespace ifj {
                             "\\[SYNTAX ERROR\\] PHP Open bracket Expecting <\\?php, found: INTEGER");
 
                 EXPECT_EXIT(IsSyntaxTreeCorrect("<?php declare(strict_types=1); $a = 1; ?>;", {}),
-                            ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
-                            "\\[SYNTAX ERROR\\] Expected end of file, got: ;");
+                            ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Unexpected character: ;");
+
+                EXPECT_EXIT(IsSyntaxTreeCorrect("<?php\n"
+                                                "declare(strict_types=1);\n"
+                                                "write(\"Hello\\n\");\n"
+                                                "?> \n"
+                                                "Hello", {}),
+                            ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Unexpected character:"
+                            "");
+
                 EXPECT_EXIT(IsSyntaxTreeCorrect("write(\\\"Hello\\\");", {}),
                             ::testing::ExitedWithCode(SYNTAX_ERROR_CODE),
                             "\\[SYNTAX ERROR\\] PHP Open bracket Expecting <\\?php, found: ID");
