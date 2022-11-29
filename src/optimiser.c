@@ -171,6 +171,30 @@ void replace_variable_usage(syntax_abstract_tree_t *tree, syntax_abstract_tree_t
             }
         }
 
+        if (current->right->type == SYN_NODE_KEYWORD_IF) {
+            process_tree_using(current->right->left, replace_variable_usage_internal, POSTORDER);
+            if (current->right->middle) {
+                replace_variable_usage(current->right->middle, current_tree);
+                syntax_abstract_tree_t *tmp_tree = optimiser_params->root_tree;
+                optimiser_params->root_tree = current->right->middle;
+                optimize_node(current->right->middle, OPTIMISE_EXPRESSION);
+                optimiser_params->root_tree = tmp_tree;
+                optimize_node(current->right->middle, OPTIMISE_UNREACHABLE_CODE);
+            }
+            if (current->right->right) {
+                if (current->right->right->type == SYN_NODE_KEYWORD_IF)
+                    process_tree_using(current->right->right->left, replace_variable_usage_internal, POSTORDER);
+
+                replace_variable_usage(current->right->right, current_tree);
+                syntax_abstract_tree_t *tmp_tree = optimiser_params->root_tree;
+                optimiser_params->root_tree = current->right->right;
+                optimize_node(current->right->right, OPTIMISE_EXPRESSION);
+                optimiser_params->root_tree = tmp_tree;
+                optimize_node(current->right->middle, OPTIMISE_UNREACHABLE_CODE);
+            }
+            break;
+        }
+
         if (current->right->type == SYN_NODE_KEYWORD_WHILE) {
             syntax_abstract_tree_t *cond_copy = tree_copy(current->right->left);
             process_tree_using(cond_copy, replace_variable_usage_internal, POSTORDER);
