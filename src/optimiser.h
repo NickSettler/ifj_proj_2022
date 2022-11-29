@@ -13,14 +13,14 @@
 
 static char *numbers_buffer;
 
-#define GET_NODE_NUMBER(child) \
-    if ((tree->child->type & (SYN_NODE_FLOAT | SYN_NODE_INTEGER)) == 0) \
-        break; \
-    double child##_number = strtod(tree->child->value->value, &numbers_buffer);
-
 #define GET_NODE_NUMBERS \
     GET_NODE_NUMBER(left)\
     GET_NODE_NUMBER(right)
+
+#define GET_NODE_NUMBER(child) \
+    if ((tree->child->type & (SYN_NODE_FLOAT | SYN_NODE_INTEGER)) == 0) \
+        return; \
+    double child##_number = strtod(tree->child->value->value, &numbers_buffer);
 
 #define PROCESS_DECIMAL(result) \
     int result_int = (int) result;\
