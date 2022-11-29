@@ -64,7 +64,11 @@ void optimise_unreachable_while(syntax_abstract_tree_t *tree) {
     if (tree->right->type != SYN_NODE_KEYWORD_WHILE) return;
 
     syntax_abstract_tree_t *cond_copy = tree_copy(tree->right->left);
-    process_tree_using(cond_copy, optimize_expression, POSTORDER);
+    if ((cond_copy->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING)) == 0) {
+        process_tree_using(cond_copy, optimize_expression, POSTORDER);
+    } else {
+        change_node_type(cond_copy, TYPE_INT);
+    }
     bool is_cond_false = !check_tree_using(cond_copy, is_true);
 
     free_syntax_tree(cond_copy);
@@ -280,7 +284,7 @@ void optimize_expression(syntax_abstract_tree_t *tree) {
     if ((tree->type &
          (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV | SYN_NODE_TYPED_EQUAL | SYN_NODE_TYPED_NOT_EQUAL |
           SYN_NODE_LESS | SYN_NODE_LESS_EQUAL | SYN_NODE_GREATER | SYN_NODE_GREATER_EQUAL | SYN_NODE_AND | SYN_NODE_OR |
-          SYN_NODE_NOT | SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING)) == 0)
+          SYN_NODE_NOT)) == 0)
         return;
 
     switch (tree->type) {
@@ -391,11 +395,6 @@ void optimize_expression(syntax_abstract_tree_t *tree) {
 
             REPLACE_TREE_VALUE(result ? "1" : "0", SYN_NODE_INTEGER)
             break;
-        }
-        case SYN_NODE_INTEGER:
-        case SYN_NODE_FLOAT:
-        case SYN_NODE_STRING: {
-            change_node_type(tree, TYPE_INT);
         }
         default:
             break;
