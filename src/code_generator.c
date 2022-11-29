@@ -895,11 +895,11 @@ void parse_loop(syntax_abstract_tree_t *tree) {
     string_t *loop_end_label = string_init(loop_label->value);
     string_append_string(loop_end_label, "_end");
 
+    syntax_tree_node_type loop_type = tree->left->type;
+
+    generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, loop_cond_var->value);
+
     parse_relational_expression(tree->left, loop_cond_var);
-
-    bool is_expression_false = tree->left->type == SYN_NODE_KEYWORD_NULL;
-
-    if (is_expression_false) return;
 
     syntax_abstract_tree_t *body_tree = tree->right;
     while (body_tree != NULL && body_tree->left != NULL) {
@@ -913,10 +913,6 @@ void parse_loop(syntax_abstract_tree_t *tree) {
         }
         body_tree = body_tree->left;
     }
-
-    syntax_tree_node_type loop_type = tree->left->type;
-
-    generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, loop_cond_var->value);
 
     generate_label(loop_start_label->value);
     generate_conditional_jump(true, loop_end_label->value, CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value,
