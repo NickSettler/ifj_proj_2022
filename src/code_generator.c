@@ -917,7 +917,10 @@ void parse_condition(syntax_abstract_tree_t *tree) {
 void parse_return(syntax_abstract_tree_t *tree) {
     if (tree->type != SYN_NODE_KEYWORD_RETURN) return;
 
-    if (tree->right->type == SYN_NODE_KEYWORD_VOID) return;
+    if (tree->right->type == SYN_NODE_KEYWORD_VOID) {
+        generate_add_on_top(CODE_GENERATOR_NULL_CONSTANT, "nil");
+        return;
+    }
 
     process_node_value(tree->right);
 
