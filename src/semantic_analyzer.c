@@ -363,17 +363,9 @@ void check_tree_for_float(syntax_abstract_tree_t *tree) {
 }
 
 void replace_node_int_to_float(syntax_abstract_tree_t *tree) {
-    if (tree == NULL) {
-        return;
-    }
-    switch (tree->type) {
-        case SYN_NODE_INTEGER:
-            tree->type = SYN_NODE_FLOAT;
-            string_append_string(tree->value, ".0");
-            break;
-        default:
-            return;
-    }
+    if (!tree || (tree->type & SYN_NODE_INTEGER) == 0) return;
+
+    change_node_type(tree, TYPE_FLOAT);
 }
 
 void check_tree_for_string(syntax_abstract_tree_t *tree) {
@@ -383,20 +375,57 @@ void check_tree_for_string(syntax_abstract_tree_t *tree) {
 }
 
 void replace_node_to_string(syntax_abstract_tree_t *tree) {
-    if (tree == NULL) {
-        return;
-    }
-    switch (tree->type) {
-        case SYN_NODE_INTEGER:
-        case SYN_NODE_FLOAT: {
-            tree->type = SYN_NODE_STRING;
-            string_t *temp = string_init("");
-            string_append_string(temp, "\"%s\"", tree->value->value);
-            string_replace(tree->value, temp->value);
+    change_node_type(tree, TYPE_STRING);
+}
+
+void change_node_type(syntax_abstract_tree_t *tree, data_type type) {
+    if (!tree || (tree->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING)) == 0) return;
+
+    switch (type) {
+        case TYPE_INT: {
+            char *num_buf;
+
+            if (tree->type & SYN_NODE_FLOAT) {
+                tree->type = SYN_NODE_INTEGER;
+                double num = strtod(tree->value->value, &num_buf);
+                string_clear(tree->value);
+                string_append_string(tree->value, "%d", (int) num);
+            }
+            if (tree->type & SYN_NODE_STRING) {
+                tree->type = SYN_NODE_INTEGER;
+                string_t *string_without_quotes = string_substr(tree->value, 1, (int) tree->value->length - 1);
+                double num = strtod(string_without_quotes->value, &num_buf);
+                string_clear(tree->value);
+                string_append_string(tree->value, "%d", (int) num);
+            }
+            break;
+        }
+        case TYPE_FLOAT: {
+            if (tree->type & SYN_NODE_INTEGER) {
+                tree->type = SYN_NODE_FLOAT;
+                string_append_string(tree->value, ".0");
+            }
+            if (tree->type & SYN_NODE_STRING) {
+                tree->type = SYN_NODE_FLOAT;
+                char *num_buf;
+                string_t *string_without_quotes = string_substr(tree->value, 1, (int) tree->value->length - 1);
+                double num = strtod(string_without_quotes->value, &num_buf);
+                string_clear(tree->value);
+                string_append_string(tree->value, "%g", num);
+            }
+            break;
+        }
+        case TYPE_STRING: {
+            if (tree->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT)) {
+                tree->type = SYN_NODE_STRING;
+                string_t *value_copy = string_init(tree->value->value);
+                string_clear(tree->value);
+                string_append_string(tree->value, "\"%s\"", value_copy->value);
+            }
             break;
         }
         default: {
-            return;
+            break;
         }
     }
 }

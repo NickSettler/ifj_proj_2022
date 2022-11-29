@@ -138,6 +138,13 @@ void check_tree_for_string(syntax_abstract_tree_t *tree);
 void replace_node_to_string(syntax_abstract_tree_t *tree);
 
 /**
+ * Changes type of the node
+ * @param tree Abstract syntax tree
+ * @param type Target type of the node
+ */
+void change_node_type(syntax_abstract_tree_t *tree, data_type type);
+
+/**
  * Checks types of two nodes
  * @param type_1 Type of first node
  * @param type_2 Type of second node
