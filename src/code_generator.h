@@ -21,7 +21,7 @@
 /**
  * @brief file for writing the code
  */
-FILE *fd;
+static FILE *fd;
 
 static char *tmp_var_name = "$$__TMP_";
 static char *loop_label_name = "$$__LOOP_";
