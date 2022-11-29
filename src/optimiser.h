@@ -72,6 +72,12 @@ bool can_detect_bool(syntax_abstract_tree_t *tree);
 bool is_true(syntax_abstract_tree_t *tree);
 
 /**
+ * Optimises unreachable while loop
+ * @param tree abstract syntax tree
+ */
+void optimise_unreachable_while(syntax_abstract_tree_t *tree);
+
+/**
  * Optimises unreachable if statement
  * @param tree abstract syntax tree
  */

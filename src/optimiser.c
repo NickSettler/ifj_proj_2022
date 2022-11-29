@@ -31,11 +31,28 @@ bool is_true(syntax_abstract_tree_t *tree) {
     } else if (tree->type == SYN_NODE_FLOAT) {
         double tree_number = strtod(tree->value->value, &numbers_buffer);
         double int_value = (int) tree_number;
-        
+
         return int_value != 0;
     }
 
     return true;
+}
+
+void optimise_unreachable_while(syntax_abstract_tree_t *tree) {
+    if (!tree || !tree->right) return;
+
+    if (tree->right->type != SYN_NODE_KEYWORD_WHILE) return;
+
+    syntax_abstract_tree_t *cond_copy = tree_copy(tree->right->left);
+    process_tree_using(cond_copy, optimize_expression, POSTORDER);
+    bool is_cond_false = !check_tree_using(cond_copy, is_true);
+
+    if (is_cond_false) {
+        free_syntax_tree(tree->right);
+        tree->right = NULL;
+    } else {
+        optimize_node(tree->right->right, OPTIMISE_UNREACHABLE_CODE);
+    }
 }
 
 void optimise_unreachable_if(syntax_abstract_tree_t *tree) {
@@ -131,7 +148,6 @@ void replace_variable_usage(syntax_abstract_tree_t *tree, syntax_abstract_tree_t
             process_tree_using(cond_copy, replace_variable_usage_internal, POSTORDER);
             process_tree_using(cond_copy, optimize_expression, POSTORDER);
             bool is_cond_false = !check_tree_using(cond_copy, is_true);
-
 
             if (is_cond_false) {
                 free_syntax_tree(current->right);
@@ -292,6 +308,11 @@ void optimize_node(syntax_abstract_tree_t *tree, optimise_type_t optimise_type) 
             }
             if (optimise_type == OPTIMISE_UNREACHABLE_CODE) {
                 optimise_unreachable_if(tree);
+            }
+        }
+        case SYN_NODE_KEYWORD_WHILE: {
+            if (optimise_type == OPTIMISE_UNREACHABLE_CODE) {
+                optimise_unreachable_while(tree);
             }
         }
         case SYN_NODE_CALL: {
