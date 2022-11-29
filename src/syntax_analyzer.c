@@ -660,6 +660,22 @@ bool is_simple_expression(syntax_abstract_tree_t *tree) {
     return true;
 }
 
+bool compare_syntax_tree(syntax_abstract_tree_t *tree1, syntax_abstract_tree_t *tree2) {
+    if (!tree1 || !tree2) return true;
+
+    if (tree1->type != tree2->type) return false;
+
+    if (tree1->value && tree2->value) {
+        if (strcmp(tree1->value->value, tree2->value->value) != 0) return false;
+    } else if ((!tree1->value ^ !tree2->value) == 1) {
+        return false;
+    }
+
+    return compare_syntax_tree(tree1->left, tree2->left) &&
+           compare_syntax_tree(tree1->middle, tree2->middle) &&
+           compare_syntax_tree(tree1->right, tree2->right);
+}
+
 syntax_abstract_tree_t *tree_copy(syntax_abstract_tree_t *tree) {
     if (!tree) return NULL;
 
