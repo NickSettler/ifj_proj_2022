@@ -28,6 +28,7 @@ typedef enum {
     SEMANTIC_SUBSTRING = 1 << 7,
     SEMANTIC_INTVAL = 1 << 8,
     SEMANTIC_FLOATVAL = 1 << 9,
+    SEMANTIC_STRVAL = 1 << 10,
 } semantic_internal_functions;
 
 typedef struct semantic_analyzer {

@@ -256,6 +256,9 @@ void process_call(syntax_abstract_tree_t *tree) {
     else if (!strcmp(tree->left->value->value, "floatval"))
         semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
                                                                         SEMANTIC_FLOATVAL);
+    else if (!strcmp(tree->left->value->value, "strval"))
+        semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
+                                                                        SEMANTIC_STRVAL);
 
     if (strcmp(semantic_state->function_name, "write") != 0) {
         if (arg_call_counter != func->argument_count) {
