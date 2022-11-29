@@ -103,7 +103,6 @@ void process_assign(syntax_abstract_tree_t *tree) {
     }
     find_element(semantic_state->symtable_ptr, id_node->value->value)->type = get_data_type(tree->right);
     check_tree_for_float(tree->right);
-
 }
 
 void process_if_while(syntax_abstract_tree_t *tree) {
@@ -353,6 +352,8 @@ data_type get_data_type(syntax_abstract_tree_t *tree) {
     }
     get_data_type(tree->left);
     get_data_type(tree->right);
+
+    return (data_type) -1;
 }
 
 void check_tree_for_float(syntax_abstract_tree_t *tree) {

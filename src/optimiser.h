@@ -11,13 +11,16 @@
 #ifndef IFJ_PROJ_OPTIMISER_H
 #define IFJ_PROJ_OPTIMISER_H
 
+static char *numbers_buffer;
+
 #define GET_NODE_NUMBERS \
-    if ((tree->left->type & (SYN_NODE_FLOAT | SYN_NODE_INTEGER)) == 0 || \
-        (tree->right->type & (SYN_NODE_FLOAT | SYN_NODE_INTEGER)) == 0) \
-        break; \
-    char *buffer; \
-    double left_number = strtod(tree->left->value->value, &buffer); \
-    double right_number = strtod(tree->right->value->value, &buffer);
+    GET_NODE_NUMBER(left)\
+    GET_NODE_NUMBER(right)
+
+#define GET_NODE_NUMBER(child) \
+    if ((tree->child->type & (SYN_NODE_FLOAT | SYN_NODE_INTEGER)) == 0) \
+        return; \
+    double child##_number = strtod(tree->child->value->value, &numbers_buffer);
 
 #define PROCESS_DECIMAL(result) \
     int result_int = (int) result;\
@@ -49,9 +52,36 @@ typedef struct optimiser_parameters {
 typedef enum {
     OPTIMISE_EXPRESSION = 1 << 0,
     OPTIMISE_UNUSED_VARIABLES = 1 << 1,
+    OPTIMISE_UNREACHABLE_CODE = 1 << 2,
 } optimise_type_t;
 
 optimiser_parameters_t *optimiser_params;
+
+/**
+ * Checks if optimiser can determine if the expression is true or false
+ * @param tree abstract syntax tree
+ * @return true if it can determine, false otherwise
+ */
+bool can_detect_bool(syntax_abstract_tree_t *tree);
+
+/**
+ * Checks if the expression is true
+ * @param tree abstract syntax tree
+ * @return true if it is true, false otherwise
+ */
+bool is_true(syntax_abstract_tree_t *tree);
+
+/**
+ * Optimises unreachable while loop
+ * @param tree abstract syntax tree
+ */
+void optimise_unreachable_while(syntax_abstract_tree_t *tree);
+
+/**
+ * Optimises unreachable if statement
+ * @param tree abstract syntax tree
+ */
+void optimise_unreachable_if(syntax_abstract_tree_t *tree);
 
 /**
  * Internal function of variables replacement

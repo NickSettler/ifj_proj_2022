@@ -263,6 +263,12 @@ syntax_abstract_tree_t *expression(FILE *fd, int precedence) {
             node = expression(fd, attributes[SYN_TOKEN_NEGATE].precedence);
             x = (op == SYN_TOKEN_SUB) ? make_binary_node(SYN_NODE_NEGATE, node, NULL) : node;
             break;
+        case LOGICAL_NOT: {
+            GET_NEXT_TOKEN(fd)
+            node = expression(fd, attributes[SYN_TOKEN_NOT].precedence);
+            x = make_binary_node(SYN_NODE_NOT, node, NULL);
+            break;
+        }
         case IDENTIFIER: {
             bool is_variable = lexical_token->value[0] == '$';
             if (is_variable) {
@@ -636,6 +642,7 @@ void *process_tree_using(syntax_abstract_tree_t *tree, void (*process)(syntax_ab
     process_tree_using(tree->middle, process, traversal_type);
     process_tree_using(tree->right, process, traversal_type);
     if (traversal_type == POSTORDER)process(tree);
+    return NULL;
 }
 
 
@@ -673,7 +680,12 @@ void free_syntax_tree(syntax_abstract_tree_t *tree) {
     free_syntax_tree(tree->middle);
     free_syntax_tree(tree->right);
 
-    free(tree->attrs);
-    string_free(tree->value);
+    // TODO: check why sometimes makes SEGFAULT
+//    if (tree->attrs != NULL) {
+//        free(tree->attrs);
+//        tree->attrs = NULL;
+//    }
+//    string_free(tree->value);
+    tree->value = NULL;
     free(tree);
 }

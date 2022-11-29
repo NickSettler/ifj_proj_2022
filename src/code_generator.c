@@ -700,9 +700,10 @@ void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result)
     bool is_left_const = tree->left->type == SYN_NODE_INTEGER || tree->left->type == SYN_NODE_FLOAT ||
                          tree->left->type == SYN_NODE_STRING || tree->left->type == SYN_NODE_IDENTIFIER ||
                          tree->left->type == SYN_NODE_KEYWORD_NULL;
-    bool is_right_const = tree->right->type == SYN_NODE_INTEGER || tree->right->type == SYN_NODE_FLOAT ||
-                          tree->right->type == SYN_NODE_STRING || tree->right->type == SYN_NODE_IDENTIFIER ||
-                          tree->right->type == SYN_NODE_KEYWORD_NULL;
+    bool is_right_const = tree->right ? tree->right->type == SYN_NODE_INTEGER || tree->right->type == SYN_NODE_FLOAT ||
+                                        tree->right->type == SYN_NODE_STRING ||
+                                        tree->right->type == SYN_NODE_IDENTIFIER ||
+                                        tree->right->type == SYN_NODE_KEYWORD_NULL : true;
 
     if (is_left_const && is_right_const) {
         string_t *operation_var_name = result ? result : string_init(tmp_var_name);
@@ -722,6 +723,17 @@ void parse_relational_expression(syntax_abstract_tree_t *tree, string_t *result)
 
         process_node_value(tree->left);
         process_node_value(tree->right);
+
+        if (instruction == CODE_GEN_NOT_INSTRUCTION) {
+            generate_operation(instruction,
+                               CODE_GENERATOR_GLOBAL_FRAME,
+                               operation_var_name->value,
+                               left_frame,
+                               tree->left->value->value,
+                               (frames_t) -1,
+                               NULL);
+            return;
+        }
 
         generate_operation(instruction,
                            CODE_GENERATOR_GLOBAL_FRAME,
@@ -980,7 +992,7 @@ void parse_func_dec(syntax_abstract_tree_t *tree) {
 
     if (tree->left) parse_func_dec(tree->left);
 
-    if (tree->right->type != SYN_NODE_FUNCTION_DECLARATION) return;
+    if (!tree->right || tree->right->type != SYN_NODE_FUNCTION_DECLARATION) return;
 
     string_t *function_label = string_init(tree->right->left->value->value);
 
@@ -1013,21 +1025,30 @@ void parse_tree(syntax_abstract_tree_t *tree) {
 
     if (tree->right) {
         switch (tree->right->type) {
-            case SYN_NODE_ASSIGN:
+            case SYN_NODE_SEQUENCE: {
+                parse_tree(tree->right);
+                break;
+            }
+            case SYN_NODE_ASSIGN: {
                 parse_assign(tree->right);
                 break;
-            case SYN_NODE_CALL:
+            }
+            case SYN_NODE_CALL: {
                 parse_function_call(tree->right, NULL);
                 break;
-            case SYN_NODE_KEYWORD_WHILE:
+            }
+            case SYN_NODE_KEYWORD_WHILE: {
                 parse_loop(tree->right);
                 break;
-            case SYN_NODE_KEYWORD_IF:
+            }
+            case SYN_NODE_KEYWORD_IF: {
                 parse_condition(tree->right);
                 break;
-            case SYN_NODE_KEYWORD_RETURN:
+            }
+            case SYN_NODE_KEYWORD_RETURN: {
                 parse_return(tree->right);
                 break;
+            }
             default:
                 break;
         }
