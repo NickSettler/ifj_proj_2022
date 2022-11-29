@@ -76,6 +76,7 @@ make_binary_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, synta
     }
 
     tree->type = type;
+    tree->value = NULL;
     tree->left = left;
     tree->middle = NULL;
     tree->right = right;
@@ -98,6 +99,7 @@ make_ternary_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, synt
     }
 
     tree->type = type;
+    tree->value = NULL;
     tree->left = left;
     tree->middle = middle;
     tree->right = right;
