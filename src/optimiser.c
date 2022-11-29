@@ -47,6 +47,9 @@ void optimise_unreachable_while(syntax_abstract_tree_t *tree) {
     process_tree_using(cond_copy, optimize_expression, POSTORDER);
     bool is_cond_false = !check_tree_using(cond_copy, is_true);
 
+    free_syntax_tree(cond_copy);
+    cond_copy = NULL;
+
     if (is_cond_false) {
         free_syntax_tree(tree->right);
         tree->right = NULL;
@@ -152,6 +155,8 @@ void replace_variable_usage(syntax_abstract_tree_t *tree, syntax_abstract_tree_t
             process_tree_using(cond_copy, replace_variable_usage_internal, POSTORDER);
             process_tree_using(cond_copy, optimize_expression, POSTORDER);
             bool is_cond_false = !check_tree_using(cond_copy, is_true);
+            free_syntax_tree(cond_copy);
+            cond_copy = NULL;
 
             if (is_cond_false) {
                 free_syntax_tree(current->right);
