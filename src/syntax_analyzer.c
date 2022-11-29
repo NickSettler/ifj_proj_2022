@@ -642,6 +642,7 @@ void *process_tree_using(syntax_abstract_tree_t *tree, void (*process)(syntax_ab
     process_tree_using(tree->middle, process, traversal_type);
     process_tree_using(tree->right, process, traversal_type);
     if (traversal_type == POSTORDER)process(tree);
+    return NULL;
 }
 
 
