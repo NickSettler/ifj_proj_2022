@@ -681,5 +681,6 @@ void free_syntax_tree(syntax_abstract_tree_t *tree) {
 
     free(tree->attrs);
     string_free(tree->value);
+    tree->value = NULL;
     free(tree);
 }
