@@ -264,6 +264,117 @@ namespace ifj {
                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
                                     SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL,
                                     SYN_NODE_INTEGER, SYN_NODE_ARGS});
+
+                CheckOptimisedTree("<?php"
+                                   "if (1) {"
+                                   "  if (1)"
+                                   "    write(1);"
+                                   "}",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
+                                    SYN_NODE_CALL, SYN_NODE_INTEGER, SYN_NODE_ARGS});
+
+                CheckOptimisedTree("<?php"
+                                   "if (1) {"
+                                   "  if (0)"
+                                   "    write(1);"
+                                   "}",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "if (0) {"
+                                   "  if (1)"
+                                   "    write(1);"
+                                   "} else {"
+                                   "  if(1) write(1);"
+                                   "}",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
+                                    SYN_NODE_CALL, SYN_NODE_INTEGER, SYN_NODE_ARGS});
+
+                CheckOptimisedTree("<?php"
+                                   "if (0) {"
+                                   "  if (1)"
+                                   "    write(1);"
+                                   "} else {"
+                                   "  if(0) write(1);"
+                                   "}",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE});
+            }
+
+            TEST_F(OptimiserTest, UnreachableWhileElimination) {
+                CheckOptimisedTree("<?php"
+                                   "while(0)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "while(1)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE,
+                                    SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "while(1)"
+                                   "  while(2)"
+                                   "    $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE,
+                                    SYN_NODE_INTEGER, SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
+                                    SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "while(1)"
+                                   "  while(0)"
+                                   "    $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "while(0)"
+                                   "  while(0)"
+                                   "    $a = 1;",
+                                   {SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "while(0)"
+                                   "  while(1)"
+                                   "    $a = 1;",
+                                   {SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "$a = 1;"
+                                   "while($a === 0)"
+                                   "  while(1)"
+                                   "    $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                    SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "$a = 1;"
+                                   "while($a === 1)"
+                                   "  while(1)"
+                                   "    $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                    SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
+                                    SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_KEYWORD_WHILE,
+                                    SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "$a = 1;"
+                                   "while($a + 1 >= 2)"
+                                   "  while(1)"
+                                   "    $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                    SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ADD, SYN_NODE_INTEGER,
+                                    SYN_NODE_GREATER_EQUAL, SYN_NODE_INTEGER, SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE,
+                                    SYN_NODE_INTEGER, SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
+                                    SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "$a = 1;"
+                                   "while($a >= 1)"
+                                   "  while(0)"
+                                   "    $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                    SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_GREATER_EQUAL, SYN_NODE_INTEGER,
+                                    SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE});
             }
         }
     }
