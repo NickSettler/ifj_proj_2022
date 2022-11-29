@@ -44,7 +44,9 @@ namespace ifj {
                     fseek(output_fd, 0, SEEK_SET);
                     fread(actual, expected_str.length() + 1, 1, output_fd);
 
-                    EXPECT_STREQ(expected_str.c_str(), actual) << "Input: " << input;
+                    EXPECT_STREQ(expected_str.c_str(), actual) << "Input: " << input.c_str();
+
+                    free_syntax_tree(tree);
                 }
             };
 
@@ -68,6 +70,200 @@ namespace ifj {
                                    "$b = $a + 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
                                     SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
+            }
+
+            TEST_F(OptimiserTest, UnreachableIfElimination) {
+                CheckOptimisedTree("<?php"
+                                   "if(0)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 - 1)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 * 1)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(0 / 1)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 === 1)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 !== 2)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 < 2)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 <= 2)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 > 2)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 >= 2)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "if(0 && 2)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 && 2)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(0 || 2)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(!1)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE});
+
+                CheckOptimisedTree("<?php"
+                                   "if(!0)"
+                                   "  $a = 1;",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(0)"
+                                   "  $a = 1;"
+                                   "else {"
+                                   "  $a = 2;"
+                                   "  $b = 3;"
+                                   "}",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 === 1)"
+                                   "  $a = 1;"
+                                   "else {"
+                                   "  $a = 2;"
+                                   "  $b = 3;"
+                                   "}",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 !== 1)"
+                                   "  $a = 1;"
+                                   "else {"
+                                   "  $a = 2;"
+                                   "  $b = 3;"
+                                   "}",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 + 12 === 10 + 3)"
+                                   "  $a = 1;"
+                                   "else {"
+                                   "  $a = 2;"
+                                   "  $b = 3;"
+                                   "}",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "if(1 + 12 === 10 + 5)"
+                                   "  $a = 1;"
+                                   "else {"
+                                   "  $a = 2;"
+                                   "  $b = 3;"
+                                   "}",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "$a = 1;"
+                                   "if ($a === 1)"
+                                   "  $a = 1;"
+                                   "else {"
+                                   "  $a = 2;"
+                                   "  $b = 3;"
+                                   "}",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                    SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "$a = 1;"
+                                   "if ($a >= 0 + 1)"
+                                   "  $a = 1;"
+                                   "else {"
+                                   "  $a = 2;"
+                                   "  $b = 3;"
+                                   "}",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                    SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
+                                    SYN_NODE_INTEGER});
+
+                CheckOptimisedTree("<?php"
+                                   "$a = 1;"
+                                   "if ($a <= 0)"
+                                   "  $a = 1;"
+                                   "else if ($a === 0) {"
+                                   "  $a = 2;"
+                                   "  $b = 3;"
+                                   "} else "
+                                   "  write(1);",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                    SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL,
+                                    SYN_NODE_INTEGER, SYN_NODE_ARGS});
+
+                CheckOptimisedTree("<?php"
+                                   "$a = 1;"
+                                   "if ($a <= 0)"
+                                   "  $a = 1;"
+                                   "else if ($a + 2 === 0 + 2) {"
+                                   "  $a = 2;"
+                                   "  $b = 3;"
+                                   "} else "
+                                   "  write(1);",
+                                   {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                    SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_CALL,
+                                    SYN_NODE_INTEGER, SYN_NODE_ARGS});
             }
         }
     }
