@@ -12,6 +12,7 @@
 
 #include "semantic_analyzer.h"
 #include "syntax_analyzer.h"
+#include "optimiser.h"
 
 semantic_analyzer_t *semantic_state;
 extern tree_node_t *symtable;
@@ -107,8 +108,26 @@ void process_assign(syntax_abstract_tree_t *tree) {
 
 void process_if_while(syntax_abstract_tree_t *tree) {
     check_tree_using(tree->left, check_defined);
-    process_tree(tree->right);
-    process_tree(tree->middle);
+    syntax_abstract_tree_t *cond_copy = tree_copy(tree->left);
+    optimize_expression(cond_copy);
+    bool can_check_condition = check_tree_using(cond_copy, can_detect_bool);
+    if (can_check_condition) {
+
+        bool is_truthy_condition = check_tree_using(cond_copy, is_true);
+        if (tree->type & SYN_NODE_KEYWORD_IF) {
+            if (is_truthy_condition) {
+                process_tree(tree->middle);
+            } else if (tree->right != NULL) {
+                process_tree(tree->right);
+            }
+        }
+        if (tree->type & SYN_NODE_KEYWORD_WHILE && is_truthy_condition) {
+            process_tree(tree->right);
+        }
+    } else {
+        process_tree(tree->right);
+        process_tree(tree->middle);
+    }
 }
 
 void process_function_definitions(syntax_abstract_tree_t *tree) {
