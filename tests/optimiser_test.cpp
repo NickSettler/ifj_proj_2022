@@ -49,21 +49,21 @@ namespace ifj {
             };
 
             TEST_F(OptimiserTest, Arithmetic) {
-                CheckOptimisedTree("<?php"
+                CheckOptimisedTree("<?php declare(strict_types=1);"
                                    "$a = 1 + 2;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
 
-                CheckOptimisedTree("<?php"
+                CheckOptimisedTree("<?php declare(strict_types=1);"
                                    "$a = 1 * 2 + 3;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
 
-                CheckOptimisedTree("<?php"
+                CheckOptimisedTree("<?php declare(strict_types=1);"
                                    "$a = 1 * 2 + 4 / 2;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_FLOAT});
             }
 
             TEST_F(OptimiserTest, VariablesReplace) {
-                CheckOptimisedTree("<?php"
+                CheckOptimisedTree("<?php declare(strict_types=1);"
                                    "$a = 1;"
                                    "$b = $a + 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
@@ -72,95 +72,112 @@ namespace ifj {
 
             TEST_F(OptimiserTest, UnreachableIfElimination) {
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(0)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 - 1)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 * 1)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(0 / 1)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 === 1)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 !== 2)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 < 2)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 <= 2)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 > 2)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 >= 2)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(0 && 2)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 && 2)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(0 || 2)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(!1)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(!0)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN,
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(0)"
                                    "  $a = 1;"
                                    "else {"
@@ -172,6 +189,7 @@ namespace ifj {
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 === 1)"
                                    "  $a = 1;"
                                    "else {"
@@ -182,6 +200,7 @@ namespace ifj {
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 !== 1)"
                                    "  $a = 1;"
                                    "else {"
@@ -193,6 +212,7 @@ namespace ifj {
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 + 12 === 10 + 3)"
                                    "  $a = 1;"
                                    "else {"
@@ -203,6 +223,7 @@ namespace ifj {
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if(1 + 12 === 10 + 5)"
                                    "  $a = 1;"
                                    "else {"
@@ -214,6 +235,7 @@ namespace ifj {
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "$a = 1;"
                                    "if ($a === 1)"
                                    "  $a = 1;"
@@ -226,6 +248,7 @@ namespace ifj {
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "$a = 1;"
                                    "if ($a >= 0 + 1)"
                                    "  $a = 1;"
@@ -238,6 +261,7 @@ namespace ifj {
                                     SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "$a = 1;"
                                    "if ($a <= 0)"
                                    "  $a = 1;"
@@ -251,6 +275,7 @@ namespace ifj {
                                     SYN_NODE_INTEGER, SYN_NODE_ARGS});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "$a = 1;"
                                    "if ($a <= 0)"
                                    "  $a = 1;"
@@ -264,6 +289,7 @@ namespace ifj {
                                     SYN_NODE_INTEGER, SYN_NODE_ARGS});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if (1) {"
                                    "  if (1)"
                                    "    write(1);"
@@ -272,6 +298,7 @@ namespace ifj {
                                     SYN_NODE_CALL, SYN_NODE_INTEGER, SYN_NODE_ARGS});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if (1) {"
                                    "  if (0)"
                                    "    write(1);"
@@ -279,6 +306,7 @@ namespace ifj {
                                    {SYN_NODE_SEQUENCE, SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if (0) {"
                                    "  if (1)"
                                    "    write(1);"
@@ -289,6 +317,7 @@ namespace ifj {
                                     SYN_NODE_CALL, SYN_NODE_INTEGER, SYN_NODE_ARGS});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "if (0) {"
                                    "  if (1)"
                                    "    write(1);"
@@ -300,17 +329,20 @@ namespace ifj {
 
             TEST_F(OptimiserTest, UnreachableWhileElimination) {
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "while(0)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "while(1)"
                                    "  $a = 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE,
                                     SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "while(1)"
                                    "  while(2)"
                                    "    $a = 1;",
@@ -319,24 +351,28 @@ namespace ifj {
                                     SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "while(1)"
                                    "  while(0)"
                                    "    $a = 1;",
                                    {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "while(0)"
                                    "  while(0)"
                                    "    $a = 1;",
                                    {SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "while(0)"
                                    "  while(1)"
                                    "    $a = 1;",
                                    {SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "$a = 1;"
                                    "while($a === 0)"
                                    "  while(1)"
@@ -345,6 +381,7 @@ namespace ifj {
                                     SYN_NODE_SEQUENCE});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "$a = 1;"
                                    "while($a === 1)"
                                    "  while(1)"
@@ -355,6 +392,7 @@ namespace ifj {
                                     SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "$a = 1;"
                                    "while($a + 1 >= 2)"
                                    "  while(1)"
@@ -366,6 +404,7 @@ namespace ifj {
                                     SYN_NODE_ASSIGN, SYN_NODE_INTEGER});
 
                 CheckOptimisedTree("<?php"
+                                   "declare(strict_types=1);"
                                    "$a = 1;"
                                    "while($a >= 1)"
                                    "  while(0)"

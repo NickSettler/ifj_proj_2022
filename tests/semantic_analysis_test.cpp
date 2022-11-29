@@ -75,7 +75,7 @@ namespace ifj {
             };
 
             TEST_F(SemanticAnalysisTest, VariableDefinition_DefinedVariable) {
-                CheckSymTableEntries("<?php $a = 1;"
+                CheckSymTableEntries("<?php declare(strict_types=1); $a = 1;"
                                      "$b = $a + 2;", {
                                              (tree_node_t) {
                                                      .defined = true,
@@ -86,7 +86,7 @@ namespace ifj {
                                                      .key = "$b",
                                              },
                                      });
-                CheckSymTableEntries("<?php $b = 1;"
+                CheckSymTableEntries("<?php declare(strict_types=1); $b = 1;"
                                      "if ($b > 2) "
                                      "{"
                                      " $v = 4;"
@@ -105,14 +105,14 @@ namespace ifj {
             }
 
             TEST_F(SemanticAnalysisTest, VariableDefinition_UndefinedVariable) {
-                EXPECT_EXIT(CheckSymTableEntries("<?php $a = 1;"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); $a = 1;"
                                                  "$b = $c + 2;", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("<?php $a = $a + 1;", {}),
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); $a = $a + 1;", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("<?php if ($b === 2) "
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); if ($b === 2) "
                                                  "{"
                                                  " $a = 3.4;"
                                                  "} else {"
@@ -120,7 +120,7 @@ namespace ifj {
                                                  "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("<?php $b = 1;"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); $b = 1;"
                                                  "if ($b === 2) "
                                                  "{"
                                                  " $b = 4;"
@@ -129,7 +129,7 @@ namespace ifj {
                                                  "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("<?php $b = 1;"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); $b = 1;"
                                                  "if ($b === 2) "
                                                  "{"
                                                  " $b = $c;"
@@ -138,34 +138,36 @@ namespace ifj {
                                                  "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("<?php $a = $a + 1;", {}),
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); $a = $a + 1;", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("<?php while ($a > 0) {$b = $b + 1; $a = $a - 1;}", {}),
+                EXPECT_EXIT(CheckSymTableEntries(
+                        "<?php declare(strict_types=1); while ($a > 0) {$b = $b + 1; $a = $a - 1;}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
-                EXPECT_EXIT(CheckSymTableEntries("<?php while ($a > 0) $a = $a - 1;", {}),
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); while ($a > 0) $a = $a - 1;", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
             }
 
             TEST_F(SemanticAnalysisTest, FunctionReturnType) {
-                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $v, string $g, int $c): float {"
-                                                 "}", {
-                                                         (tree_node_t) {
-                                                                 .defined = true,
-                                                                 .key = "f",
-                                                         },
-                                                 }),
+                EXPECT_EXIT(CheckSymTableEntries(
+                        "<?php declare(strict_types=1); function f(int $v, string $g, int $c): float {"
+                        "}", {
+                                (tree_node_t) {
+                                        .defined = true,
+                                        .key = "f",
+                                },
+                        }),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Function has no return");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php function fork(): int {"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); function fork(): int {"
                                                  "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Function has no return");
 
-                CheckSymTableEntries("<?php function f(string $s): string {"
+                CheckSymTableEntries("<?php declare(strict_types=1); function f(string $s): string {"
                                      "  return $s;"
                                      "}"
                                      "$str = f(\"1\");", {
@@ -184,7 +186,7 @@ namespace ifj {
                                      }
                 );
 
-                CheckSymTableEntries("<?php function f(int $d) {"
+                CheckSymTableEntries("<?php declare(strict_types=1); function f(int $d) {"
                                      " $d = $d + 1;"
                                      "return ;"
                                      "}", {
@@ -199,7 +201,7 @@ namespace ifj {
                                      }
                 );
 
-                CheckSymTableEntries("<?php function fork(): float {"
+                CheckSymTableEntries("<?php declare(strict_types=1); function fork(): float {"
                                      "return 1 + 1.2;"
                                      "}", {
                                              (tree_node_t) {
@@ -208,19 +210,19 @@ namespace ifj {
                                              },
                                      });
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $f): float {"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); function f(int $i, float $f): float {"
                                                  "  return $i + $s;"
                                                  "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
                             "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$[A-Za-z_][A-Za-z0-9_]* used before declaration");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $a, float $b): float {"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); function f(int $a, float $b): float {"
                                                  "  $a = $a + 1;"
                                                  "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_RET_ERROR_CODE),
                             "\\[SEMANTIC FUNC RET ERROR\\] Missing return value in function f");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $f): float {"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); function f(int $i, float $f): float {"
                                                  "  return $i;"
                                                  "}", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
@@ -228,7 +230,7 @@ namespace ifj {
             }
 
             TEST_F(SemanticAnalysisTest, FunctionCall) {
-                CheckSymTableEntries("<?php function f(int $i, float $s): float {"
+                CheckSymTableEntries("<?php declare(strict_types=1); function f(int $i, float $s): float {"
                                      "return $i + $s;"
                                      "}"
                                      "function foo(int $i) {"
@@ -259,7 +261,7 @@ namespace ifj {
                                      }
                 );
 
-                CheckSymTableEntries("<?php function f(int $i, float $s): float {"
+                CheckSymTableEntries("<?php declare(strict_types=1); function f(int $i, float $s): float {"
                                      "return $i + $s;"
                                      "}"
                                      "function foo(int $i) {"
@@ -290,7 +292,7 @@ namespace ifj {
                                      }
                 );
 
-                CheckSymTableEntries("<?php write(\"Hello world!\");",
+                CheckSymTableEntries("<?php declare(strict_types=1); write(\"Hello world!\");",
                                      {
                                              (tree_node_t) {
                                                      .defined = true,
@@ -299,7 +301,7 @@ namespace ifj {
                                      }
                 );
 
-                CheckSymTableEntries("<?php substring(\"Hello world!\", 1, 3);",
+                CheckSymTableEntries("<?php declare(strict_types=1); substring(\"Hello world!\", 1, 3);",
                                      {
                                              (tree_node_t) {
                                                      .type = (data_type) (TYPE_STRING | TYPE_NULL),
@@ -311,7 +313,7 @@ namespace ifj {
                                      }
                 );
 
-                CheckSymTableEntries("<?php write(\"a\", \"b\", \"c\");",
+                CheckSymTableEntries("<?php declare(strict_types=1); write(\"a\", \"b\", \"c\");",
                                      {
                                              (tree_node_t) {
                                                      .argument_count = 0,
@@ -321,7 +323,7 @@ namespace ifj {
                                      }
                 );
 
-                CheckSymTableEntries("<?php reads();",
+                CheckSymTableEntries("<?php declare(strict_types=1); reads();",
                                      {
                                              (tree_node_t) {
                                                      .type = (data_type) (TYPE_STRING | TYPE_NULL),
@@ -331,7 +333,7 @@ namespace ifj {
                                      }
                 );
 
-                CheckSymTableEntries("<?php strlen(\"abc\");",
+                CheckSymTableEntries("<?php declare(strict_types=1); strlen(\"abc\");",
                                      {
                                              (tree_node_t) {
                                                      .type = TYPE_INT,
@@ -341,19 +343,19 @@ namespace ifj {
                                      }
                 );
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php strlen(\"a\", 2);", {}),
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); strlen(\"a\", 2);", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php strlen(2);", {}),
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); strlen(2);", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument with value 2");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php reads(2);", {}),
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); reads(2);", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $s): float {"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); function f(int $i, float $s): float {"
                                                  "return $i + $s;"
                                                  "}"
                                                  "function foo(int $i) {"
@@ -383,42 +385,42 @@ namespace ifj {
                 ), ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $f): float {"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); function f(int $i, float $f): float {"
                                                  "  return $i + $f;"
                                                  "}"
                                                  "$a = f(\"1\", 2.0);", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $f): float {"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); function f(int $i, float $f): float {"
                                                  "  return $i + $f;"
                                                  "}"
                                                  "$a = f(2.0, 1);", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $s): float {"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); function f(int $i, float $s): float {"
                                                  "  return $i + $s;"
                                                  "}"
                                                  "f(\"1\", 2);", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $s): float {"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); function f(int $i, float $s): float {"
                                                  "  return $i + $s;"
                                                  "}"
                                                  "$a = f(1, 2.0, 3);", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php function f(int $i, float $s): float {"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); function f(int $i, float $s): float {"
                                                  "  return $i + $s;"
                                                  "}"
                                                  "$a = f(1);", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Wrong number of arguments");
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php function f(string $s): string {"
+                EXPECT_EXIT(CheckSymTableEntries("<?php declare(strict_types=1); function f(string $s): string {"
                                                  "  return $s;"
                                                  "}"
                                                  "$str = f(1);", {}),
@@ -537,13 +539,535 @@ namespace ifj {
                                      "}"
                                      "write(\"GOOD\n\");", {});
 
-                EXPECT_EXIT(CheckSymTableEntries("<?php\n"
+                EXPECT_EXIT(CheckSymTableEntries("<?php"
                                                  "declare(strict_types=1);\n"
                                                  "function f() : int {\n"
                                                  "}\n"
                                                  "f();", {}),
                             ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
                             "\\[SEMANTIC FUNC ARG ERROR\\] Function has no return");
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);\n"
+                                     "if (0-1 > 0-1) { write(\"fail 0-1 > 0-1\\n\"); } else {}\n"
+                                     "if (0-1 > 0) { write(\"fail 0-1 > 0\\n\"); } else {}\n"
+                                     "if (0-1 > 1) { write(\"fail 0-1 > 1\\n\"); } else {}\n"
+                                     "if (0-1 > 0-1.0) { write(\"fail 0-1 > 0-1.0\\n\"); } else {}\n"
+                                     "if (0-1 > 0-0.5) { write(\"fail 0-1 > 0-0.5\\n\"); } else {}\n"
+                                     "if (0-1 > 0.0) { write(\"fail 0-1 > 0.0\\n\"); } else {}\n"
+                                     "if (0-1 > 0.5) { write(\"fail 0-1 > 0.5\\n\"); } else {}\n"
+                                     "if (0-1 > 1.0) { write(\"fail 0-1 > 1.0\\n\"); } else {}\n"
+                                     "if (0-1 > \"\") {} else { write(\"fail 0-1 > \\\"\\\"\\n\"); }\n"
+                                     "if (0-1 > \"aa\") { write(\"fail 0-1 > \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (0-1 > \"ab\") { write(\"fail 0-1 > \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (0 > 0-1) {} else { write(\"fail 0 > 0-1\\n\"); }\n"
+                                     "if (0 > 0) { write(\"fail 0 > 0\\n\"); } else {}\n"
+                                     "if (0 > 1) { write(\"fail 0 > 1\\n\"); } else {}\n"
+                                     "if (0 > 0-1.0) {} else { write(\"fail 0 > 0-1.0\\n\"); }\n"
+                                     "if (0 > 0-0.5) {} else { write(\"fail 0 > 0-0.5\\n\"); }\n"
+                                     "if (0 > 0.0) { write(\"fail 0 > 0.0\\n\"); } else {}\n"
+                                     "if (0 > 0.5) { write(\"fail 0 > 0.5\\n\"); } else {}\n"
+                                     "if (0 > 1.0) { write(\"fail 0 > 1.0\\n\"); } else {}\n"
+                                     "if (0 > \"\") {} else { write(\"fail 0 > \\\"\\\"\\n\"); }\n"
+                                     "if (0 > \"aa\") { write(\"fail 0 > \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (0 > \"ab\") { write(\"fail 0 > \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (1 > 0-1) {} else { write(\"fail 1 > 0-1\\n\"); }\n"
+                                     "if (1 > 0) {} else { write(\"fail 1 > 0\\n\"); }\n"
+                                     "if (1 > 1) { write(\"fail 1 > 1\\n\"); } else {}\n"
+                                     "if (1 > 0-1.0) {} else { write(\"fail 1 > 0-1.0\\n\"); }\n"
+                                     "if (1 > 0-0.5) {} else { write(\"fail 1 > 0-0.5\\n\"); }\n"
+                                     "if (1 > 0.0) {} else { write(\"fail 1 > 0.0\\n\"); }\n"
+                                     "if (1 > 0.5) {} else { write(\"fail 1 > 0.5\\n\"); }\n"
+                                     "if (1 > 1.0) { write(\"fail 1 > 1.0\\n\"); } else {}\n"
+                                     "if (1 > \"\") {} else { write(\"fail 1 > \\\"\\\"\\n\"); }\n"
+                                     "if (1 > \"aa\") { write(\"fail 1 > \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (1 > \"ab\") { write(\"fail 1 > \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (0-1.0 > 0-1) { write(\"fail 0-1.0 > 0-1\\n\"); } else {}\n"
+                                     "if (0-1.0 > 0) { write(\"fail 0-1.0 > 0\\n\"); } else {}\n"
+                                     "if (0-1.0 > 1) { write(\"fail 0-1.0 > 1\\n\"); } else {}\n"
+                                     "if (0-1.0 > 0-1.0) { write(\"fail 0-1.0 > 0-1.0\\n\"); } else {}\n"
+                                     "if (0-1.0 > 0-0.5) { write(\"fail 0-1.0 > 0-0.5\\n\"); } else {}\n"
+                                     "if (0-1.0 > 0.0) { write(\"fail 0-1.0 > 0.0\\n\"); } else {}\n"
+                                     "if (0-1.0 > 0.5) { write(\"fail 0-1.0 > 0.5\\n\"); } else {}\n"
+                                     "if (0-1.0 > 1.0) { write(\"fail 0-1.0 > 1.0\\n\"); } else {}\n"
+                                     "if (0-1.0 > \"\") {} else { write(\"fail 0-1.0 > \\\"\\\"\\n\"); }\n"
+                                     "if (0-1.0 > \"aa\") { write(\"fail 0-1.0 > \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (0-1.0 > \"ab\") { write(\"fail 0-1.0 > \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (0-0.5 > 0-1) {} else { write(\"fail 0-0.5 > 0-1\\n\"); }\n"
+                                     "if (0-0.5 > 0) { write(\"fail 0-0.5 > 0\\n\"); } else {}\n"
+                                     "if (0-0.5 > 1) { write(\"fail 0-0.5 > 1\\n\"); } else {}\n"
+                                     "if (0-0.5 > 0-1.0) {} else { write(\"fail 0-0.5 > 0-1.0\\n\"); }\n"
+                                     "if (0-0.5 > 0-0.5) { write(\"fail 0-0.5 > 0-0.5\\n\"); } else {}\n"
+                                     "if (0-0.5 > 0.0) { write(\"fail 0-0.5 > 0.0\\n\"); } else {}\n"
+                                     "if (0-0.5 > 0.5) { write(\"fail 0-0.5 > 0.5\\n\"); } else {}\n"
+                                     "if (0-0.5 > 1.0) { write(\"fail 0-0.5 > 1.0\\n\"); } else {}\n"
+                                     "if (0-0.5 > \"\") {} else { write(\"fail 0-0.5 > \\\"\\\"\\n\"); }\n"
+                                     "if (0-0.5 > \"aa\") { write(\"fail 0-0.5 > \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (0-0.5 > \"ab\") { write(\"fail 0-0.5 > \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (0.0 > 0-1) {} else { write(\"fail 0.0 > 0-1\\n\"); }\n"
+                                     "if (0.0 > 0) { write(\"fail 0.0 > 0\\n\"); } else {}\n"
+                                     "if (0.0 > 1) { write(\"fail 0.0 > 1\\n\"); } else {}\n"
+                                     "if (0.0 > 0-1.0) {} else { write(\"fail 0.0 > 0-1.0\\n\"); }\n"
+                                     "if (0.0 > 0-0.5) {} else { write(\"fail 0.0 > 0-0.5\\n\"); }\n"
+                                     "if (0.0 > 0.0) { write(\"fail 0.0 > 0.0\\n\"); } else {}\n"
+                                     "if (0.0 > 0.5) { write(\"fail 0.0 > 0.5\\n\"); } else {}\n"
+                                     "if (0.0 > 1.0) { write(\"fail 0.0 > 1.0\\n\"); } else {}\n"
+                                     "if (0.0 > \"\") {} else { write(\"fail 0.0 > \\\"\\\"\\n\"); }\n"
+                                     "if (0.0 > \"aa\") { write(\"fail 0.0 > \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (0.0 > \"ab\") { write(\"fail 0.0 > \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (0.5 > 0-1) {} else { write(\"fail 0.5 > 0-1\\n\"); }\n"
+                                     "if (0.5 > 0) {} else { write(\"fail 0.5 > 0\\n\"); }\n"
+                                     "if (0.5 > 1) { write(\"fail 0.5 > 1\\n\"); } else {}\n"
+                                     "if (0.5 > 0-1.0) {} else { write(\"fail 0.5 > 0-1.0\\n\"); }\n"
+                                     "if (0.5 > 0-0.5) {} else { write(\"fail 0.5 > 0-0.5\\n\"); }\n"
+                                     "if (0.5 > 0.0) {} else { write(\"fail 0.5 > 0.0\\n\"); }\n"
+                                     "if (0.5 > 0.5) { write(\"fail 0.5 > 0.5\\n\"); } else {}\n"
+                                     "if (0.5 > 1.0) { write(\"fail 0.5 > 1.0\\n\"); } else {}\n"
+                                     "if (0.5 > \"\") {} else { write(\"fail 0.5 > \\\"\\\"\\n\"); }\n"
+                                     "if (0.5 > \"aa\") { write(\"fail 0.5 > \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (0.5 > \"ab\") { write(\"fail 0.5 > \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (1.0 > 0-1) {} else { write(\"fail 1.0 > 0-1\\n\"); }\n"
+                                     "if (1.0 > 0) {} else { write(\"fail 1.0 > 0\\n\"); }\n"
+                                     "if (1.0 > 1) { write(\"fail 1.0 > 1\\n\"); } else {}\n"
+                                     "if (1.0 > 0-1.0) {} else { write(\"fail 1.0 > 0-1.0\\n\"); }\n"
+                                     "if (1.0 > 0-0.5) {} else { write(\"fail 1.0 > 0-0.5\\n\"); }\n"
+                                     "if (1.0 > 0.0) {} else { write(\"fail 1.0 > 0.0\\n\"); }\n"
+                                     "if (1.0 > 0.5) {} else { write(\"fail 1.0 > 0.5\\n\"); }\n"
+                                     "if (1.0 > 1.0) { write(\"fail 1.0 > 1.0\\n\"); } else {}\n"
+                                     "if (1.0 > \"\") {} else { write(\"fail 1.0 > \\\"\\\"\\n\"); }\n"
+                                     "if (1.0 > \"aa\") { write(\"fail 1.0 > \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (1.0 > \"ab\") { write(\"fail 1.0 > \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (\"\" > 0-1) { write(\"fail \\\"\\\" > 0-1\\n\"); } else {}\n"
+                                     "if (\"\" > 0) { write(\"fail \\\"\\\" > 0\\n\"); } else {}\n"
+                                     "if (\"\" > 1) { write(\"fail \\\"\\\" > 1\\n\"); } else {}\n"
+                                     "if (\"\" > 0-1.0) { write(\"fail \\\"\\\" > 0-1.0\\n\"); } else {}\n"
+                                     "if (\"\" > 0-0.5) { write(\"fail \\\"\\\" > 0-0.5\\n\"); } else {}\n"
+                                     "if (\"\" > 0.0) { write(\"fail \\\"\\\" > 0.0\\n\"); } else {}\n"
+                                     "if (\"\" > 0.5) { write(\"fail \\\"\\\" > 0.5\\n\"); } else {}\n"
+                                     "if (\"\" > 1.0) { write(\"fail \\\"\\\" > 1.0\\n\"); } else {}\n"
+                                     "if (\"\" > \"\") { write(\"fail \\\"\\\" > \\\"\\\"\\n\"); } else {}\n"
+                                     "if (\"\" > \"aa\") { write(\"fail \\\"\\\" > \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (\"\" > \"ab\") { write(\"fail \\\"\\\" > \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (\"aa\" > 0-1) {} else { write(\"fail \\\"aa\\\" > 0-1\\n\"); }\n"
+                                     "if (\"aa\" > 0) {} else { write(\"fail \\\"aa\\\" > 0\\n\"); }\n"
+                                     "if (\"aa\" > 1) {} else { write(\"fail \\\"aa\\\" > 1\\n\"); }\n"
+                                     "if (\"aa\" > 0-1.0) {} else { write(\"fail \\\"aa\\\" > 0-1.0\\n\"); }\n"
+                                     "if (\"aa\" > 0-0.5) {} else { write(\"fail \\\"aa\\\" > 0-0.5\\n\"); }\n"
+                                     "if (\"aa\" > 0.0) {} else { write(\"fail \\\"aa\\\" > 0.0\\n\"); }\n"
+                                     "if (\"aa\" > 0.5) {} else { write(\"fail \\\"aa\\\" > 0.5\\n\"); }\n"
+                                     "if (\"aa\" > 1.0) {} else { write(\"fail \\\"aa\\\" > 1.0\\n\"); }\n"
+                                     "if (\"aa\" > \"\") {} else { write(\"fail \\\"aa\\\" > \\\"\\\"\\n\"); }\n"
+                                     "if (\"aa\" > \"aa\") { write(\"fail \\\"aa\\\" > \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (\"aa\" > \"ab\") { write(\"fail \\\"aa\\\" > \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (\"ab\" > 0-1) {} else { write(\"fail \\\"ab\\\" > 0-1\\n\"); }\n"
+                                     "if (\"ab\" > 0) {} else { write(\"fail \\\"ab\\\" > 0\\n\"); }\n"
+                                     "if (\"ab\" > 1) {} else { write(\"fail \\\"ab\\\" > 1\\n\"); }\n"
+                                     "if (\"ab\" > 0-1.0) {} else { write(\"fail \\\"ab\\\" > 0-1.0\\n\"); }\n"
+                                     "if (\"ab\" > 0-0.5) {} else { write(\"fail \\\"ab\\\" > 0-0.5\\n\"); }\n"
+                                     "if (\"ab\" > 0.0) {} else { write(\"fail \\\"ab\\\" > 0.0\\n\"); }\n"
+                                     "if (\"ab\" > 0.5) {} else { write(\"fail \\\"ab\\\" > 0.5\\n\"); }\n"
+                                     "if (\"ab\" > 1.0) {} else { write(\"fail \\\"ab\\\" > 1.0\\n\"); }\n"
+                                     "if (\"ab\" > \"\") {} else { write(\"fail \\\"ab\\\" > \\\"\\\"\\n\"); }\n"
+                                     "if (\"ab\" > \"aa\") {} else { write(\"fail \\\"ab\\\" > \\\"aa\\\"\\n\"); }\n"
+                                     "if (\"ab\" > \"ab\") { write(\"fail \\\"ab\\\" > \\\"ab\\\"\\n\"); } else {}\n"
+                                     "write(\"done\");", {});
+
+                CheckSymTableEntries("<?php\n"
+                                     "declare(strict_types=1);\n"
+                                     "if (0-1 >= 0-1) {} else { write(\"fail 0-1 >= 0-1\\n\"); }\n"
+                                     "if (0-1 >= 0) { write(\"fail 0-1 >= 0\\n\"); } else {}\n"
+                                     "if (0-1 >= 1) { write(\"fail 0-1 >= 1\\n\"); } else {}\n"
+                                     "if (0-1 >= 0-1.0) {} else { write(\"fail 0-1 >= 0-1.0\\n\"); }\n"
+                                     "if (0-1 >= 0-0.5) { write(\"fail 0-1 >= 0-0.5\\n\"); } else {}\n"
+                                     "if (0-1 >= 0.0) { write(\"fail 0-1 >= 0.0\\n\"); } else {}\n"
+                                     "if (0-1 >= 0.5) { write(\"fail 0-1 >= 0.5\\n\"); } else {}\n"
+                                     "if (0-1 >= 1.0) { write(\"fail 0-1 >= 1.0\\n\"); } else {}\n"
+                                     "if (0-1 >= \"\") {} else { write(\"fail 0-1 >= \\\"\\\"\\n\"); }\n"
+                                     "if (0-1 >= \"aa\") { write(\"fail 0-1 >= \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (0-1 >= \"ab\") { write(\"fail 0-1 >= \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (0 >= 0-1) {} else { write(\"fail 0 >= 0-1\\n\"); }\n"
+                                     "if (0 >= 0) {} else { write(\"fail 0 >= 0\\n\"); }\n"
+                                     "if (0 >= 1) { write(\"fail 0 >= 1\\n\"); } else {}\n"
+                                     "if (0 >= 0-1.0) {} else { write(\"fail 0 >= 0-1.0\\n\"); }\n"
+                                     "if (0 >= 0-0.5) {} else { write(\"fail 0 >= 0-0.5\\n\"); }\n"
+                                     "if (0 >= 0.0) {} else { write(\"fail 0 >= 0.0\\n\"); }\n"
+                                     "if (0 >= 0.5) { write(\"fail 0 >= 0.5\\n\"); } else {}\n"
+                                     "if (0 >= 1.0) { write(\"fail 0 >= 1.0\\n\"); } else {}\n"
+                                     "if (0 >= \"\") {} else { write(\"fail 0 >= \\\"\\\"\\n\"); }\n"
+                                     "if (0 >= \"aa\") { write(\"fail 0 >= \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (0 >= \"ab\") { write(\"fail 0 >= \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (1 >= 0-1) {} else { write(\"fail 1 >= 0-1\\n\"); }\n"
+                                     "if (1 >= 0) {} else { write(\"fail 1 >= 0\\n\"); }\n"
+                                     "if (1 >= 1) {} else { write(\"fail 1 >= 1\\n\"); }\n"
+                                     "if (1 >= 0-1.0) {} else { write(\"fail 1 >= 0-1.0\\n\"); }\n"
+                                     "if (1 >= 0-0.5) {} else { write(\"fail 1 >= 0-0.5\\n\"); }\n"
+                                     "if (1 >= 0.0) {} else { write(\"fail 1 >= 0.0\\n\"); }\n"
+                                     "if (1 >= 0.5) {} else { write(\"fail 1 >= 0.5\\n\"); }\n"
+                                     "if (1 >= 1.0) {} else { write(\"fail 1 >= 1.0\\n\"); }\n"
+                                     "if (1 >= \"\") {} else { write(\"fail 1 >= \\\"\\\"\\n\"); }\n"
+                                     "if (1 >= \"aa\") { write(\"fail 1 >= \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (1 >= \"ab\") { write(\"fail 1 >= \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (0-1.0 >= 0-1) {} else { write(\"fail 0-1.0 >= 0-1\\n\"); }\n"
+                                     "if (0-1.0 >= 0) { write(\"fail 0-1.0 >= 0\\n\"); } else {}\n"
+                                     "if (0-1.0 >= 1) { write(\"fail 0-1.0 >= 1\\n\"); } else {}\n"
+                                     "if (0-1.0 >= 0-1.0) {} else { write(\"fail 0-1.0 >= 0-1.0\\n\"); }\n"
+                                     "if (0-1.0 >= 0-0.5) { write(\"fail 0-1.0 >= 0-0.5\\n\"); } else {}\n"
+                                     "if (0-1.0 >= 0.0) { write(\"fail 0-1.0 >= 0.0\\n\"); } else {}\n"
+                                     "if (0-1.0 >= 0.5) { write(\"fail 0-1.0 >= 0.5\\n\"); } else {}\n"
+                                     "if (0-1.0 >= 1.0) { write(\"fail 0-1.0 >= 1.0\\n\"); } else {}\n"
+                                     "if (0-1.0 >= \"\") {} else { write(\"fail 0-1.0 >= \\\"\\\"\\n\"); }\n"
+                                     "if (0-1.0 >= \"aa\") { write(\"fail 0-1.0 >= \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (0-1.0 >= \"ab\") { write(\"fail 0-1.0 >= \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (0-0.5 >= 0-1) {} else { write(\"fail 0-0.5 >= 0-1\\n\"); }\n"
+                                     "if (0-0.5 >= 0) { write(\"fail 0-0.5 >= 0\\n\"); } else {}\n"
+                                     "if (0-0.5 >= 1) { write(\"fail 0-0.5 >= 1\\n\"); } else {}\n"
+                                     "if (0-0.5 >= 0-1.0) {} else { write(\"fail 0-0.5 >= 0-1.0\\n\"); }\n"
+                                     "if (0-0.5 >= 0-0.5) {} else { write(\"fail 0-0.5 >= 0-0.5\\n\"); }\n"
+                                     "if (0-0.5 >= 0.0) { write(\"fail 0-0.5 >= 0.0\\n\"); } else {}\n"
+                                     "if (0-0.5 >= 0.5) { write(\"fail 0-0.5 >= 0.5\\n\"); } else {}\n"
+                                     "if (0-0.5 >= 1.0) { write(\"fail 0-0.5 >= 1.0\\n\"); } else {}\n"
+                                     "if (0-0.5 >= \"\") {} else { write(\"fail 0-0.5 >= \\\"\\\"\\n\"); }\n"
+                                     "if (0-0.5 >= \"aa\") { write(\"fail 0-0.5 >= \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (0-0.5 >= \"ab\") { write(\"fail 0-0.5 >= \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (0.0 >= 0-1) {} else { write(\"fail 0.0 >= 0-1\\n\"); }\n"
+                                     "if (0.0 >= 0) {} else { write(\"fail 0.0 >= 0\\n\"); }\n"
+                                     "if (0.0 >= 1) { write(\"fail 0.0 >= 1\\n\"); } else {}\n"
+                                     "if (0.0 >= 0-1.0) {} else { write(\"fail 0.0 >= 0-1.0\\n\"); }\n"
+                                     "if (0.0 >= 0-0.5) {} else { write(\"fail 0.0 >= 0-0.5\\n\"); }\n"
+                                     "if (0.0 >= 0.0) {} else { write(\"fail 0.0 >= 0.0\\n\"); }\n"
+                                     "if (0.0 >= 0.5) { write(\"fail 0.0 >= 0.5\\n\"); } else {}\n"
+                                     "if (0.0 >= 1.0) { write(\"fail 0.0 >= 1.0\\n\"); } else {}\n"
+                                     "if (0.0 >= \"\") {} else { write(\"fail 0.0 >= \\\"\\\"\\n\"); }\n"
+                                     "if (0.0 >= \"aa\") { write(\"fail 0.0 >= \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (0.0 >= \"ab\") { write(\"fail 0.0 >= \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (0.5 >= 0-1) {} else { write(\"fail 0.5 >= 0-1\\n\"); }\n"
+                                     "if (0.5 >= 0) {} else { write(\"fail 0.5 >= 0\\n\"); }\n"
+                                     "if (0.5 >= 1) { write(\"fail 0.5 >= 1\\n\"); } else {}\n"
+                                     "if (0.5 >= 0-1.0) {} else { write(\"fail 0.5 >= 0-1.0\\n\"); }\n"
+                                     "if (0.5 >= 0-0.5) {} else { write(\"fail 0.5 >= 0-0.5\\n\"); }\n"
+                                     "if (0.5 >= 0.0) {} else { write(\"fail 0.5 >= 0.0\\n\"); }\n"
+                                     "if (0.5 >= 0.5) {} else { write(\"fail 0.5 >= 0.5\\n\"); }\n"
+                                     "if (0.5 >= 1.0) { write(\"fail 0.5 >= 1.0\\n\"); } else {}\n"
+                                     "if (0.5 >= \"\") {} else { write(\"fail 0.5 >= \\\"\\\"\\n\"); }\n"
+                                     "if (0.5 >= \"aa\") { write(\"fail 0.5 >= \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (0.5 >= \"ab\") { write(\"fail 0.5 >= \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (1.0 >= 0-1) {} else { write(\"fail 1.0 >= 0-1\\n\"); }\n"
+                                     "if (1.0 >= 0) {} else { write(\"fail 1.0 >= 0\\n\"); }\n"
+                                     "if (1.0 >= 1) {} else { write(\"fail 1.0 >= 1\\n\"); }\n"
+                                     "if (1.0 >= 0-1.0) {} else { write(\"fail 1.0 >= 0-1.0\\n\"); }\n"
+                                     "if (1.0 >= 0-0.5) {} else { write(\"fail 1.0 >= 0-0.5\\n\"); }\n"
+                                     "if (1.0 >= 0.0) {} else { write(\"fail 1.0 >= 0.0\\n\"); }\n"
+                                     "if (1.0 >= 0.5) {} else { write(\"fail 1.0 >= 0.5\\n\"); }\n"
+                                     "if (1.0 >= 1.0) {} else { write(\"fail 1.0 >= 1.0\\n\"); }\n"
+                                     "if (1.0 >= \"\") {} else { write(\"fail 1.0 >= \\\"\\\"\\n\"); }\n"
+                                     "if (1.0 >= \"aa\") { write(\"fail 1.0 >= \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (1.0 >= \"ab\") { write(\"fail 1.0 >= \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (\"\" >= 0-1) { write(\"fail \\\"\\\" >= 0-1\\n\"); } else {}\n"
+                                     "if (\"\" >= 0) { write(\"fail \\\"\\\" >= 0\\n\"); } else {}\n"
+                                     "if (\"\" >= 1) { write(\"fail \\\"\\\" >= 1\\n\"); } else {}\n"
+                                     "if (\"\" >= 0-1.0) { write(\"fail \\\"\\\" >= 0-1.0\\n\"); } else {}\n"
+                                     "if (\"\" >= 0-0.5) { write(\"fail \\\"\\\" >= 0-0.5\\n\"); } else {}\n"
+                                     "if (\"\" >= 0.0) { write(\"fail \\\"\\\" >= 0.0\\n\"); } else {}\n"
+                                     "if (\"\" >= 0.5) { write(\"fail \\\"\\\" >= 0.5\\n\"); } else {}\n"
+                                     "if (\"\" >= 1.0) { write(\"fail \\\"\\\" >= 1.0\\n\"); } else {}\n"
+                                     "if (\"\" >= \"\") {} else { write(\"fail \\\"\\\" >= \\\"\\\"\\n\"); }\n"
+                                     "if (\"\" >= \"aa\") { write(\"fail \\\"\\\" >= \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (\"\" >= \"ab\") { write(\"fail \\\"\\\" >= \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (\"aa\" >= 0-1) {} else { write(\"fail \\\"aa\\\" >= 0-1\\n\"); }\n"
+                                     "if (\"aa\" >= 0) {} else { write(\"fail \\\"aa\\\" >= 0\\n\"); }\n"
+                                     "if (\"aa\" >= 1) {} else { write(\"fail \\\"aa\\\" >= 1\\n\"); }\n"
+                                     "if (\"aa\" >= 0-1.0) {} else { write(\"fail \\\"aa\\\" >= 0-1.0\\n\"); }\n"
+                                     "if (\"aa\" >= 0-0.5) {} else { write(\"fail \\\"aa\\\" >= 0-0.5\\n\"); }\n"
+                                     "if (\"aa\" >= 0.0) {} else { write(\"fail \\\"aa\\\" >= 0.0\\n\"); }\n"
+                                     "if (\"aa\" >= 0.5) {} else { write(\"fail \\\"aa\\\" >= 0.5\\n\"); }\n"
+                                     "if (\"aa\" >= 1.0) {} else { write(\"fail \\\"aa\\\" >= 1.0\\n\"); }\n"
+                                     "if (\"aa\" >= \"\") {} else { write(\"fail \\\"aa\\\" >= \\\"\\\"\\n\"); }\n"
+                                     "if (\"aa\" >= \"aa\") {} else { write(\"fail \\\"aa\\\" >= \\\"aa\\\"\\n\"); }\n"
+                                     "if (\"aa\" >= \"ab\") { write(\"fail \\\"aa\\\" >= \\\"ab\\\"\\n\"); } else {}\n"
+                                     "if (\"ab\" >= 0-1) {} else { write(\"fail \\\"ab\\\" >= 0-1\\n\"); }\n"
+                                     "if (\"ab\" >= 0) {} else { write(\"fail \\\"ab\\\" >= 0\\n\"); }\n"
+                                     "if (\"ab\" >= 1) {} else { write(\"fail \\\"ab\\\" >= 1\\n\"); }\n"
+                                     "if (\"ab\" >= 0-1.0) {} else { write(\"fail \\\"ab\\\" >= 0-1.0\\n\"); }\n"
+                                     "if (\"ab\" >= 0-0.5) {} else { write(\"fail \\\"ab\\\" >= 0-0.5\\n\"); }\n"
+                                     "if (\"ab\" >= 0.0) {} else { write(\"fail \\\"ab\\\" >= 0.0\\n\"); }\n"
+                                     "if (\"ab\" >= 0.5) {} else { write(\"fail \\\"ab\\\" >= 0.5\\n\"); }\n"
+                                     "if (\"ab\" >= 1.0) {} else { write(\"fail \\\"ab\\\" >= 1.0\\n\"); }\n"
+                                     "if (\"ab\" >= \"\") {} else { write(\"fail \\\"ab\\\" >= \\\"\\\"\\n\"); }\n"
+                                     "if (\"ab\" >= \"aa\") {} else { write(\"fail \\\"ab\\\" >= \\\"aa\\\"\\n\"); }\n"
+                                     "if (\"ab\" >= \"ab\") {} else { write(\"fail \\\"ab\\\" >= \\\"ab\\\"\\n\"); }\n"
+                                     "write(\"done\");", {});
+
+                CheckSymTableEntries("<?php\n"
+                                     "declare(strict_types=1);\n"
+                                     "if (0-1 < 0-1) { write(\"fail 0-1 < 0-1\\n\"); } else {}\n"
+                                     "if (0-1 < 0) {} else { write(\"fail 0-1 < 0\\n\"); }\n"
+                                     "if (0-1 < 1) {} else { write(\"fail 0-1 < 1\\n\"); }\n"
+                                     "if (0-1 < 0-1.0) { write(\"fail 0-1 < 0-1.0\\n\"); } else {}\n"
+                                     "if (0-1 < 0-0.5) {} else { write(\"fail 0-1 < 0-0.5\\n\"); }\n"
+                                     "if (0-1 < 0.0) {} else { write(\"fail 0-1 < 0.0\\n\"); }\n"
+                                     "if (0-1 < 0.5) {} else { write(\"fail 0-1 < 0.5\\n\"); }\n"
+                                     "if (0-1 < 1.0) {} else { write(\"fail 0-1 < 1.0\\n\"); }\n"
+                                     "if (0-1 < \"\") { write(\"fail 0-1 < \\\"\\\"\\n\"); } else {}\n"
+                                     "if (0-1 < \"aa\") {} else { write(\"fail 0-1 < \\\"aa\\\"\\n\"); }\n"
+                                     "if (0-1 < \"ab\") {} else { write(\"fail 0-1 < \\\"ab\\\"\\n\"); }\n"
+                                     "if (0 < 0-1) { write(\"fail 0 < 0-1\\n\"); } else {}\n"
+                                     "if (0 < 0) { write(\"fail 0 < 0\\n\"); } else {}\n"
+                                     "if (0 < 1) {} else { write(\"fail 0 < 1\\n\"); }\n"
+                                     "if (0 < 0-1.0) { write(\"fail 0 < 0-1.0\\n\"); } else {}\n"
+                                     "if (0 < 0-0.5) { write(\"fail 0 < 0-0.5\\n\"); } else {}\n"
+                                     "if (0 < 0.0) { write(\"fail 0 < 0.0\\n\"); } else {}\n"
+                                     "if (0 < 0.5) {} else { write(\"fail 0 < 0.5\\n\"); }\n"
+                                     "if (0 < 1.0) {} else { write(\"fail 0 < 1.0\\n\"); }\n"
+                                     "if (0 < \"\") { write(\"fail 0 < \\\"\\\"\\n\"); } else {}\n"
+                                     "if (0 < \"aa\") {} else { write(\"fail 0 < \\\"aa\\\"\\n\"); }\n"
+                                     "if (0 < \"ab\") {} else { write(\"fail 0 < \\\"ab\\\"\\n\"); }\n"
+                                     "if (1 < 0-1) { write(\"fail 1 < 0-1\\n\"); } else {}\n"
+                                     "if (1 < 0) { write(\"fail 1 < 0\\n\"); } else {}\n"
+                                     "if (1 < 1) { write(\"fail 1 < 1\\n\"); } else {}\n"
+                                     "if (1 < 0-1.0) { write(\"fail 1 < 0-1.0\\n\"); } else {}\n"
+                                     "if (1 < 0-0.5) { write(\"fail 1 < 0-0.5\\n\"); } else {}\n"
+                                     "if (1 < 0.0) { write(\"fail 1 < 0.0\\n\"); } else {}\n"
+                                     "if (1 < 0.5) { write(\"fail 1 < 0.5\\n\"); } else {}\n"
+                                     "if (1 < 1.0) { write(\"fail 1 < 1.0\\n\"); } else {}\n"
+                                     "if (1 < \"\") { write(\"fail 1 < \\\"\\\"\\n\"); } else {}\n"
+                                     "if (1 < \"aa\") {} else { write(\"fail 1 < \\\"aa\\\"\\n\"); }\n"
+                                     "if (1 < \"ab\") {} else { write(\"fail 1 < \\\"ab\\\"\\n\"); }\n"
+                                     "if (0-1.0 < 0-1) { write(\"fail 0-1.0 < 0-1\\n\"); } else {}\n"
+                                     "if (0-1.0 < 0) {} else { write(\"fail 0-1.0 < 0\\n\"); }\n"
+                                     "if (0-1.0 < 1) {} else { write(\"fail 0-1.0 < 1\\n\"); }\n"
+                                     "if (0-1.0 < 0-1.0) { write(\"fail 0-1.0 < 0-1.0\\n\"); } else {}\n"
+                                     "if (0-1.0 < 0-0.5) {} else { write(\"fail 0-1.0 < 0-0.5\\n\"); }\n"
+                                     "if (0-1.0 < 0.0) {} else { write(\"fail 0-1.0 < 0.0\\n\"); }\n"
+                                     "if (0-1.0 < 0.5) {} else { write(\"fail 0-1.0 < 0.5\\n\"); }\n"
+                                     "if (0-1.0 < 1.0) {} else { write(\"fail 0-1.0 < 1.0\\n\"); }\n"
+                                     "if (0-1.0 < \"\") { write(\"fail 0-1.0 < \\\"\\\"\\n\"); } else {}\n"
+                                     "if (0-1.0 < \"aa\") {} else { write(\"fail 0-1.0 < \\\"aa\\\"\\n\"); }\n"
+                                     "if (0-1.0 < \"ab\") {} else { write(\"fail 0-1.0 < \\\"ab\\\"\\n\"); }\n"
+                                     "if (0-0.5 < 0-1) { write(\"fail 0-0.5 < 0-1\\n\"); } else {}\n"
+                                     "if (0-0.5 < 0) {} else { write(\"fail 0-0.5 < 0\\n\"); }\n"
+                                     "if (0-0.5 < 1) {} else { write(\"fail 0-0.5 < 1\\n\"); }\n"
+                                     "if (0-0.5 < 0-1.0) { write(\"fail 0-0.5 < 0-1.0\\n\"); } else {}\n"
+                                     "if (0-0.5 < 0-0.5) { write(\"fail 0-0.5 < 0-0.5\\n\"); } else {}\n"
+                                     "if (0-0.5 < 0.0) {} else { write(\"fail 0-0.5 < 0.0\\n\"); }\n"
+                                     "if (0-0.5 < 0.5) {} else { write(\"fail 0-0.5 < 0.5\\n\"); }\n"
+                                     "if (0-0.5 < 1.0) {} else { write(\"fail 0-0.5 < 1.0\\n\"); }\n"
+                                     "if (0-0.5 < \"\") { write(\"fail 0-0.5 < \\\"\\\"\\n\"); } else {}\n"
+                                     "if (0-0.5 < \"aa\") {} else { write(\"fail 0-0.5 < \\\"aa\\\"\\n\"); }\n"
+                                     "if (0-0.5 < \"ab\") {} else { write(\"fail 0-0.5 < \\\"ab\\\"\\n\"); }\n"
+                                     "if (0.0 < 0-1) { write(\"fail 0.0 < 0-1\\n\"); } else {}\n"
+                                     "if (0.0 < 0) { write(\"fail 0.0 < 0\\n\"); } else {}\n"
+                                     "if (0.0 < 1) {} else { write(\"fail 0.0 < 1\\n\"); }\n"
+                                     "if (0.0 < 0-1.0) { write(\"fail 0.0 < 0-1.0\\n\"); } else {}\n"
+                                     "if (0.0 < 0-0.5) { write(\"fail 0.0 < 0-0.5\\n\"); } else {}\n"
+                                     "if (0.0 < 0.0) { write(\"fail 0.0 < 0.0\\n\"); } else {}\n"
+                                     "if (0.0 < 0.5) {} else { write(\"fail 0.0 < 0.5\\n\"); }\n"
+                                     "if (0.0 < 1.0) {} else { write(\"fail 0.0 < 1.0\\n\"); }\n"
+                                     "if (0.0 < \"\") { write(\"fail 0.0 < \\\"\\\"\\n\"); } else {}\n"
+                                     "if (0.0 < \"aa\") {} else { write(\"fail 0.0 < \\\"aa\\\"\\n\"); }\n"
+                                     "if (0.0 < \"ab\") {} else { write(\"fail 0.0 < \\\"ab\\\"\\n\"); }\n"
+                                     "if (0.5 < 0-1) { write(\"fail 0.5 < 0-1\\n\"); } else {}\n"
+                                     "if (0.5 < 0) { write(\"fail 0.5 < 0\\n\"); } else {}\n"
+                                     "if (0.5 < 1) {} else { write(\"fail 0.5 < 1\\n\"); }\n"
+                                     "if (0.5 < 0-1.0) { write(\"fail 0.5 < 0-1.0\\n\"); } else {}\n"
+                                     "if (0.5 < 0-0.5) { write(\"fail 0.5 < 0-0.5\\n\"); } else {}\n"
+                                     "if (0.5 < 0.0) { write(\"fail 0.5 < 0.0\\n\"); } else {}\n"
+                                     "if (0.5 < 0.5) { write(\"fail 0.5 < 0.5\\n\"); } else {}\n"
+                                     "if (0.5 < 1.0) {} else { write(\"fail 0.5 < 1.0\\n\"); }\n"
+                                     "if (0.5 < \"\") { write(\"fail 0.5 < \\\"\\\"\\n\"); } else {}\n"
+                                     "if (0.5 < \"aa\") {} else { write(\"fail 0.5 < \\\"aa\\\"\\n\"); }\n"
+                                     "if (0.5 < \"ab\") {} else { write(\"fail 0.5 < \\\"ab\\\"\\n\"); }\n"
+                                     "if (1.0 < 0-1) { write(\"fail 1.0 < 0-1\\n\"); } else {}\n"
+                                     "if (1.0 < 0) { write(\"fail 1.0 < 0\\n\"); } else {}\n"
+                                     "if (1.0 < 1) { write(\"fail 1.0 < 1\\n\"); } else {}\n"
+                                     "if (1.0 < 0-1.0) { write(\"fail 1.0 < 0-1.0\\n\"); } else {}\n"
+                                     "if (1.0 < 0-0.5) { write(\"fail 1.0 < 0-0.5\\n\"); } else {}\n"
+                                     "if (1.0 < 0.0) { write(\"fail 1.0 < 0.0\\n\"); } else {}\n"
+                                     "if (1.0 < 0.5) { write(\"fail 1.0 < 0.5\\n\"); } else {}\n"
+                                     "if (1.0 < 1.0) { write(\"fail 1.0 < 1.0\\n\"); } else {}\n"
+                                     "if (1.0 < \"\") { write(\"fail 1.0 < \\\"\\\"\\n\"); } else {}\n"
+                                     "if (1.0 < \"aa\") {} else { write(\"fail 1.0 < \\\"aa\\\"\\n\"); }\n"
+                                     "if (1.0 < \"ab\") {} else { write(\"fail 1.0 < \\\"ab\\\"\\n\"); }\n"
+                                     "if (\"\" < 0-1) {} else { write(\"fail \\\"\\\" < 0-1\\n\"); }\n"
+                                     "if (\"\" < 0) {} else { write(\"fail \\\"\\\" < 0\\n\"); }\n"
+                                     "if (\"\" < 1) {} else { write(\"fail \\\"\\\" < 1\\n\"); }\n"
+                                     "if (\"\" < 0-1.0) {} else { write(\"fail \\\"\\\" < 0-1.0\\n\"); }\n"
+                                     "if (\"\" < 0-0.5) {} else { write(\"fail \\\"\\\" < 0-0.5\\n\"); }\n"
+                                     "if (\"\" < 0.0) {} else { write(\"fail \\\"\\\" < 0.0\\n\"); }\n"
+                                     "if (\"\" < 0.5) {} else { write(\"fail \\\"\\\" < 0.5\\n\"); }\n"
+                                     "if (\"\" < 1.0) {} else { write(\"fail \\\"\\\" < 1.0\\n\"); }\n"
+                                     "if (\"\" < \"\") { write(\"fail \\\"\\\" < \\\"\\\"\\n\"); } else {}\n"
+                                     "if (\"\" < \"aa\") {} else { write(\"fail \\\"\\\" < \\\"aa\\\"\\n\"); }\n"
+                                     "if (\"\" < \"ab\") {} else { write(\"fail \\\"\\\" < \\\"ab\\\"\\n\"); }\n"
+                                     "if (\"aa\" < 0-1) { write(\"fail \\\"aa\\\" < 0-1\\n\"); } else {}\n"
+                                     "if (\"aa\" < 0) { write(\"fail \\\"aa\\\" < 0\\n\"); } else {}\n"
+                                     "if (\"aa\" < 1) { write(\"fail \\\"aa\\\" < 1\\n\"); } else {}\n"
+                                     "if (\"aa\" < 0-1.0) { write(\"fail \\\"aa\\\" < 0-1.0\\n\"); } else {}\n"
+                                     "if (\"aa\" < 0-0.5) { write(\"fail \\\"aa\\\" < 0-0.5\\n\"); } else {}\n"
+                                     "if (\"aa\" < 0.0) { write(\"fail \\\"aa\\\" < 0.0\\n\"); } else {}\n"
+                                     "if (\"aa\" < 0.5) { write(\"fail \\\"aa\\\" < 0.5\\n\"); } else {}\n"
+                                     "if (\"aa\" < 1.0) { write(\"fail \\\"aa\\\" < 1.0\\n\"); } else {}\n"
+                                     "if (\"aa\" < \"\") { write(\"fail \\\"aa\\\" < \\\"\\\"\\n\"); } else {}\n"
+                                     "if (\"aa\" < \"aa\") { write(\"fail \\\"aa\\\" < \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (\"aa\" < \"ab\") {} else { write(\"fail \\\"aa\\\" < \\\"ab\\\"\\n\"); }\n"
+                                     "if (\"ab\" < 0-1) { write(\"fail \\\"ab\\\" < 0-1\\n\"); } else {}\n"
+                                     "if (\"ab\" < 0) { write(\"fail \\\"ab\\\" < 0\\n\"); } else {}\n"
+                                     "if (\"ab\" < 1) { write(\"fail \\\"ab\\\" < 1\\n\"); } else {}\n"
+                                     "if (\"ab\" < 0-1.0) { write(\"fail \\\"ab\\\" < 0-1.0\\n\"); } else {}\n"
+                                     "if (\"ab\" < 0-0.5) { write(\"fail \\\"ab\\\" < 0-0.5\\n\"); } else {}\n"
+                                     "if (\"ab\" < 0.0) { write(\"fail \\\"ab\\\" < 0.0\\n\"); } else {}\n"
+                                     "if (\"ab\" < 0.5) { write(\"fail \\\"ab\\\" < 0.5\\n\"); } else {}\n"
+                                     "if (\"ab\" < 1.0) { write(\"fail \\\"ab\\\" < 1.0\\n\"); } else {}\n"
+                                     "if (\"ab\" < \"\") { write(\"fail \\\"ab\\\" < \\\"\\\"\\n\"); } else {}\n"
+                                     "if (\"ab\" < \"aa\") { write(\"fail \\\"ab\\\" < \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (\"ab\" < \"ab\") { write(\"fail \\\"ab\\\" < \\\"ab\\\"\\n\"); } else {}\n"
+                                     "write(\"done\");", {});
+
+                CheckSymTableEntries("<?php\n"
+                                     "declare(strict_types=1);\n"
+                                     "if (0-1 <= 0-1) {} else { write(\"fail 0-1 <= 0-1\\n\"); }\n"
+                                     "if (0-1 <= 0) {} else { write(\"fail 0-1 <= 0\\n\"); }\n"
+                                     "if (0-1 <= 1) {} else { write(\"fail 0-1 <= 1\\n\"); }\n"
+                                     "if (0-1 <= 0-1.0) {} else { write(\"fail 0-1 <= 0-1.0\\n\"); }\n"
+                                     "if (0-1 <= 0-0.5) {} else { write(\"fail 0-1 <= 0-0.5\\n\"); }\n"
+                                     "if (0-1 <= 0.0) {} else { write(\"fail 0-1 <= 0.0\\n\"); }\n"
+                                     "if (0-1 <= 0.5) {} else { write(\"fail 0-1 <= 0.5\\n\"); }\n"
+                                     "if (0-1 <= 1.0) {} else { write(\"fail 0-1 <= 1.0\\n\"); }\n"
+                                     "if (0-1 <= \"\") { write(\"fail 0-1 <= \\\"\\\"\\n\"); } else {}\n"
+                                     "if (0-1 <= \"aa\") {} else { write(\"fail 0-1 <= \\\"aa\\\"\\n\"); }\n"
+                                     "if (0-1 <= \"ab\") {} else { write(\"fail 0-1 <= \\\"ab\\\"\\n\"); }\n"
+                                     "if (0 <= 0-1) { write(\"fail 0 <= 0-1\\n\"); } else {}\n"
+                                     "if (0 <= 0) {} else { write(\"fail 0 <= 0\\n\"); }\n"
+                                     "if (0 <= 1) {} else { write(\"fail 0 <= 1\\n\"); }\n"
+                                     "if (0 <= 0-1.0) { write(\"fail 0 <= 0-1.0\\n\"); } else {}\n"
+                                     "if (0 <= 0-0.5) { write(\"fail 0 <= 0-0.5\\n\"); } else {}\n"
+                                     "if (0 <= 0.0) {} else { write(\"fail 0 <= 0.0\\n\"); }\n"
+                                     "if (0 <= 0.5) {} else { write(\"fail 0 <= 0.5\\n\"); }\n"
+                                     "if (0 <= 1.0) {} else { write(\"fail 0 <= 1.0\\n\"); }\n"
+                                     "if (0 <= \"\") { write(\"fail 0 <= \\\"\\\"\\n\"); } else {}\n"
+                                     "if (0 <= \"aa\") {} else { write(\"fail 0 <= \\\"aa\\\"\\n\"); }\n"
+                                     "if (0 <= \"ab\") {} else { write(\"fail 0 <= \\\"ab\\\"\\n\"); }\n"
+                                     "if (1 <= 0-1) { write(\"fail 1 <= 0-1\\n\"); } else {}\n"
+                                     "if (1 <= 0) { write(\"fail 1 <= 0\\n\"); } else {}\n"
+                                     "if (1 <= 1) {} else { write(\"fail 1 <= 1\\n\"); }\n"
+                                     "if (1 <= 0-1.0) { write(\"fail 1 <= 0-1.0\\n\"); } else {}\n"
+                                     "if (1 <= 0-0.5) { write(\"fail 1 <= 0-0.5\\n\"); } else {}\n"
+                                     "if (1 <= 0.0) { write(\"fail 1 <= 0.0\\n\"); } else {}\n"
+                                     "if (1 <= 0.5) { write(\"fail 1 <= 0.5\\n\"); } else {}\n"
+                                     "if (1 <= 1.0) {} else { write(\"fail 1 <= 1.0\\n\"); }\n"
+                                     "if (1 <= \"\") { write(\"fail 1 <= \\\"\\\"\\n\"); } else {}\n"
+                                     "if (1 <= \"aa\") {} else { write(\"fail 1 <= \\\"aa\\\"\\n\"); }\n"
+                                     "if (1 <= \"ab\") {} else { write(\"fail 1 <= \\\"ab\\\"\\n\"); }\n"
+                                     "if (0-1.0 <= 0-1) {} else { write(\"fail 0-1.0 <= 0-1\\n\"); }\n"
+                                     "if (0-1.0 <= 0) {} else { write(\"fail 0-1.0 <= 0\\n\"); }\n"
+                                     "if (0-1.0 <= 1) {} else { write(\"fail 0-1.0 <= 1\\n\"); }\n"
+                                     "if (0-1.0 <= 0-1.0) {} else { write(\"fail 0-1.0 <= 0-1.0\\n\"); }\n"
+                                     "if (0-1.0 <= 0-0.5) {} else { write(\"fail 0-1.0 <= 0-0.5\\n\"); }\n"
+                                     "if (0-1.0 <= 0.0) {} else { write(\"fail 0-1.0 <= 0.0\\n\"); }\n"
+                                     "if (0-1.0 <= 0.5) {} else { write(\"fail 0-1.0 <= 0.5\\n\"); }\n"
+                                     "if (0-1.0 <= 1.0) {} else { write(\"fail 0-1.0 <= 1.0\\n\"); }\n"
+                                     "if (0-1.0 <= \"\") { write(\"fail 0-1.0 <= \\\"\\\"\\n\"); } else {}\n"
+                                     "if (0-1.0 <= \"aa\") {} else { write(\"fail 0-1.0 <= \\\"aa\\\"\\n\"); }\n"
+                                     "if (0-1.0 <= \"ab\") {} else { write(\"fail 0-1.0 <= \\\"ab\\\"\\n\"); }\n"
+                                     "if (0-0.5 <= 0-1) { write(\"fail 0-0.5 <= 0-1\\n\"); } else {}\n"
+                                     "if (0-0.5 <= 0) {} else { write(\"fail 0-0.5 <= 0\\n\"); }\n"
+                                     "if (0-0.5 <= 1) {} else { write(\"fail 0-0.5 <= 1\\n\"); }\n"
+                                     "if (0-0.5 <= 0-1.0) { write(\"fail 0-0.5 <= 0-1.0\\n\"); } else {}\n"
+                                     "if (0-0.5 <= 0-0.5) {} else { write(\"fail 0-0.5 <= 0-0.5\\n\"); }\n"
+                                     "if (0-0.5 <= 0.0) {} else { write(\"fail 0-0.5 <= 0.0\\n\"); }\n"
+                                     "if (0-0.5 <= 0.5) {} else { write(\"fail 0-0.5 <= 0.5\\n\"); }\n"
+                                     "if (0-0.5 <= 1.0) {} else { write(\"fail 0-0.5 <= 1.0\\n\"); }\n"
+                                     "if (0-0.5 <= \"\") { write(\"fail 0-0.5 <= \\\"\\\"\\n\"); } else {}\n"
+                                     "if (0-0.5 <= \"aa\") {} else { write(\"fail 0-0.5 <= \\\"aa\\\"\\n\"); }\n"
+                                     "if (0-0.5 <= \"ab\") {} else { write(\"fail 0-0.5 <= \\\"ab\\\"\\n\"); }\n"
+                                     "if (0.0 <= 0-1) { write(\"fail 0.0 <= 0-1\\n\"); } else {}\n"
+                                     "if (0.0 <= 0) {} else { write(\"fail 0.0 <= 0\\n\"); }\n"
+                                     "if (0.0 <= 1) {} else { write(\"fail 0.0 <= 1\\n\"); }\n"
+                                     "if (0.0 <= 0-1.0) { write(\"fail 0.0 <= 0-1.0\\n\"); } else {}\n"
+                                     "if (0.0 <= 0-0.5) { write(\"fail 0.0 <= 0-0.5\\n\"); } else {}\n"
+                                     "if (0.0 <= 0.0) {} else { write(\"fail 0.0 <= 0.0\\n\"); }\n"
+                                     "if (0.0 <= 0.5) {} else { write(\"fail 0.0 <= 0.5\\n\"); }\n"
+                                     "if (0.0 <= 1.0) {} else { write(\"fail 0.0 <= 1.0\\n\"); }\n"
+                                     "if (0.0 <= \"\") { write(\"fail 0.0 <= \\\"\\\"\\n\"); } else {}\n"
+                                     "if (0.0 <= \"aa\") {} else { write(\"fail 0.0 <= \\\"aa\\\"\\n\"); }\n"
+                                     "if (0.0 <= \"ab\") {} else { write(\"fail 0.0 <= \\\"ab\\\"\\n\"); }\n"
+                                     "if (0.5 <= 0-1) { write(\"fail 0.5 <= 0-1\\n\"); } else {}\n"
+                                     "if (0.5 <= 0) { write(\"fail 0.5 <= 0\\n\"); } else {}\n"
+                                     "if (0.5 <= 1) {} else { write(\"fail 0.5 <= 1\\n\"); }\n"
+                                     "if (0.5 <= 0-1.0) { write(\"fail 0.5 <= 0-1.0\\n\"); } else {}\n"
+                                     "if (0.5 <= 0-0.5) { write(\"fail 0.5 <= 0-0.5\\n\"); } else {}\n"
+                                     "if (0.5 <= 0.0) { write(\"fail 0.5 <= 0.0\\n\"); } else {}\n"
+                                     "if (0.5 <= 0.5) {} else { write(\"fail 0.5 <= 0.5\\n\"); }\n"
+                                     "if (0.5 <= 1.0) {} else { write(\"fail 0.5 <= 1.0\\n\"); }\n"
+                                     "if (0.5 <= \"\") { write(\"fail 0.5 <= \\\"\\\"\\n\"); } else {}\n"
+                                     "if (0.5 <= \"aa\") {} else { write(\"fail 0.5 <= \\\"aa\\\"\\n\"); }\n"
+                                     "if (0.5 <= \"ab\") {} else { write(\"fail 0.5 <= \\\"ab\\\"\\n\"); }\n"
+                                     "if (1.0 <= 0-1) { write(\"fail 1.0 <= 0-1\\n\"); } else {}\n"
+                                     "if (1.0 <= 0) { write(\"fail 1.0 <= 0\\n\"); } else {}\n"
+                                     "if (1.0 <= 1) {} else { write(\"fail 1.0 <= 1\\n\"); }\n"
+                                     "if (1.0 <= 0-1.0) { write(\"fail 1.0 <= 0-1.0\\n\"); } else {}\n"
+                                     "if (1.0 <= 0-0.5) { write(\"fail 1.0 <= 0-0.5\\n\"); } else {}\n"
+                                     "if (1.0 <= 0.0) { write(\"fail 1.0 <= 0.0\\n\"); } else {}\n"
+                                     "if (1.0 <= 0.5) { write(\"fail 1.0 <= 0.5\\n\"); } else {}\n"
+                                     "if (1.0 <= 1.0) {} else { write(\"fail 1.0 <= 1.0\\n\"); }\n"
+                                     "if (1.0 <= \"\") { write(\"fail 1.0 <= \\\"\\\"\\n\"); } else {}\n"
+                                     "if (1.0 <= \"aa\") {} else { write(\"fail 1.0 <= \\\"aa\\\"\\n\"); }\n"
+                                     "if (1.0 <= \"ab\") {} else { write(\"fail 1.0 <= \\\"ab\\\"\\n\"); }\n"
+                                     "if (\"\" <= 0-1) {} else { write(\"fail \\\"\\\" <= 0-1\\n\"); }\n"
+                                     "if (\"\" <= 0) {} else { write(\"fail \\\"\\\" <= 0\\n\"); }\n"
+                                     "if (\"\" <= 1) {} else { write(\"fail \\\"\\\" <= 1\\n\"); }\n"
+                                     "if (\"\" <= 0-1.0) {} else { write(\"fail \\\"\\\" <= 0-1.0\\n\"); }\n"
+                                     "if (\"\" <= 0-0.5) {} else { write(\"fail \\\"\\\" <= 0-0.5\\n\"); }\n"
+                                     "if (\"\" <= 0.0) {} else { write(\"fail \\\"\\\" <= 0.0\\n\"); }\n"
+                                     "if (\"\" <= 0.5) {} else { write(\"fail \\\"\\\" <= 0.5\\n\"); }\n"
+                                     "if (\"\" <= 1.0) {} else { write(\"fail \\\"\\\" <= 1.0\\n\"); }\n"
+                                     "if (\"\" <= \"\") {} else { write(\"fail \\\"\\\" <= \\\"\\\"\\n\"); }\n"
+                                     "if (\"\" <= \"aa\") {} else { write(\"fail \\\"\\\" <= \\\"aa\\\"\\n\"); }\n"
+                                     "if (\"\" <= \"ab\") {} else { write(\"fail \\\"\\\" <= \\\"ab\\\"\\n\"); }\n"
+                                     "if (\"aa\" <= 0-1) { write(\"fail \\\"aa\\\" <= 0-1\\n\"); } else {}\n"
+                                     "if (\"aa\" <= 0) { write(\"fail \\\"aa\\\" <= 0\\n\"); } else {}\n"
+                                     "if (\"aa\" <= 1) { write(\"fail \\\"aa\\\" <= 1\\n\"); } else {}\n"
+                                     "if (\"aa\" <= 0-1.0) { write(\"fail \\\"aa\\\" <= 0-1.0\\n\"); } else {}\n"
+                                     "if (\"aa\" <= 0-0.5) { write(\"fail \\\"aa\\\" <= 0-0.5\\n\"); } else {}\n"
+                                     "if (\"aa\" <= 0.0) { write(\"fail \\\"aa\\\" <= 0.0\\n\"); } else {}\n"
+                                     "if (\"aa\" <= 0.5) { write(\"fail \\\"aa\\\" <= 0.5\\n\"); } else {}\n"
+                                     "if (\"aa\" <= 1.0) { write(\"fail \\\"aa\\\" <= 1.0\\n\"); } else {}\n"
+                                     "if (\"aa\" <= \"\") { write(\"fail \\\"aa\\\" <= \\\"\\\"\\n\"); } else {}\n"
+                                     "if (\"aa\" <= \"aa\") {} else { write(\"fail \\\"aa\\\" <= \\\"aa\\\"\\n\"); }\n"
+                                     "if (\"aa\" <= \"ab\") {} else { write(\"fail \\\"aa\\\" <= \\\"ab\\\"\\n\"); }\n"
+                                     "if (\"ab\" <= 0-1) { write(\"fail \\\"ab\\\" <= 0-1\\n\"); } else {}\n"
+                                     "if (\"ab\" <= 0) { write(\"fail \\\"ab\\\" <= 0\\n\"); } else {}\n"
+                                     "if (\"ab\" <= 1) { write(\"fail \\\"ab\\\" <= 1\\n\"); } else {}\n"
+                                     "if (\"ab\" <= 0-1.0) { write(\"fail \\\"ab\\\" <= 0-1.0\\n\"); } else {}\n"
+                                     "if (\"ab\" <= 0-0.5) { write(\"fail \\\"ab\\\" <= 0-0.5\\n\"); } else {}\n"
+                                     "if (\"ab\" <= 0.0) { write(\"fail \\\"ab\\\" <= 0.0\\n\"); } else {}\n"
+                                     "if (\"ab\" <= 0.5) { write(\"fail \\\"ab\\\" <= 0.5\\n\"); } else {}\n"
+                                     "if (\"ab\" <= 1.0) { write(\"fail \\\"ab\\\" <= 1.0\\n\"); } else {}\n"
+                                     "if (\"ab\" <= \"\") { write(\"fail \\\"ab\\\" <= \\\"\\\"\\n\"); } else {}\n"
+                                     "if (\"ab\" <= \"aa\") { write(\"fail \\\"ab\\\" <= \\\"aa\\\"\\n\"); } else {}\n"
+                                     "if (\"ab\" <= \"ab\") {} else { write(\"fail \\\"ab\\\" <= \\\"ab\\\"\\n\"); }\n"
+                                     "write(\"done\");", {});
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);"
+                                     "$x = 1.0;"
+                                     "$i = 0;"
+                                     "while($i < 10000) {"
+                                     "$x = ($x + 2.0/$x)/2.0;"
+                                     "$i = $i + 1;"
+                                     "}"
+                                     "write(\"Square root of 2 is: \", $x);", {});
+
+                CheckSymTableEntries("<?php"
+                                     "declare(strict_types=1);", {});
+
+                CheckSymTableEntries("<?php\n"
+                                     "\n"
+                                     "\n"
+                                     "\n"
+                                     "declare(         strict_types   =\n"
+                                     "1       )\n"
+                                     ";", {});
+
             }
         }
     }

@@ -142,6 +142,7 @@ namespace ifj {
                                 );
                             }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
                             "\\[LEXICAL ERROR\\] Invalid PHP open bracket");
+
             }
 
             TEST_F(LexicalAnalyzerTest, ArithmeticOperators) {
@@ -631,6 +632,11 @@ namespace ifj {
                                (lexical_token_t) {INTEGER, "1"},
                                (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
                                (lexical_token_t) {SEMICOLON, ";"}
+                );
+                IsStackCorrect("  <?php//this is opening tag, it is needed for ever php script"
+                               "/* this is something that is needed for compability with IFJ code */declare(/*some parameter here*//*aaaaaaa*/strict_types=/*:)*/1);//bye",
+                               1,
+                               (lexical_token_t) {OPEN_PHP_BRACKET, "<?php"}
                 );
 
                 EXPECT_EXIT(IsStackCorrect("<?php\n"
