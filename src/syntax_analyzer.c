@@ -368,7 +368,7 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
                 }
 
                 if (current_token_type == SYN_TOKEN_SEMICOLON) {
-                    tree = make_binary_node(SYN_NODE_ASSIGN, v, v);
+                    tree = v;
                     GET_NEXT_TOKEN(fd)
                     break;
                 }

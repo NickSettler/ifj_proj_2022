@@ -88,6 +88,11 @@ void process_tree(syntax_abstract_tree_t *tree) {
             semantic_state->function_name = temp_function_name;
             break;
         }
+        case SYN_NODE_IDENTIFIER: {
+            if (!check_tree_using(tree, is_defined)) {
+                SEMANTIC_UNDEF_VAR_ERROR("Variable %s is not defined", tree->value->value)
+            }
+        }
         default:
             break;
     }
@@ -112,7 +117,6 @@ void process_if_while(syntax_abstract_tree_t *tree) {
     optimize_expression(cond_copy);
     bool can_check_condition = check_tree_using(cond_copy, can_detect_bool);
     if (can_check_condition) {
-
         bool is_truthy_condition = check_tree_using(cond_copy, is_true);
         if (tree->type & SYN_NODE_KEYWORD_IF) {
             if (is_truthy_condition) {
