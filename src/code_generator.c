@@ -214,25 +214,35 @@ void generate_number_conversion_functions() {
     }
 }
 
-void generate_int_to_char(frames_t frame) {
-    fprintf(fd, "LABEL int2char\n");
-    fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR %s@retval1\n", frames[frame]);
-    fprintf(fd, "MOVE %s@retval1 nil@nil\n", frames[frame]);
-    fprintf(fd, "DEFVAR %s@i\n", frames[frame]);
-    fprintf(fd, "MOVE %s@i %s@1\n", frames[frame], frames[frame]);
-    fprintf(fd, "DEFVAR %s@i\n", frames[frame]);
-    fprintf(fd, "MOVE %s@tmp nil@nil\n", frames[frame]);
-    fprintf(fd, "TYPE %s@tmp %s@int\n", frames[frame], frames[frame]);
-    fprintf(fd, "JUMPIFEQ error_label %s@tmp string@nil\n", frames[frame]);
-    fprintf(fd, "LT %s@tmp %s@i int@0\n", frames[frame], frames[frame]);
-    fprintf(fd, "JUMPIFEQ nil_return %s@tmp bool@true\n", frames[frame]);
-    fprintf(fd, "GT %s@tmp %s@i int@255\n", frames[frame], frames[frame]);
-    fprintf(fd, "JUMPIFEQ nil_return %s@tmp bool@true\n", frames[frame]);
-    fprintf(fd, "INT2CHAR %s@retval1 %s@int\n", frames[frame], frames[frame]);
-    fprintf(fd, "LABEL nil_return\n");
-    fprintf(fd, "POPFRAME\n");
-    fprintf(fd, "RETURN\n");
+void generate_strval() {
+    char *function_label = "strval";
+    char *null_cond_label = "strval_null_cond";
+    char *function_end_label = "strval_end";
+
+    char *type_var = "$type";
+    char *result_var = "$result";
+
+    generate_label(function_label);
+    generate_create_frame();
+    generate_push_frame();
+
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, type_var);
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, result_var);
+
+    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, result_var);
+
+    generate_type(CODE_GENERATOR_LOCAL_FRAME, type_var, CODE_GENERATOR_LOCAL_FRAME, result_var);
+    generate_conditional_jump(true, null_cond_label, CODE_GENERATOR_LOCAL_FRAME, type_var,
+                              CODE_GENERATOR_NULL_CONSTANT, "nil");
+    generate_jump(function_end_label);
+
+    generate_label(null_cond_label);
+    generate_move(CODE_GENERATOR_LOCAL_FRAME, result_var, CODE_GENERATOR_STRING_CONSTANT, "");
+    generate_jump(function_end_label);
+
+    generate_label(function_end_label);
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, result_var);
+    generate_end();
 }
 
 void generate_string_to_int(frames_t frame) {

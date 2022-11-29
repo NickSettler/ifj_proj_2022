@@ -262,40 +262,9 @@ void generate_conversion_base(char *label, char *process_variable, char *type_va
 void generate_number_conversion_functions();
 
 /**
- * @brief generate a decimal to string conversion
- * @param *variable variable name
+ * Generates function to convert to string data type
  */
-void generate_int_to_char(frames_t frame);
-
-/**
- * @brief generate a string to decimal conversion
- * @param *symbol symbol name
- */
-void generate_string_to_int(frames_t frame);
-
-/**
- * @brief read string from standard input
- * @param *frame variable frame
- */
-void generate_reads(frames_t frame);
-
-/**
- * @brief read int from standard input
- * @param frame variable frame
- */
-void generate_readi(frames_t frame);
-
-/**
- * @brief read float from standard input
- * @param frame variable frame
- */
-void generate_readf(frames_t frame);
-
-/**
- * @brief print value to standard output
- * @param frame symbol frame
- */
-void generate_write();
+void generate_strval();
 
 /**
  * Generates internal substring function
