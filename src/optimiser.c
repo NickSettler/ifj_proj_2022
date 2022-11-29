@@ -280,7 +280,7 @@ void optimize_expression(syntax_abstract_tree_t *tree) {
     if ((tree->type &
          (SYN_NODE_ADD | SYN_NODE_SUB | SYN_NODE_MUL | SYN_NODE_DIV | SYN_NODE_TYPED_EQUAL | SYN_NODE_TYPED_NOT_EQUAL |
           SYN_NODE_LESS | SYN_NODE_LESS_EQUAL | SYN_NODE_GREATER | SYN_NODE_GREATER_EQUAL | SYN_NODE_AND | SYN_NODE_OR |
-          SYN_NODE_NOT)) == 0)
+          SYN_NODE_NOT | SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING)) == 0)
         return;
 
     switch (tree->type) {
@@ -391,6 +391,11 @@ void optimize_expression(syntax_abstract_tree_t *tree) {
 
             REPLACE_TREE_VALUE(result ? "1" : "0", SYN_NODE_INTEGER)
             break;
+        }
+        case SYN_NODE_INTEGER:
+        case SYN_NODE_FLOAT:
+        case SYN_NODE_STRING: {
+            change_node_type(tree, TYPE_INT);
         }
         default:
             break;
