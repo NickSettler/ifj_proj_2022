@@ -17,6 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+
       - name: Configure CMake
         run: cmake -S $GITHUB_WORKSPACE -B ${{runner.workspace}}/build
 
