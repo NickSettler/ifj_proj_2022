@@ -70,7 +70,7 @@ typedef enum {
     OPTIMISE_UNREACHABLE_CODE = 1 << 2,
 } optimise_type_t;
 
-optimiser_parameters_t *optimiser_params;
+static optimiser_parameters_t *optimiser_params;
 
 /**
  * Checks if optimiser can determine if the expression is true or false
