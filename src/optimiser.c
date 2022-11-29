@@ -126,7 +126,20 @@ void replace_variable_usage(syntax_abstract_tree_t *tree, syntax_abstract_tree_t
             }
         }
 
-        if (current->right->type == SYN_NODE_KEYWORD_WHILE) continue;
+        if (current->right->type == SYN_NODE_KEYWORD_WHILE) {
+            syntax_abstract_tree_t *cond_copy = tree_copy(current->right->left);
+            process_tree_using(cond_copy, replace_variable_usage_internal, POSTORDER);
+            process_tree_using(cond_copy, optimize_expression, POSTORDER);
+            bool is_cond_false = !check_tree_using(cond_copy, is_true);
+
+
+            if (is_cond_false) {
+                free_syntax_tree(current->right);
+                trees[j]->right = NULL;
+            }
+
+            continue;
+        }
 
         process_tree_using(current->right, replace_variable_usage_internal, POSTORDER);
     }
@@ -257,6 +270,8 @@ void optimize_node(syntax_abstract_tree_t *tree, optimise_type_t optimise_type) 
     if (!tree) return;
 
     optimize_node(tree->left, optimise_type);
+
+    if (!tree->right) return;
 
     switch (tree->right->type) {
         case SYN_NODE_ASSIGN: {
