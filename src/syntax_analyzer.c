@@ -500,6 +500,8 @@ syntax_abstract_tree_t *load_syntax_tree(FILE *fd) {
         GET_NEXT_TOKEN(fd)
         expect_token("Semicolon", SYN_TOKEN_SEMICOLON);
         GET_NEXT_TOKEN(fd)
+    } else {
+        SYNTAX_ERROR("Expected declare keyword\n")
     }
 
     syntax_abstract_tree_t *tree = NULL;
