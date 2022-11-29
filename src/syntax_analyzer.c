@@ -681,8 +681,9 @@ void free_syntax_tree(syntax_abstract_tree_t *tree) {
     free_syntax_tree(tree->right);
 
     if (tree->attrs != NULL) {
-        free(tree->attrs);
-        tree->attrs = NULL;
+        // TODO: check why sometimes makes SEGFAULT
+//        free(tree->attrs);
+//        tree->attrs = NULL;
     }
     string_free(tree->value);
     tree->value = NULL;
