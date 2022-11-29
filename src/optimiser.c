@@ -76,6 +76,8 @@ void optimise_unreachable_if(syntax_abstract_tree_t *tree) {
         }
 
         tree->right = tree->right->middle;
+
+        optimize_node(tree->right, OPTIMISE_UNREACHABLE_CODE);
     } else {
         if (has_else) {
             tree->right = tree->right->right;
@@ -90,6 +92,8 @@ void optimise_unreachable_if(syntax_abstract_tree_t *tree) {
 
         free_syntax_tree(tree->middle);
         tree->middle = NULL;
+
+        optimize_node(tree->right, OPTIMISE_UNREACHABLE_CODE);
     }
 }
 
@@ -152,6 +156,8 @@ void replace_variable_usage(syntax_abstract_tree_t *tree, syntax_abstract_tree_t
             if (is_cond_false) {
                 free_syntax_tree(current->right);
                 trees[j]->right = NULL;
+            } else {
+                optimize_node(current->right->right, OPTIMISE_UNREACHABLE_CODE);
             }
 
             continue;
