@@ -44,6 +44,20 @@ bool is_true(syntax_abstract_tree_t *tree) {
     return true;
 }
 
+bool is_unused(syntax_abstract_tree_t *tree) {
+    if (!tree) return true;
+
+    if (tree->type == SYN_NODE_IDENTIFIER) {
+        bool same_identifier_name = !strcmp(tree->value->value, optimiser_params->current_unused_variable_name->value);
+
+        if (same_identifier_name) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void optimise_unreachable_while(syntax_abstract_tree_t *tree) {
     if (!tree || !tree->right) return;
 
@@ -131,8 +145,7 @@ void replace_variable_usage_internal(syntax_abstract_tree_t *tree) {
 }
 
 void replace_variable_usage(syntax_abstract_tree_t *tree, syntax_abstract_tree_t *current_tree) {
-    if (!tree)
-        return;
+    if (!tree) return;
 
     syntax_abstract_tree_t *trees[1000] = {NULL};
 
@@ -214,6 +227,52 @@ void replace_variable_usage(syntax_abstract_tree_t *tree, syntax_abstract_tree_t
         }
 
         process_tree_using(current->right, replace_variable_usage_internal, POSTORDER);
+    }
+}
+
+void remove_unused_variables(syntax_abstract_tree_t *tree) {
+    if (!tree) return;
+
+    syntax_abstract_tree_t *trees[1000] = {NULL};
+
+    int i = 0;
+    int current_level = -1;
+
+    while (tree && tree->type == SYN_NODE_SEQUENCE) {
+        trees[i++] = tree;
+
+        bool is_same_tree = compare_syntax_tree(tree->right, optimiser_params->current_unused_variable_tree);
+
+        if (current_level == -1 && tree->right && tree->right->type == SYN_NODE_ASSIGN &&
+            !strcmp(tree->right->left->value->value, optimiser_params->current_unused_variable_name->value) &&
+            is_same_tree)
+            current_level = i - 1;
+        tree = tree->left;
+    }
+
+    bool is_used_in_code = false;
+
+    for (int j = current_level; j >= 0; j--) {
+        syntax_abstract_tree_t *current = trees[j];
+
+        bool is_same_tree = compare_syntax_tree(current->right, optimiser_params->current_unused_variable_tree);
+
+        if (current->right && current->right->type == SYN_NODE_ASSIGN &&
+            !strcmp(current->right->left->value->value, optimiser_params->current_unused_variable_name->value) &&
+            is_same_tree)
+            continue;
+
+        if (!is_used_in_code) {
+            bool is_used_in_current = !check_tree_using(current->right, is_unused);
+            is_used_in_code = is_used_in_current;
+
+            if (is_used_in_current) break;
+        }
+    }
+
+    if (!is_used_in_code) {
+        free_syntax_tree(trees[current_level]->right);
+        trees[current_level]->right = NULL;
     }
 }
 
@@ -349,10 +408,16 @@ void optimize_node(syntax_abstract_tree_t *tree, optimise_type_t optimise_type) 
         case SYN_NODE_ASSIGN: {
             if (optimise_type == OPTIMISE_EXPRESSION) {
                 process_tree_using(tree->right, optimize_expression, POSTORDER);
-                optimiser_params->current_replaced_variable_name = tree->right->left->value;
-                optimiser_params->current_replaced_variable_tree = tree->right->right;
-                if (tree->right->right->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT))
+                if (tree->right->right->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT)) {
+                    optimiser_params->current_replaced_variable_name = tree->right->left->value;
+                    optimiser_params->current_replaced_variable_tree = tree->right->right;
                     replace_variable_usage(optimiser_params->root_tree, tree->right);
+                }
+            }
+            if (optimise_type == OPTIMISE_UNUSED_VARIABLES) {
+                optimiser_params->current_unused_variable_name = tree->right->left->value;
+                optimiser_params->current_unused_variable_tree = tree->right;
+                remove_unused_variables(optimiser_params->root_tree);
             }
             break;
         }
@@ -389,14 +454,15 @@ void optimize_tree(syntax_abstract_tree_t *tree) {
 
     optimize_node(tree, OPTIMISE_EXPRESSION);
     optimize_node(tree, OPTIMISE_UNREACHABLE_CODE);
-//    optimize_node(tree, OPTIMISE_UNUSED_VARIABLES);
+    optimize_node(tree, OPTIMISE_UNUSED_VARIABLES);
 }
 
 void init_optimiser() {
     optimiser_parameters_t *params = (optimiser_parameters_t *) malloc(sizeof(optimiser_parameters_t));
 
     params->root_tree = NULL;
-    params->current_unused_variable = NULL;
+    params->current_unused_variable_name = NULL;
+    params->current_replaced_variable_tree = NULL;
     params->current_replaced_variable_name = NULL;
     params->current_replaced_variable_tree = NULL;
 

@@ -54,10 +54,12 @@ static char *numbers_buffer;
     tree->right = NULL;
 
 #include "syntax_analyzer.h"
+#include "semantic_analyzer.h"
 
 typedef struct optimiser_parameters {
     syntax_abstract_tree_t *root_tree;
-    string_t *current_unused_variable;
+    string_t *current_unused_variable_name;
+    syntax_abstract_tree_t *current_unused_variable_tree;
     string_t *current_replaced_variable_name;
     syntax_abstract_tree_t *current_replaced_variable_tree;
 } optimiser_parameters_t;
