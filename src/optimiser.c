@@ -14,7 +14,7 @@
 bool can_detect_bool(syntax_abstract_tree_t *tree) {
     if (!tree) return true;
 
-    if ((tree->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT)) == 0) {
+    if ((tree->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING | SYN_NODE_KEYWORD_NULL)) == 0) {
         return false;
     }
 
@@ -33,6 +33,12 @@ bool is_true(syntax_abstract_tree_t *tree) {
         double int_value = (int) tree_number;
 
         return int_value != 0;
+    } else if (tree->type == SYN_NODE_STRING) {
+        if (!strcmp(tree->value->value, "\"\"")) return false;
+
+        return true;
+    } else if (tree->type == SYN_NODE_KEYWORD_NULL) {
+        return false;
     }
 
     return true;
