@@ -301,7 +301,8 @@ void optimize_node(syntax_abstract_tree_t *tree, optimise_type_t optimise_type) 
                 process_tree_using(tree->right, optimize_expression, POSTORDER);
                 optimiser_params->current_replaced_variable_name = tree->right->left->value;
                 optimiser_params->current_replaced_variable_tree = tree->right->right;
-                replace_variable_usage(optimiser_params->root_tree, tree->right);
+                if (tree->right->right->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT))
+                    replace_variable_usage(optimiser_params->root_tree, tree->right);
             }
             break;
         }
@@ -310,7 +311,8 @@ void optimize_node(syntax_abstract_tree_t *tree, optimise_type_t optimise_type) 
                 process_tree_using(tree->right, optimize_expression, POSTORDER);
                 optimiser_params->current_replaced_variable_name = tree->right->left->value;
                 optimiser_params->current_replaced_variable_tree = tree->right->right;
-                replace_variable_usage(optimiser_params->root_tree, tree->right);
+//                if (tree->right->right->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT))
+//                    replace_variable_usage(optimiser_params->root_tree, tree->right);
             }
             if (optimise_type == OPTIMISE_UNREACHABLE_CODE) {
                 optimise_unreachable_if(tree);
@@ -326,7 +328,8 @@ void optimize_node(syntax_abstract_tree_t *tree, optimise_type_t optimise_type) 
                 process_tree_using(tree->right, optimize_expression, POSTORDER);
                 optimiser_params->current_replaced_variable_name = tree->right->left->value;
                 optimiser_params->current_replaced_variable_tree = tree->right->right;
-                replace_variable_usage(optimiser_params->root_tree, tree->right);
+//                if (tree->right->right->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT))
+//                    replace_variable_usage(optimiser_params->root_tree, tree->right);
             }
         }
         default:
