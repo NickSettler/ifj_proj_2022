@@ -137,17 +137,32 @@ void replace_variable_usage(syntax_abstract_tree_t *tree, syntax_abstract_tree_t
     syntax_abstract_tree_t *trees[1000] = {NULL};
 
     int i = 0;
-    int current_level = 0;
+    int current_level = -1;
 
     while (tree && tree->type == SYN_NODE_SEQUENCE) {
         trees[i++] = tree;
+
+        bool is_same_tree = compare_syntax_tree(tree->right->right, optimiser_params->current_replaced_variable_tree);
+
+        if (current_level == -1 && tree->right && tree->right->type == SYN_NODE_ASSIGN &&
+            !strcmp(tree->right->left->value->value, optimiser_params->current_replaced_variable_name->value) &&
+            is_same_tree)
+            current_level = i;
         tree = tree->left;
-        if (tree && tree->right == current_tree) current_level = i;
     }
+
+    if (current_level == -1) current_level = i;
 
     for (int j = current_level - 1; j >= 0; j--) {
         syntax_abstract_tree_t *current = trees[j];
-        if (current->right == current_tree) continue;
+
+        bool is_same_tree = compare_syntax_tree(current->right->right,
+                                                optimiser_params->current_replaced_variable_tree);
+
+        if (current->right && current->right->type == SYN_NODE_ASSIGN &&
+            !strcmp(current->right->left->value->value, optimiser_params->current_replaced_variable_name->value) &&
+            is_same_tree)
+            continue;
 
         if (current->right->type == SYN_NODE_ASSIGN) {
             if (!strcmp(current->right->left->value->value, optimiser_params->current_replaced_variable_name->value)) {
