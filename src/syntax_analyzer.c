@@ -680,7 +680,10 @@ void free_syntax_tree(syntax_abstract_tree_t *tree) {
     free_syntax_tree(tree->middle);
     free_syntax_tree(tree->right);
 
-    free(tree->attrs);
+    if (tree->attrs != NULL) {
+        free(tree->attrs);
+        tree->attrs = NULL;
+    }
     string_free(tree->value);
     tree->value = NULL;
     free(tree);
