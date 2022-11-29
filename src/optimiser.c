@@ -34,9 +34,7 @@ bool is_true(syntax_abstract_tree_t *tree) {
 
         return int_value != 0;
     } else if (tree->type == SYN_NODE_STRING) {
-        if (!strcmp(tree->value->value, "\"\"")) return false;
-
-        return true;
+        return tree->value->length != 2;
     } else if (tree->type == SYN_NODE_KEYWORD_NULL) {
         return false;
     }
