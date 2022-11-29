@@ -249,7 +249,7 @@ void generate_strval() {
 
     generate_type(CODE_GENERATOR_LOCAL_FRAME, type_var, CODE_GENERATOR_LOCAL_FRAME, result_var);
     generate_conditional_jump(true, null_cond_label, CODE_GENERATOR_LOCAL_FRAME, type_var,
-                              CODE_GENERATOR_NULL_CONSTANT, "nil");
+                              CODE_GENERATOR_STRING_CONSTANT, "nil");
     generate_jump(function_end_label);
 
     generate_label(null_cond_label);
