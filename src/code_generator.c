@@ -567,7 +567,8 @@ frames_t get_node_frame(syntax_abstract_tree_t *tree) {
         case SYN_NODE_KEYWORD_NULL:
             return CODE_GENERATOR_NULL_CONSTANT;
         case SYN_NODE_IDENTIFIER: {
-            // TODO: get frame from symbol table
+            if (code_generator_parameters->is_in_function)
+                return CODE_GENERATOR_LOCAL_FRAME;
             return CODE_GENERATOR_GLOBAL_FRAME;
         }
         default:
