@@ -189,12 +189,28 @@ void generate_number_conversion_functions() {
         string_t *conversion_label = string_init(current_function->value);
         string_append_string(conversion_label, "_%s", conversion_type);
 
+        string_t *null_conv_label = string_init(current_function->value);
+        string_append_string(null_conv_label, "_null_conv");
+
         generate_conversion_base(current_function->value, process_variable, type_variable);
 
         generate_conditional_jump(true, end_label->value, CODE_GENERATOR_LOCAL_FRAME, type_variable,
                                   CODE_GENERATOR_STRING_CONSTANT, current_type);
         generate_conditional_jump(true, conversion_label->value, CODE_GENERATOR_LOCAL_FRAME, type_variable,
                                   CODE_GENERATOR_STRING_CONSTANT, conversion_type);
+        generate_conditional_jump(true, null_conv_label->value, CODE_GENERATOR_LOCAL_FRAME, type_variable,
+                                  CODE_GENERATOR_STRING_CONSTANT, "nil");
+        generate_jump(end_label->value);
+
+        generate_label(null_conv_label->value);
+        string_t *zero_value = string_init("");
+        string_append_string(zero_value, i == 0 ? "%a" : "%d", 0);
+        generate_move(
+                CODE_GENERATOR_LOCAL_FRAME,
+                process_variable,
+                i == 0 ? CODE_GENERATOR_FLOAT_CONSTANT : CODE_GENERATOR_INT_CONSTANT,
+                zero_value->value
+        );
         generate_jump(end_label->value);
 
         generate_label(conversion_label->value);
@@ -214,108 +230,34 @@ void generate_number_conversion_functions() {
     }
 }
 
-void generate_int_to_char(frames_t frame) {
-    fprintf(fd, "LABEL int2char\n");
-    fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR %s@retval1\n", frames[frame]);
-    fprintf(fd, "MOVE %s@retval1 nil@nil\n", frames[frame]);
-    fprintf(fd, "DEFVAR %s@i\n", frames[frame]);
-    fprintf(fd, "MOVE %s@i %s@1\n", frames[frame], frames[frame]);
-    fprintf(fd, "DEFVAR %s@i\n", frames[frame]);
-    fprintf(fd, "MOVE %s@tmp nil@nil\n", frames[frame]);
-    fprintf(fd, "TYPE %s@tmp %s@int\n", frames[frame], frames[frame]);
-    fprintf(fd, "JUMPIFEQ error_label %s@tmp string@nil\n", frames[frame]);
-    fprintf(fd, "LT %s@tmp %s@i int@0\n", frames[frame], frames[frame]);
-    fprintf(fd, "JUMPIFEQ nil_return %s@tmp bool@true\n", frames[frame]);
-    fprintf(fd, "GT %s@tmp %s@i int@255\n", frames[frame], frames[frame]);
-    fprintf(fd, "JUMPIFEQ nil_return %s@tmp bool@true\n", frames[frame]);
-    fprintf(fd, "INT2CHAR %s@retval1 %s@int\n", frames[frame], frames[frame]);
-    fprintf(fd, "LABEL nil_return\n");
-    fprintf(fd, "POPFRAME\n");
-    fprintf(fd, "RETURN\n");
-}
+void generate_strval() {
+    char *function_label = "strval";
+    char *null_cond_label = "strval_null_cond";
+    char *function_end_label = "strval_end";
 
-void generate_string_to_int(frames_t frame) {
-    fprintf(fd, "LABEL stri2int\n");
-    fprintf(fd, "CREATEFRAME\n");
-    fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR %s@s\n", frames[frame]);
-    fprintf(fd, "MOVE %s@s %s@1\n", frames[frame], frames[frame]);
-    fprintf(fd, "DEFVAR %s@i\n", frames[frame]);
-    fprintf(fd, "MOVE %s@i %s@2\n", frames[frame], frames[frame]);
-    fprintf(fd, "DEFVAR %s@lenght\n", frames[frame]);
-    fprintf(fd, "MOVE %s@length nil@nil\n", frames[frame]);
-    fprintf(fd, "DEFVAR %s@tmp\n", frames[frame]);
-    fprintf(fd, "MOVE %s@tmp nil@nil\n", frames[frame]);
-    fprintf(fd, "TYPE %s@tmp %s@s\n", frames[frame], frames[frame]);
-    fprintf(fd, "JUMPIFEQ error_label %s@tmp string@nil\n", frames[frame]);
-    fprintf(fd, "TYPE %s@tmp %s@i\n", frames[frame], frames[frame]);
-    fprintf(fd, "JUMPIFEQ error_label %s@tmp string@nil\n", frames[frame]);
-    fprintf(fd, "STRLEN %s@length %s@s\n", frames[frame], frames[frame]);
-    fprintf(fd, "LT %s@tmp %s@i int@0\n", frames[frame], frames[frame]);
-    fprintf(fd, "JUMPIFEQ nil_return %s@tmp bool@true\n", frames[frame]);
-    fprintf(fd, "GT %s@tmp %s@i %s@length\n", frames[frame], frames[frame], frames[frame]);
-    fprintf(fd, "JUMPIFEQ nil_return %s@tmp bool@true\n", frames[frame]);
-    fprintf(fd, "STRI2INT %s@retval1 %s@s %s@i\n", frames[frame], frames[frame], frames[frame]);
-    fprintf(fd, "LABEL nil_return\n");
-    fprintf(fd, "POPFRAME\n");
-    fprintf(fd, "RETURN\n");
-}
+    char *type_var = "$type";
+    char *result_var = "$result";
 
-void generate_reads(frames_t frame) {
-    fprintf(fd, "LABEL reads\n");
-    fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR %s@retval1\n", frames[frame]);
-    fprintf(fd, "MOVE %s@retval1\n", frames[frame]);
-    fprintf(fd, "READ %s@retval1 string\n", frames[frame]);
-    fprintf(fd, "POPFRAME\n");
-    fprintf(fd, "RETURN\n");
-}
-
-void generate_readi(frames_t frame) {
-    fprintf(fd, "LABEL readi\n");
-    fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR %s@retval1\n", frames[frame]);
-    fprintf(fd, "MOVE %s@retval1\n", frames[frame]);
-    fprintf(fd, "READ %s@retval1 int\n", frames[frame]);
-    fprintf(fd, "POPFRAME\n");
-    fprintf(fd, "RETURN\n");
-}
-
-void generate_readf(frames_t frame) {
-    fprintf(fd, "LABEL readf\n");
-    fprintf(fd, "PUSHFRAME\n");
-    fprintf(fd, "DEFVAR %s@retval1\n", frames[frame]);
-    fprintf(fd, "MOVE %s@retval1\n", frames[frame]);
-    fprintf(fd, "READ %s@retval1 float\n", frames[frame]);
-    fprintf(fd, "POPFRAME\n");
-    fprintf(fd, "RETURN\n");
-}
-
-void generate_write() {
-    char *stack_string_var = "$stack_string";
-    char *counter_var = "$i";
-
-    generate_label("write");
+    generate_label(function_label);
     generate_create_frame();
     generate_push_frame();
 
-    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, stack_string_var);
-    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, counter_var);
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, type_var);
+    generate_declaration(CODE_GENERATOR_LOCAL_FRAME, result_var);
 
-    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, counter_var);
+    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, result_var);
 
-    generate_label("write_loop");
+    generate_type(CODE_GENERATOR_LOCAL_FRAME, type_var, CODE_GENERATOR_LOCAL_FRAME, result_var);
+    generate_conditional_jump(true, null_cond_label, CODE_GENERATOR_LOCAL_FRAME, type_var,
+                              CODE_GENERATOR_STRING_CONSTANT, "nil");
+    generate_jump(function_end_label);
 
-    fprintf(fd, "JUMPIFEQ write_end LF@%s int@0\n", counter_var);
-    generate_pop_from_top(CODE_GENERATOR_LOCAL_FRAME, stack_string_var);
+    generate_label(null_cond_label);
+    generate_move(CODE_GENERATOR_LOCAL_FRAME, result_var, CODE_GENERATOR_STRING_CONSTANT, "");
+    generate_jump(function_end_label);
 
-    fprintf(fd, "WRITE LF@%s\n", stack_string_var);
-    generate_operation(CODE_GEN_SUB_INSTRUCTION, CODE_GENERATOR_LOCAL_FRAME, counter_var, CODE_GENERATOR_LOCAL_FRAME,
-                       counter_var, CODE_GENERATOR_INT_CONSTANT, "1");
-    fprintf(fd, "JUMP write_loop\n");
-
-    generate_label("write_end");
+    generate_label(function_end_label);
+    generate_add_on_top(CODE_GENERATOR_LOCAL_FRAME, result_var);
     generate_end();
 }
 
@@ -567,7 +509,8 @@ frames_t get_node_frame(syntax_abstract_tree_t *tree) {
         case SYN_NODE_KEYWORD_NULL:
             return CODE_GENERATOR_NULL_CONSTANT;
         case SYN_NODE_IDENTIFIER: {
-            // TODO: get frame from symbol table
+            if (code_generator_parameters->is_in_function)
+                return CODE_GENERATOR_LOCAL_FRAME;
             return CODE_GENERATOR_GLOBAL_FRAME;
         }
         default:
@@ -895,11 +838,11 @@ void parse_loop(syntax_abstract_tree_t *tree) {
     string_t *loop_end_label = string_init(loop_label->value);
     string_append_string(loop_end_label, "_end");
 
+    syntax_tree_node_type loop_type = tree->left->type;
+
+    generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, loop_cond_var->value);
+
     parse_relational_expression(tree->left, loop_cond_var);
-
-    bool is_expression_false = tree->left->type == SYN_NODE_KEYWORD_NULL;
-
-    if (is_expression_false) return;
 
     syntax_abstract_tree_t *body_tree = tree->right;
     while (body_tree != NULL && body_tree->left != NULL) {
@@ -913,10 +856,6 @@ void parse_loop(syntax_abstract_tree_t *tree) {
         }
         body_tree = body_tree->left;
     }
-
-    syntax_tree_node_type loop_type = tree->left->type;
-
-    generate_declaration(CODE_GENERATOR_GLOBAL_FRAME, loop_cond_var->value);
 
     generate_label(loop_start_label->value);
     generate_conditional_jump(true, loop_end_label->value, CODE_GENERATOR_GLOBAL_FRAME, tree->left->value->value,
@@ -978,7 +917,10 @@ void parse_condition(syntax_abstract_tree_t *tree) {
 void parse_return(syntax_abstract_tree_t *tree) {
     if (tree->type != SYN_NODE_KEYWORD_RETURN) return;
 
-    if (tree->right->type == SYN_NODE_KEYWORD_VOID) return;
+    if (tree->right->type == SYN_NODE_KEYWORD_VOID) {
+        generate_add_on_top(CODE_GENERATOR_NULL_CONSTANT, "nil");
+        return;
+    }
 
     process_node_value(tree->right);
 

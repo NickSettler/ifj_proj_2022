@@ -268,8 +268,25 @@ void *process_tree_using(syntax_abstract_tree_t *tree, void (*process)(syntax_ab
  */
 bool is_simple_expression(syntax_abstract_tree_t *tree);
 
+/**
+ * Compares if two ASTs are equal
+ * @param tree1 First AST
+ * @param tree2 Second AST
+ * @return True if the ASTs are equal, false otherwise
+ */
+bool compare_syntax_tree(syntax_abstract_tree_t *tree1, syntax_abstract_tree_t *tree2);
+
+/**
+ * Copies the syntax abstract tree
+ * @param tree Syntax abstract tree
+ * @return Copy of the syntax abstract tree
+ */
 syntax_abstract_tree_t *tree_copy(syntax_abstract_tree_t *tree);
 
+/**
+ * Frees the syntax abstract tree
+ * @param tree Syntax abstract tree
+ */
 void free_syntax_tree(syntax_abstract_tree_t *tree);
 
 #endif //IFJ_PROJ_SYNTAX_ANALYZER_H

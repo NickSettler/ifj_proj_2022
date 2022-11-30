@@ -498,7 +498,7 @@ namespace ifj {
                                                  "declare(strict_types=1);"
                                                  "$x;", {}),
                             ::testing::ExitedWithCode(SEMANTIC_UNDEF_VAR_ERROR_CODE),
-                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$x used before declaration");
+                            "\\[SEMANTIC UNDEF VAR ERROR\\] Variable \\$x is not defined");
 
                 CheckSymTableEntries("<?php"
                                      "declare(strict_types=1);"

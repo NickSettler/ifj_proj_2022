@@ -34,6 +34,8 @@ int main(int argc, char **argv) {
 
     if (current_semantic_state->used_functions & (SEMANTIC_INTVAL | SEMANTIC_FLOATVAL))
         generate_number_conversion_functions();
+    if (current_semantic_state->used_functions & (SEMANTIC_STRVAL))
+        generate_strval();
     if (current_semantic_state->used_functions & SEMANTIC_SUBSTRING)
         generate_substr();
     if (current_semantic_state->used_functions & SEMANTIC_ORD)

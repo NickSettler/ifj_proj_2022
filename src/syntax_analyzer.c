@@ -76,6 +76,7 @@ make_binary_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, synta
     }
 
     tree->type = type;
+    tree->value = NULL;
     tree->left = left;
     tree->middle = NULL;
     tree->right = right;
@@ -98,6 +99,7 @@ make_ternary_node(syntax_tree_node_type type, syntax_abstract_tree_t *left, synt
     }
 
     tree->type = type;
+    tree->value = NULL;
     tree->left = left;
     tree->middle = middle;
     tree->right = right;
@@ -368,7 +370,7 @@ syntax_abstract_tree_t *stmt(FILE *fd) {
                 }
 
                 if (current_token_type == SYN_TOKEN_SEMICOLON) {
-                    tree = make_binary_node(SYN_NODE_ASSIGN, v, v);
+                    tree = v;
                     GET_NEXT_TOKEN(fd)
                     break;
                 }
@@ -658,6 +660,22 @@ bool is_simple_expression(syntax_abstract_tree_t *tree) {
     }
 
     return true;
+}
+
+bool compare_syntax_tree(syntax_abstract_tree_t *tree1, syntax_abstract_tree_t *tree2) {
+    if (!tree1 || !tree2) return true;
+
+    if (tree1->type != tree2->type) return false;
+
+    if (tree1->value && tree2->value) {
+        if (strcmp(tree1->value->value, tree2->value->value) != 0) return false;
+    } else if ((!tree1->value ^ !tree2->value) == 1) {
+        return false;
+    }
+
+    return compare_syntax_tree(tree1->left, tree2->left) &&
+           compare_syntax_tree(tree1->middle, tree2->middle) &&
+           compare_syntax_tree(tree1->right, tree2->right);
 }
 
 syntax_abstract_tree_t *tree_copy(syntax_abstract_tree_t *tree) {

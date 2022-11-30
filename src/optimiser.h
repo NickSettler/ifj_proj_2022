@@ -14,12 +14,25 @@
 static char *numbers_buffer;
 
 #define GET_NODE_NUMBERS \
+    if (!(tree->left->type & (SYN_NODE_STRING | SYN_NODE_INTEGER | SYN_NODE_FLOAT)) || \
+        !(tree->right->type & (SYN_NODE_STRING | SYN_NODE_INTEGER | SYN_NODE_FLOAT)))  \
+        return; \
+    data_type conv_data_type = type_check(get_data_type(tree->left), get_data_type(tree->right)); \
+    CONV_NODE_VALUE(left) \
+    CONV_NODE_VALUE(right) \
     GET_NODE_NUMBER(left)\
     GET_NODE_NUMBER(right)
 
+#define CONV_NODE_VALUE(child) \
+    data_type child##_type = get_data_type(tree->child); \
+    bool need_##child##_conv = conv_data_type != child##_type; \
+    if (need_##child##_conv) \
+        change_node_type(tree->child, conv_data_type);
+
 #define GET_NODE_NUMBER(child) \
-    if ((tree->child->type & (SYN_NODE_FLOAT | SYN_NODE_INTEGER)) == 0) \
-        return; \
+    if (tree->child->type == SYN_NODE_STRING) { \
+        change_node_type(tree->child, TYPE_INT); \
+    } \
     double child##_number = strtod(tree->child->value->value, &numbers_buffer);
 
 #define PROCESS_DECIMAL(result) \
@@ -41,10 +54,12 @@ static char *numbers_buffer;
     tree->right = NULL;
 
 #include "syntax_analyzer.h"
+#include "semantic_analyzer.h"
 
 typedef struct optimiser_parameters {
     syntax_abstract_tree_t *root_tree;
-    string_t *current_unused_variable;
+    string_t *current_unused_variable_name;
+    syntax_abstract_tree_t *current_unused_variable_tree;
     string_t *current_replaced_variable_name;
     syntax_abstract_tree_t *current_replaced_variable_tree;
 } optimiser_parameters_t;
@@ -55,7 +70,7 @@ typedef enum {
     OPTIMISE_UNREACHABLE_CODE = 1 << 2,
 } optimise_type_t;
 
-optimiser_parameters_t *optimiser_params;
+static optimiser_parameters_t *optimiser_params;
 
 /**
  * Checks if optimiser can determine if the expression is true or false

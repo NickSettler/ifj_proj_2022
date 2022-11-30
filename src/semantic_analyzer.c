@@ -12,6 +12,7 @@
 
 #include "semantic_analyzer.h"
 #include "syntax_analyzer.h"
+#include "optimiser.h"
 
 semantic_analyzer_t *semantic_state;
 extern tree_node_t *symtable;
@@ -87,6 +88,11 @@ void process_tree(syntax_abstract_tree_t *tree) {
             semantic_state->function_name = temp_function_name;
             break;
         }
+        case SYN_NODE_IDENTIFIER: {
+            if (!check_tree_using(tree, is_defined)) {
+                SEMANTIC_UNDEF_VAR_ERROR("Variable %s is not defined", tree->value->value)
+            }
+        }
         default:
             break;
     }
@@ -107,8 +113,25 @@ void process_assign(syntax_abstract_tree_t *tree) {
 
 void process_if_while(syntax_abstract_tree_t *tree) {
     check_tree_using(tree->left, check_defined);
-    process_tree(tree->right);
-    process_tree(tree->middle);
+    syntax_abstract_tree_t *cond_copy = tree_copy(tree->left);
+    optimize_expression(cond_copy);
+    bool can_check_condition = check_tree_using(cond_copy, can_detect_bool);
+    if (can_check_condition) {
+        bool is_truthy_condition = check_tree_using(cond_copy, is_true);
+        if (tree->type & SYN_NODE_KEYWORD_IF) {
+            if (is_truthy_condition) {
+                process_tree(tree->middle);
+            } else if (tree->right != NULL) {
+                process_tree(tree->right);
+            }
+        }
+        if (tree->type & SYN_NODE_KEYWORD_WHILE && is_truthy_condition) {
+            process_tree(tree->right);
+        }
+    } else {
+        process_tree(tree->right);
+        process_tree(tree->middle);
+    }
 }
 
 void process_function_definitions(syntax_abstract_tree_t *tree) {
@@ -237,6 +260,9 @@ void process_call(syntax_abstract_tree_t *tree) {
     else if (!strcmp(tree->left->value->value, "floatval"))
         semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
                                                                         SEMANTIC_FLOATVAL);
+    else if (!strcmp(tree->left->value->value, "strval"))
+        semantic_state->used_functions = (semantic_internal_functions) (semantic_state->used_functions |
+                                                                        SEMANTIC_STRVAL);
 
     if (strcmp(semantic_state->function_name, "write") != 0) {
         if (arg_call_counter != func->argument_count) {
@@ -363,17 +389,9 @@ void check_tree_for_float(syntax_abstract_tree_t *tree) {
 }
 
 void replace_node_int_to_float(syntax_abstract_tree_t *tree) {
-    if (tree == NULL) {
-        return;
-    }
-    switch (tree->type) {
-        case SYN_NODE_INTEGER:
-            tree->type = SYN_NODE_FLOAT;
-            string_append_string(tree->value, ".0");
-            break;
-        default:
-            return;
-    }
+    if (!tree || (tree->type & SYN_NODE_INTEGER) == 0) return;
+
+    change_node_type(tree, TYPE_FLOAT);
 }
 
 void check_tree_for_string(syntax_abstract_tree_t *tree) {
@@ -383,20 +401,57 @@ void check_tree_for_string(syntax_abstract_tree_t *tree) {
 }
 
 void replace_node_to_string(syntax_abstract_tree_t *tree) {
-    if (tree == NULL) {
-        return;
-    }
-    switch (tree->type) {
-        case SYN_NODE_INTEGER:
-        case SYN_NODE_FLOAT: {
-            tree->type = SYN_NODE_STRING;
-            string_t *temp = string_init("");
-            string_append_string(temp, "\"%s\"", tree->value->value);
-            string_replace(tree->value, temp->value);
+    change_node_type(tree, TYPE_STRING);
+}
+
+void change_node_type(syntax_abstract_tree_t *tree, data_type type) {
+    if (!tree || (tree->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT | SYN_NODE_STRING)) == 0) return;
+
+    switch (type) {
+        case TYPE_INT: {
+            char *num_buf;
+
+            if (tree->type & SYN_NODE_FLOAT) {
+                tree->type = SYN_NODE_INTEGER;
+                double num = strtod(tree->value->value, &num_buf);
+                string_clear(tree->value);
+                string_append_string(tree->value, "%d", (int) num);
+            }
+            if (tree->type & SYN_NODE_STRING) {
+                tree->type = SYN_NODE_INTEGER;
+                string_t *string_without_quotes = string_substr(tree->value, 1, (int) tree->value->length - 1);
+                double num = strtod(string_without_quotes->value, &num_buf);
+                string_clear(tree->value);
+                string_append_string(tree->value, "%d", (int) num);
+            }
+            break;
+        }
+        case TYPE_FLOAT: {
+            if (tree->type & SYN_NODE_INTEGER) {
+                tree->type = SYN_NODE_FLOAT;
+                string_append_string(tree->value, ".0");
+            }
+            if (tree->type & SYN_NODE_STRING) {
+                tree->type = SYN_NODE_FLOAT;
+                char *num_buf;
+                string_t *string_without_quotes = string_substr(tree->value, 1, (int) tree->value->length - 1);
+                double num = strtod(string_without_quotes->value, &num_buf);
+                string_clear(tree->value);
+                string_append_string(tree->value, "%g", num);
+            }
+            break;
+        }
+        case TYPE_STRING: {
+            if (tree->type & (SYN_NODE_INTEGER | SYN_NODE_FLOAT)) {
+                tree->type = SYN_NODE_STRING;
+                string_t *value_copy = string_init(tree->value->value);
+                string_clear(tree->value);
+                string_append_string(tree->value, "\"%s\"", value_copy->value);
+            }
             break;
         }
         default: {
-            return;
+            break;
         }
     }
 }
