@@ -113,16 +113,38 @@
 	chyby jsou detekovány až v průběhu sémantické analýzy. Po vytvoření abstraktního syntaktického stromu
 	syntaktický analyzátor přejde do další fáze sémantické analýzy.
 
-	Príklad stromu pro syntaktickou analýzu je uveden na obrázku~\ref{figure:ast_example}.
+	Príklad stromu pro syntaktickou analýzu je uveden na obrázkéch~\ref{figure:ast_example}-~\ref{figure:ast_example}.
 
 	\newpage
 
 	\begin{figure}[!ht]
 		\centering
-		\includegraphics[width=1\linewidth]{ast.pdf}
+		\includegraphics[width=1\linewidth]{assign.pdf}
 		\caption{Abstraktní syntaktický strom přirážení proměnných}
 		\label{figure:ast_example}
 	\end{figure}
+
+    \begin{figure}[!ht]
+		\centering
+		\includegraphics[width=1\linewidth]{if.pdf}
+		\caption{Abstraktní syntaktický strom cyklů}
+		\label{figure:ast_example}
+	\end{figure}
+
+    \begin{figure}[!ht]
+		\centering
+		\includegraphics[width=1\linewidth]{func_dec.pdf}
+		\caption{Abstraktní syntaktický strom deklarací funkcí}
+		\label{figure:ast_example}
+	\end{figure}
+
+    \begin{figure}[!ht]
+		\centering
+		\includegraphics[width=1\linewidth]{func_call.pdf}
+		\caption{Abstraktní syntaktický strom volání funkcí}
+		\label{figure:ast_example}
+	\end{figure}
+    \newpage
 
 	\subsection{Sémantická analýza}
 	Sémantická analýza je implementována v souboru \texttt{semantic\_analyzer.c} a její rozhraní pro implementaci
@@ -201,7 +223,13 @@
 
 	%Závěr %
 	\section{Závěr}
+    Náš tým jsme měli sestaven brzy  a~pracovalo se nám společně velmi dobře.
 
+	V~průběhu vývoje jsme se potýkali s~menšími problémy týkajícími se nejasností v~zadání, ale
+	tyto jsme vyřešili díky fóru k~projektu. Správnost řešení jsme si ověřili pomocí Google testy a~pokusnímu odevzdání, díky čemuž jsme byli schopni projekt ještě více odladit.
+
+	Tento projekt nám celkově přinesl spoustu znalostí ohledně fungování překladačů, prakticky nám
+	objasnil probíranou látku v~předmětech IFJ a~IAL a~přinesl nám zkušennosti s~projekty tohoto rozsahu.
 
 
 
