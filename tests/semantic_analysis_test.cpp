@@ -451,12 +451,6 @@ namespace ifj {
 
                 EXPECT_EXIT(CheckSymTableEntries("<?php"
                                                  "declare(strict_types=1);"
-                                                 " $return = 5;", {}),
-                            ::testing::ExitedWithCode(SEMANTIC_FUNC_ARG_ERROR_CODE),
-                            "\\[SEMANTIC FUNC ARG ERROR\\] Wrong type of argument");
-
-                EXPECT_EXIT(CheckSymTableEntries("<?php"
-                                                 "declare(strict_types=1);"
                                                  "function f(int $x) : void {"
                                                  "    write($x, \"\n\");"
                                                  "}"
