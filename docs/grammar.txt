@@ -11,12 +11,18 @@
 <f-type> -> float
 <f-type> -> string
 <f-type> -> void
+<f-type> -> e
 
 <f-args> -> <f-arg>
 <f-args> -> <f-arg>, <f-args>
 <f-args> -> e
 
-<f-arg> -> <f-type> ID
+<f-arg> -> <arg-type> ID
+
+<arg-type> -> int
+<arg-type> -> float
+<arg-type> -> string
+<arg-type> -> e
 
 <stat> -> ID = <expr> ;
 <stat> -> ID = ID ( <args> ) ;
@@ -48,5 +54,3 @@
 
 <declare> -> declare(strict-types = 0) ;
 <declare> -> declare(strict-types = 1) ;
-
-
