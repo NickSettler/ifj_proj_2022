@@ -11,6 +11,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{geometry} \geometry{verbose,a4paper,tmargin=2cm,bmargin=2cm,lmargin=2.5cm,rmargin=1.5cm}
 \usepackage{times}
+\usepackage{geometry}
 \usepackage{verbatim}
 \usepackage{enumitem}
 \usepackage{graphicx} % insert picture
@@ -22,7 +23,7 @@
 	hypertexnames = false,
 	citecolor = blue
 }
-
+\usepackage{pdflscape}
 
 \begin{document}
 	%% Title page %%
@@ -264,6 +265,7 @@
 
 			\item \verb|<f-dec-stats> -> <f-dec-stat>|
 			\item \verb|<f-dec-stats> -> <f-dec-stat> <f-dec-stats>|
+
 			\item \verb|<f-dec-stat> -> function ID ( <f-args> ) : <f-type> { <stat-list> }|
 			\item \verb|<f-dec-stat> -> function ID ( <f-args> ) { <stat-list> }|
 
@@ -271,11 +273,18 @@
 			\item \verb|<f-type> -> float|
 			\item \verb|<f-type> -> string|
 			\item \verb|<f-type> -> void|
+            \item \verb|<f-type> -> |$\varepsilon$
 
 			\item \verb|<f-args> -> <f-arg>|
 			\item \verb|<f-args> -> <f-arg>, <f-args>|
 			\item \verb|<f-args> -> |$\varepsilon$
-			\item \verb|<f-arg> -> <f-type> ID|
+
+			\item \verb|<f-arg> -> <arg-type> ID|
+
+            \item \verb|<arg-type> -> int|
+            \item \verb|<arg-type> -> float|
+            \item \verb|<arg-type> -> string|
+            \item \verb|<arg-type> -> |$\varepsilon$
 
 			\item \verb|<stat> -> ID = <expr> ;|
 			\item \verb|<stat> -> ID = ID ( <args> ) ;|
@@ -314,13 +323,16 @@
 	\end{table}
 
     \newpage
+    \thispagestyle{empty}
+    \begin{landscape}
 	\section{LL -- tabulka}
 	\begin{table}[!ht]
 		\centering
-		\includegraphics[width=1\linewidth]{}
+		\includegraphics[width=1\linewidth]{LL grammar.pdf}
 		\caption{LL -- tabulka použitá při syntaktické analýze}
 		\label{table:ll_table}
 	\end{table}
+    \end{landscape}
 
     \newpage
 	\section{Precedenční tabulka}
