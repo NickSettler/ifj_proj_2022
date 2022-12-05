@@ -142,6 +142,20 @@ namespace ifj {
                                 );
                             }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
                             "\\[LEXICAL ERROR\\] Invalid PHP open bracket");
+
+                EXPECT_EXIT({
+                                IsStackCorrect("<?php\n"
+                                               "declare(strict_types=1);\n"
+                                               "while(1!=1){}", 5,
+                                               (lexical_token_t) {OPEN_PHP_BRACKET, "<?php"},
+                                               (lexical_token_t) {IDENTIFIER, "$test"},
+                                               (lexical_token_t) {ASSIGN, "="},
+                                               (lexical_token_t) {STRING, "\"abc\""},
+                                               (lexical_token_t) {CLOSE_PHP_BRACKET, "?>"}
+                                );
+                            }, ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid operator: !=");
+
             }
 
             TEST_F(LexicalAnalyzerTest, ArithmeticOperators) {
@@ -632,6 +646,11 @@ namespace ifj {
                                (lexical_token_t) {RIGHT_PARENTHESIS, ")"},
                                (lexical_token_t) {SEMICOLON, ";"}
                 );
+                IsStackCorrect("  <?php//this is opening tag, it is needed for ever php script"
+                               "/* this is something that is needed for compability with IFJ code */declare(/*some parameter here*//*aaaaaaa*/strict_types=/*:)*/1);//bye",
+                               1,
+                               (lexical_token_t) {OPEN_PHP_BRACKET, "<?php"}
+                );
 
                 EXPECT_EXIT(IsStackCorrect("<?php\n"
                                            "declare(strict_types=1);\n"
@@ -704,12 +723,6 @@ namespace ifj {
                                (lexical_token_t) {LEFT_CURLY_BRACKETS, "{"},
                                (lexical_token_t) {RIGHT_CURLY_BRACKETS, "}"}
                 );
-
-                EXPECT_EXIT(IsStackCorrect("<?php\n"
-                                           "declare(strict_types=1);\n"
-                                           "while(1!=1){}", 0),
-                            ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
-                            "\\[LEXICAL ERROR\\] Invalid operator: !=");
 
                 IsStackCorrect("<?php\n"
                                "declare(strict_types=1);\n"
@@ -808,6 +821,18 @@ namespace ifj {
                                            "@", 0),
                             ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
                             "\\[LEXICAL ERROR\\] Unexpected character: @");
+
+                EXPECT_EXIT(IsStackCorrect("<?php\n"
+                                           "declare(strict_types=1);\n"
+                                           "$x = 0.;", 0),
+                            ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid float number format");
+
+                EXPECT_EXIT(IsStackCorrect("<?php\n"
+                                           "declare(strict_types=1);\n"
+                                           "$x = 0.0e;", 0),
+                            ::testing::ExitedWithCode(LEXICAL_ERROR_CODE),
+                            "\\[LEXICAL ERROR\\] Invalid float number format");
 
                 IsStackCorrect("<?php\n"
                                "declare(strict_types=1);\n"
