@@ -105,8 +105,8 @@
 	Nejdůležitější částí celého programu je syntaktická analýza. Syntaktická analýza je implementována v souboru
 	\texttt{syntax\_analyzer.c}, a její rozhraní pro implementaci v \texttt{syntax\_analyzer.h}.
 
-	Syntaktická analýza je implementována pomocí rekurzívního sestupu na základě LL gramatiky~\ref{table:ll_gramatika}. Syntaktický
-	analyzátor zpracovává všechny části LL gramatiky na výrazy podle pravidel v LL - tabulce~\ref{table:ll_table}. Úkolem
+	Syntaktická analýza je implementována pomocí rekurzívního sestupu na základě LL gramatiky - Tabulka ~\ref{table:ll_gramatika}. Syntaktický
+	analyzátor zpracovává všechny části LL gramatiky na výrazy podle pravidel v LL - tabulce - Tabulka ~\ref{table:ll_table}. Úkolem
 	syntetického analyzátoru je sestavit abstraktní syntaktický strom na základě seznamu tokenů. Strom je postaven
 	tak, že je nastavena priorita operací a ve výsledku můžeme načtením tohoto stromu spustit kód v
 	požadovaném pořadí. Pokud je nalezena chyba, překladač dokončí kontrolu, vymaže alokovanou paměť
@@ -114,7 +114,7 @@
 	chyby jsou detekovány až v průběhu sémantické analýzy. Po vytvoření abstraktního syntaktického stromu
 	syntaktický analyzátor přejde do další fáze sémantické analýzy.
 
-	Príklad stromu pro syntaktickou analýzu je uveden na obrázkéch~\ref{figure:ast_example1}-~\ref{figure:ast_example4}.
+	Príklady stromu pro syntaktickou analýzu jsou uvedeny na obrázkéch~\ref{figure:ast_example1}-~\ref{figure:ast_example4}.
 
 	\newpage
 
@@ -128,7 +128,7 @@
     \begin{figure}[!ht]
 		\centering
 		\includegraphics[width=1\linewidth]{if.pdf}
-		\caption{Abstraktní syntaktický strom cyklů}
+		\caption{Abstraktní syntaktický strom větvení}
 		\label{figure:ast_example2}
 	\end{figure}
 
@@ -163,7 +163,7 @@
     Tabulka symbolů je binární vyhledávací strom, který obsahuje informace o všech identifikátorech kódu. Tabulka symbolů se skládá jak z globálního stromů (pro všechny globální proměnné), tak z lokálních stromů (pro argumenty a lokální proměnné funkcí).
 
 
-    Tabulka symbolů je uložena a okamžitě použita v sémantické analýze a~slouží ke kontrole, zda daný identifikátor existuje a~zda souhlasí jeho datový typ, př''ípadně návratová hodnota.
+    Tabulka symbolů je uložena a okamžitě použita v sémantické analýze a~slouží ke kontrole, zda daný identifikátor existuje a~zda souhlasí jeho datový typ, případně návratová hodnota.
 
 
 	Příklad stromu pro tabulku symbolů je uveden na obrázku~\ref{figure:sem_anal_example}.
@@ -176,15 +176,15 @@
 	\end{figure}
 
     \subsection{Optimalizáce kódu}
-    Optimalizáce kódu je implementováné v souboru \texttt{optimiser.c} a jeho rozhraní pro implementaci v \texttt{optimiser.h}.
+    Optimalizáce kódu je implementováné v souboru \texttt{optimiser.c} a jeho rozhraní pro implementaci v souboru \texttt{optimiser.h}.
 
-    Optimalizáce kódu pracuje s abstraktním syntaktickým stromem a mění to.
+    Optimalizáce kódu pracuje s abstraktním syntaktickým stromem a mění ho.
 
     Optimalizátor kódu se spustí ihned po sémantické analýze a před vygenerováním kódu.
 
     Optimalizátor kódu provádí následující hlavní akce:
     \begin{enumerate}
-        \item Optimalizuje matematické výrazy (například \texttt{\$a = 5 + 9/3; -> \$a = 8;}
+        \item Optimalizuje matematické výrazy (například \texttt{\$a = 5 + 9/3; -> \$a = 8;})
         \item Přiřazování a změna hodnoty proměnné během programu
         \item Optimalizuje nedosažitelné smyčky while a if
         \item Odstraňuje nepoužívané proměnné
@@ -204,20 +204,17 @@
 
     \textbf{Generování výrazů}
 
-    Jednoduché výrazy jsou zpracovávány optimalizátorem a generovány na jednom řádku.
+    Jednoduché výrazy jsou zpracovávány optimalizátorem a generovány pomocí jednoho příkazu.
     U složitých výrazů, které optimalizátor nerozpozná, lze k výrazům přidat další proměnné pro provádění výpočtů.
 
     \textbf{Generování cyklů}
 
-    Pokud je proměnná deklarována ve cyklu, bylo nutné ji před začátkem cyklu předdefinovat.
+    Pokud je proměnná deklarována ve cyklu, bylo nutné ji před začátkem cyklu definovat.
 
     \textbf{Generování funkcí}
 
     Pro funkce a jejich proměnné byl vytvořen lokální rámec.
      Pokud nejsou v kódu volány vestavěné funkce, generátor kódu je nevygeneruje.
-
-
-
 
 
     % Práce v týmu %
@@ -232,7 +229,7 @@
 	\subsubsection{Vývoj}
 
 	Veškerá naše práce byla rozdělena do sprintů, každý trval týden. Během sprintu musel každý jednotlivý člen týmu
-	splnit určitý objem úkolu.
+	splnit určité úkoly.
 
 	Pro správu souborů projektu jsme používali verzovací systém Git. Jako vzdálený repositář jsme použivali
 	\href{https://github.com/NickSettler/ifj_proj_2022}{\textit{repozitář na GitHubu}}.
