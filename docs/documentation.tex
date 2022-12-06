@@ -114,7 +114,7 @@
 	chyby jsou detekovány až v průběhu sémantické analýzy. Po vytvoření abstraktního syntaktického stromu
 	syntaktický analyzátor přejde do další fáze sémantické analýzy.
 
-	Príklad stromu pro syntaktickou analýzu je uveden na obrázkéch~\ref{figure:ast_example}-~\ref{figure:ast_example}.
+	Príklad stromu pro syntaktickou analýzu je uveden na obrázkéch~\ref{figure:ast_example1}-~\ref{figure:ast_example4}.
 
 	\newpage
 
@@ -122,51 +122,102 @@
 		\centering
 		\includegraphics[width=1\linewidth]{assign.pdf}
 		\caption{Abstraktní syntaktický strom přirážení proměnných}
-		\label{figure:ast_example}
+		\label{figure:ast_example1}
 	\end{figure}
 
     \begin{figure}[!ht]
 		\centering
 		\includegraphics[width=1\linewidth]{if.pdf}
 		\caption{Abstraktní syntaktický strom cyklů}
-		\label{figure:ast_example}
+		\label{figure:ast_example2}
 	\end{figure}
 
     \begin{figure}[!ht]
 		\centering
 		\includegraphics[width=1\linewidth]{func_dec.pdf}
 		\caption{Abstraktní syntaktický strom deklarací funkcí}
-		\label{figure:ast_example}
+		\label{figure:ast_example3}
 	\end{figure}
 
     \begin{figure}[!ht]
 		\centering
-		\includegraphics[width=1\linewidth]{func_call.pdf}
+		\includegraphics[width=1\linewidth]{fun_call.pdf}
 		\caption{Abstraktní syntaktický strom volání funkcí}
-		\label{figure:ast_example}
+		\label{figure:ast_example4}
 	\end{figure}
     \newpage
 
 	\subsection{Sémantická analýza}
 	Sémantická analýza je implementována v souboru \texttt{semantic\_analyzer.c} a její rozhraní pro implementaci
-	v \texttt{semantic\_analyzer.h}. Sémantický analyzátor pracuje s abstraktním syntaktickým stromem, který
-	vytvořil syntaktický analyzátor. Úkolem sémantického analyzátoru je kontrola sémantickou správnost zdrojového
-	programu: kontrola deklarací, datových typů, seznamů parametrů apod. a to pomocí kontroly datových typu. K
-	tomu využívá datové struktury a funkce pro sémantické kontroly. Pokud při kontrole je nalezena chyba, překladač dokončí
-	kontrolu, vymaže alokovanou paměť a zobrazí chybovou hlášku na standartní chybový vstup. Po dokončení
-	sémantické analýzy se překladač přesune do fáze generování kódu.
+	v \texttt{semantic\_analyzer.h}.
 
-	Příklad stromu pro sémantickou analýzu je uveden na obrázku~\ref{figure:sem_anal_example}.
+    Sémantický analyzátor pracuje s abstraktním syntaktickým stromem, který
+	vytvořil syntaktický analyzátor. Úkolem sémantického analyzátoru je kontrola sémantické správnosti zdrojového
+	programu: kontrola deklarací, datových typů, seznamů parametrů apod. a to pomocí kontroly datových typu.
+
+    K tomu využívá datové struktury a funkce pro sémantické kontroly. Pokud při kontrole je nalezena chyba, překladač dokončí
+	kontrolu, vymaže alokovanou paměť a zobrazí chybovou hlášku na standartní chybový vstup.
+
+    V souboréch \texttt{symtable.c} a \texttt{symtable.h} je uložená tabulka symbolů.
+
+    Tabulka symbolů je binární vyhledávací strom, který obsahuje informace o všech identifikátorech kódu. Tabulka symbolů se skládá jak z globálního stromů (pro všechny globální proměnné), tak z lokálních stromů (pro argumenty a lokální proměnné funkcí).
+
+
+    Tabulka symbolů je uložena a okamžitě použita v sémantické analýze a~slouží ke kontrole, zda daný identifikátor existuje a~zda souhlasí jeho datový typ, př''ípadně návratová hodnota.
+
+
+	Příklad stromu pro tabulku symbolů je uveden na obrázku~\ref{figure:sem_anal_example}.
 
 	\begin{figure}[!ht]
 		\centering
 		\includegraphics[width=1\linewidth]{sem_anal.pdf}
-		\caption{Derivační strom pro sémantickou analýzu}
+		\caption{Tabulka symbolů}
 		\label{figure:sem_anal_example}
 	\end{figure}
 
+    \subsection{Optimalizáce kódu}
+    Optimalizáce kódu je implementováné v souboru \texttt{optimiser.c} a jeho rozhraní pro implementaci v \texttt{optimiser.h}.
+
+    Optimalizáce kódu pracuje s abstraktním syntaktickým stromem a mění to.
+
+    Optimalizátor kódu se spustí ihned po sémantické analýze a před vygenerováním kódu.
+
+    Optimalizátor kódu provádí následující hlavní akce:
+    \begin{enumerate}
+        \item Optimalizuje matematické výrazy (například \texttt{\$a = 5 + 9/3; -> \$a = 8;}
+        \item Přiřazování a změna hodnoty proměnné během programu
+        \item Optimalizuje nedosažitelné smyčky while a if
+        \item Odstraňuje nepoužívané proměnné
+    \end{enumerate}
 
 	\subsection{Generování cílového kódu}
+    Generování cílového kódu je implementováné v souboru \texttt{code\_generator.c} a jeho rozhraní pro implementaci
+	v \texttt{code\_generator.h}.  Generování kódu pracuje s abstraktním syntaktickým stromem po optimalizáce kódu.
+
+    Generování cílového kódu znamená generování mezikódu IFJcode22. Kód je generován na standardní výstup po dokončení všech analýz.
+
+	Na začátku generování jsou inicializovány potřebné datové struktury (které jsou na závěr uvolněny), vygenerována hlavička mezikódu, která zahrnuje potřebné náležitosti pro korektní interpretaci mezikódu a~skok do hlavního těla programu. Poté jsou vygenerovány vestavěné funkce, které jsou zapsány přímo v~jazyce IFJcode22.
+
+     Každá funkce mezikódu IFJcode22 je tvořena návěštím ve tvaru \texttt{\$generate\_funkce}.
+
+    Pak se spouští parser syntaktického stromu, dokud není nalezen jeden z uzlů: \texttt{SYN\_NODE\_ASSIGN, \\SYN\_NODE\_KEYWORD\_IF, SYN\_NODE\_KEYWORD\_WHILE, SYN\_NODE\_FUNCTION\_DECLARATION, \\SYN\_NODE\_CALL}. Pro každý z uzlů jsou spuštěny různé funkce generování kódu.
+
+    \textbf{Generování výrazů}
+
+    Jednoduché výrazy jsou zpracovávány optimalizátorem a generovány na jednom řádku.
+    U složitých výrazů, které optimalizátor nerozpozná, lze k výrazům přidat další proměnné pro provádění výpočtů.
+
+    \textbf{Generování cyklů}
+
+    Pokud je proměnná deklarována ve cyklu, bylo nutné ji před začátkem cyklu předdefinovat.
+
+    \textbf{Generování funkcí}
+
+    Pro funkce a jejich proměnné byl vytvořen lokální rámec.
+     Pokud nejsou v kódu volány vestavěné funkce, generátor kódu je nevygeneruje.
+
+
+
 
 
     % Práce v týmu %
@@ -211,10 +262,10 @@
 			\hline
 			Člen týmu & Přidělená práce \\ \hline
 			\textbf{Nikita Moiseev} & \begin{tabular}{l} vedení týmu, organizace práce, dohlížení na provádění práce,
-				konzultace, \\ kontrola, lexikální analýza, syntaktická analýza \end{tabular} \\
+				konzultace, \\ kontrola, lexikální analýza, syntaktická analýza, optimalizace kódu, testování, \\ dokumentace \end{tabular}\\
 			Maksim Kalutski & \begin{tabular}{l} generování cílového kódu, testování, dokumentace \end{tabular} \\
-			Elena Marochkina & \begin{tabular}{l} implementace tabulky symbolů, syntaktická analýza, testování, dokumentace \end{tabular} \\
-			Nikita Pasynkov & \begin{tabular}{l} lexikální analýza, syntaktická analýza, testování, dokumentace \end{tabular} \\ \hline
+			Elena Marochkina & \begin{tabular}{l} implementace tabulky symbolů, syntaktická analýza, sémantická analzya, testování, \\ dokumentace\end{tabular} \\
+			Nikita Pasynkov & \begin{tabular}{l} lexikální analýza, syntaktická analýza, sémantická analzya, testování, dokumentace \end{tabular} \\ \hline
 		\end{tabular}
 		\caption{Rozdělení práce v~týmu mezi jednotlivými členy}
 		\label{table:rozdeleni_prace}
