@@ -636,6 +636,69 @@ namespace ifj {
                                     {SYN_NODE_SEQUENCE, SYN_NODE_INTEGER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
                                      SYN_NODE_KEYWORD_WHILE, SYN_NODE_SEQUENCE});
             }
+
+            TEST_F(SyntaxAnalyzerTest, LogicalOperators) {
+                IsSyntaxTreeCorrect("<?php "
+                                    "declare(strict_types=1);\n"
+                                    "$a = 1 && 2;", {
+                                            SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                            SYN_NODE_AND,
+                                            SYN_NODE_INTEGER
+                                    });
+
+                IsSyntaxTreeCorrect("<?php "
+                                    "declare(strict_types=1);\n"
+                                    "$a = 1 || 2;", {
+                                            SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                            SYN_NODE_OR,
+                                            SYN_NODE_INTEGER
+                                    });
+
+                IsSyntaxTreeCorrect("<?php "
+                                    "declare(strict_types=1);\n"
+                                    "$a = 1 !== 2;", {
+                                            SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER,
+                                            SYN_NODE_TYPED_NOT_EQUAL, SYN_NODE_INTEGER
+                                    });
+
+                IsSyntaxTreeCorrect("<?php "
+                                    "declare(strict_types=1);\n"
+                                    "if ($a === 10 && $b === 5) $a = 5;", {
+                                            SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL,
+                                            SYN_NODE_INTEGER, SYN_NODE_AND, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL,
+                                            SYN_NODE_INTEGER, SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE,
+                                            SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER
+                                    });
+
+                IsSyntaxTreeCorrect("<?php "
+                                    "declare(strict_types=1);\n"
+                                    "if ($a === 10 || $b === 5) $a = 5;", {
+                                            SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL,
+                                            SYN_NODE_INTEGER, SYN_NODE_OR, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL,
+                                            SYN_NODE_INTEGER, SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE,
+                                            SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER
+                                    });
+
+                IsSyntaxTreeCorrect("<?php "
+                                    "declare(strict_types=1);\n"
+                                    "if ($a !== 10) $a = 5;", {
+                                            SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_NOT_EQUAL,
+                                            SYN_NODE_INTEGER, SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE,
+                                            SYN_NODE_IDENTIFIER, SYN_NODE_ASSIGN, SYN_NODE_INTEGER
+                                    });
+
+                IsSyntaxTreeCorrect("<?php "
+                                    "declare(strict_types=1);\n"
+                                    "if ($a === 10 && ($b === 5 || $c !== 10) && $d === 10) $a = 5;", {
+                                            SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL,
+                                            SYN_NODE_INTEGER, SYN_NODE_AND, SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL,
+                                            SYN_NODE_INTEGER, SYN_NODE_OR, SYN_NODE_IDENTIFIER,
+                                            SYN_NODE_TYPED_NOT_EQUAL, SYN_NODE_INTEGER, SYN_NODE_AND,
+                                            SYN_NODE_IDENTIFIER, SYN_NODE_TYPED_EQUAL, SYN_NODE_INTEGER,
+                                            SYN_NODE_KEYWORD_IF, SYN_NODE_SEQUENCE, SYN_NODE_IDENTIFIER,
+                                            SYN_NODE_ASSIGN, SYN_NODE_INTEGER
+                                    });
+            }
         }
     }
 }
