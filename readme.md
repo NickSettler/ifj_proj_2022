@@ -14,3 +14,8 @@ For unit testing is used [googletest](https://github.com/google/googletest)
     * `choco install googletest` for Windows
 2. Run `make test` to run all tests
 3. While developing use CMake to build and run tests
+
+## Building
+
+1. Run `make`
+2. Use generated `comp` file to compile PHP8 code
